@@ -92,7 +92,7 @@ if __name__ == "__main__":
             self.logger.debug("Debug!", method = "main", line = "92")
             self.logger.debug("Debug!", var_name = "myvar", method = "main", line = 93)
             self.logger.warn("Warn!")
-            self.logger.error("Method warn!", method="main")
+            self.logger.warn("Method warn!", method="main")
 
             self.shutdown()
 
