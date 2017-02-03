@@ -6,7 +6,7 @@ Author:
 
 import rospy
 
-from tester import Tester
+import tester
 
 class Logger:
     """ Create ROS style log messages.
@@ -76,7 +76,7 @@ class Logger:
 
 if __name__ == "__main__":
     # run unit tests for the logger class
-    class LoggerTest(Tester):
+    class LoggerTest(tester.Tester):
         def __init__(self):
             # initalize test class
             Tester.__init__(self, "Logger")

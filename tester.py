@@ -6,7 +6,7 @@ Author:
 
 import rospy
 
-from logger import Logger
+import logger
 
 class Tester():
     """
