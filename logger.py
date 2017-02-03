@@ -36,7 +36,7 @@ class Logger:
             msg = "In method '" + str(method) + "': " + str(msg)
             
         if line is not None:
-            msg = "(line " + str(msg) + ")"
+            msg += "(line " + str(line) + ")"
             
         self._print(rospy.loginfo, msg)
         
