@@ -6,8 +6,6 @@ Author:
 
 import rospy
 
-import tester
-
 class Logger:
     """ Create ROS style log messages.
     
@@ -75,8 +73,10 @@ class Logger:
         self._print(rospy.logwarn, msg)
 
 if __name__ == "__main__":
+    from tester import Tester
+    
     # run unit tests for the logger class
-    class LoggerTest(tester.Tester):
+    class LoggerTest(Tester):
         def __init__(self):
             # initalize test class
             Tester.__init__(self, "Logger")
