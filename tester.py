@@ -7,7 +7,6 @@ Author:
 import rospy
 
 from logger import Logger
-from motion import Motion
 
 class Tester():
     """
