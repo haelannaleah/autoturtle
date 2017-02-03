@@ -37,5 +37,5 @@ class Tester():
         self.logger = Logger(self.__name__)
         self.logger.info("hello world")
 
-    def self.shutdown(self):
+    def shutdown(self):
         self.logger.info("goodbye world")
