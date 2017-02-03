@@ -36,7 +36,7 @@ class Logger:
             msg = "In method '" + str(method) + "': " + str(msg)
             
         if line is not None:
-            msg += "(line " + str(line) + ")"
+            msg += " (line " + str(line) + ")"
             
         self._print(rospy.loginfo, msg)
         
@@ -48,7 +48,7 @@ class Logger:
             method (str, optional): Method from which the error message originated.
         """
         if method is not None:
-            msg = "Error in method '" + method+ "': " + str(msg)
+            msg = "Error in method '" + method + "': " + str(msg)
             
         self._print(rospy.logerr, msg)
     
@@ -60,7 +60,7 @@ class Logger:
         """
         self._print(rospy.loginfo, msg)
     
-    def warn(self, msg, method=None):
+    def warn(self, msg, method = None):
         """ Log warnings. 
         
         Args:
