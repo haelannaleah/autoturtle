@@ -47,7 +47,7 @@ class Logger:
             msg (str): Description of the error.
             method (str, optional): Method from which the error message originated.
         """
-        if method_name is not None:
+        if method is not None:
             msg = "Error in method '" + method+ "': " + str(msg)
             
         self._print(rospy.logerr, msg)
