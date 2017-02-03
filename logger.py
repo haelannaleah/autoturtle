@@ -94,4 +94,6 @@ if __name__ == "__main__":
             self.logger.warn("Warn!")
             self.logger.error("Method warn!", method="main")
 
-            rospy.spin()
+            self.shutdown()
+
+    LoggerTest()
