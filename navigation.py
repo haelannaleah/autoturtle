@@ -72,6 +72,6 @@ if __name__ == "__main__":
         def main(self):
             self.logger.debug(self.navigation.angle, var_name = "cur_angle")
             self.logger.debug(self.navigation.wrapTurnAngle(-2), var_name="-2")
-            self.logger.debug(self.navigation.wrapTurnAngle(-2), var_name="-2")
+            self.logger.debug(self.navigation.wrapTurnAngle(2), var_name="2")
 
     NavigationTest()
