@@ -28,3 +28,5 @@ if __name__ == "__main__":
 
         def main(self):
             pass
+
+    NavigationTest()
