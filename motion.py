@@ -89,6 +89,8 @@ class Motion():
             
         Args:
             direction (bool): Turn direction is left if True, right if False
+            speed (float, optiona): The percentage of the the maximum turn speed
+                the robot will turn at.
         """
         # if we're still moving forward, stop
         if not self._linear_stop():
@@ -104,14 +106,20 @@ class Motion():
         
         self._publish()
 
-    def walk(self):
-        """ Move straight forward. """
-        self.walking = True
+    def walk(self, speed=1):
+        """ Move straight forward. 
         
-        if self._move_cmd.linear.x < self._LIN_SPEED:
+        Args:
+            speed (float, optiona): The percentage of the the maximum linear speed
+                the robot will move at.
+        """
+        self.walking = True
+        target_speed = self._LIN_SPEED * min(speed, 1)
+        
+        if self._move_cmd.linear.x < target_speed:
             self.accelerate(self._ACCEL_DELTA)
         else:
-            self._move_cmd.linear.x = self._LIN_SPEED
+            self._move_cmd.linear.x = target_speed
             
         self._move_cmd.angular.z = 0
         self._publish()
