@@ -19,7 +19,8 @@ class Sensors():
         cliff_sensor (int): -1 if left sensor, 0 if middle sensor, 1 if right sensor.
         wheeldrop (bool): True if robot is not on the ground, False otherwise.
     """
-
+    _SENSOR_LOCATION = ["Left", "Center", "Right"]
+    
     def __init__(self):
         self._logger = Logger("Sensors")
 
@@ -38,21 +39,28 @@ class Sensors():
         rospy.Subscriber('mobile_base/events/wheel_drop', WheelDropEvent, self._wheelDropCallback)
 
     def _bumperCallback(self, data):
-        """Handle bump events."""
+        """ Handle bump events. """
         self.bump = bool(data.state == BumperEvent.PRESSED)
         self.bumper = data.bumper - 1
-        self._logger.warn("Bumper event: " + str(data))
+        self._logKobuki("bumper", data.state, ("RELEASED", "PRESSED"), data.bumper)
 
     def _cliffCallback(self, data):
-        """Handle cliffs."""
+        """ Handle cliffs. """
         if self.wheeldrop:
             return
         
         self.cliff = bool(data.state == CliffEvent.CLIFF)
-        self.cliff_sensor = data.sensor
-        self._logger.warn("Cliff event: " + str(data.CLIFF))
+        self.cliff_sensor = data.sensor - 1
+        self._logKobuki("cliff", data.state, ("FLOOR", "CLIFF"), data.sensor)
 
     def _wheelDropCallback(self, data):
-        """Handle wheel drops."""
+        """ Handle wheel drops. """
         self.wheeldrop = bool(data.state == WheelDropEvent.DROPPED)
-        self._logger.warn("Wheel drop event: " + str(data.wheel))
+        self._logKobuki("WheelDrop", data.state, ("RAISED", "DROPPED"))
+
+    def _logKobuki(sensor, state, states, sensor_location = None):
+        """ Log useful Kobuki information. """
+        if sensor_location is not None:
+            sensor = self._SENSOR_LOCATION[sensor_location] + " " + sensor
+        
+        self._logger.warn(sensor + " event: " + states[state])
