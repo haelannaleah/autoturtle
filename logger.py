@@ -98,6 +98,6 @@ if __name__ == "__main__":
             self.logger.warn("Warn!")
             self.logger.warn("Method warn!", method="main")
 
-            rospy.signal_shutdown("Test complete.")
+            self.signal_shutdown("Logger test complete.")
 
     LoggerTest()

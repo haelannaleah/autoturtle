@@ -50,8 +50,7 @@ class Tester():
         
         Note: This function must be overriden in the subclasses.
         """
-        self.logger.error("The main function in the tester class must be overriden!")
-        self.shutdown()
+        self.signal_shutdown("The main function in the tester class must be overriden!")
 
     def shutdown(self):
         """ Stop all robot operations. 
@@ -63,3 +62,12 @@ class Tester():
             self.rate.sleep()
         
         self.logger.info("goodbye world")
+
+    def signal_shutdown(self, reason):
+        """ Interrupt robot control loop.
+        
+        Args:
+            reason (str): A human readable explanation for why the test has ended.
+        """
+        self.logger.warn("Signalling shutdown: " + reason)
+        rospy.signal_shutdown(reason)
