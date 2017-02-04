@@ -82,6 +82,9 @@ if __name__ == "__main__":
             # initalize test class
             Tester.__init__(self, "Logger")
             
+        def main(self):
+            """ The main control loop. """
+            
             # verify that log messages are functional
             self.logger.info("hello")
             self.logger.error("Error!")
@@ -95,6 +98,6 @@ if __name__ == "__main__":
             self.logger.warn("Warn!")
             self.logger.warn("Method warn!", method="main")
 
-            self.shutdown()
+            self.signal_shutdown("Logger test complete.")
 
     LoggerTest()
