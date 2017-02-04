@@ -21,7 +21,8 @@ class Motion():
     _ROT_SPEED = radians(60)
     _LIN_SPEED = 0.2
     _ACCEL_TIME = 0.1
-    _ACCEL_DELTA = .0025
+    _ACCEL_DELTA = .003
+    _DECEL_DELTA = -.004
     _TURN_LEFT = 1
     _TURN_RIGHT = -1
     
@@ -42,7 +43,7 @@ class Motion():
             True if the robot has stopped, False otherwise.
         """
         if self._move_cmd.linear.x > 0:
-            self.accelerate(-self._ACCEL_DELTA)
+            self.accelerate(self._DECEL_DELTA)
             return False
         else:
             self._move_cmd.linear.x = 0
