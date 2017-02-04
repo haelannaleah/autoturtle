@@ -121,7 +121,8 @@ if __name__ == "__main__":
     from sensors import Sensors
 
     class MotionTest(Tester):
-        """ Run unit test for the motion class """
+        """ Run unit test for the motion class. """
+        
         def __init__(self):
             Tester.__init__(self, "Motion")
             
