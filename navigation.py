@@ -29,7 +29,7 @@ class Navigation():
     def _ekfCallback(self, data):
         self.p = data.pose.pose.position
         self.q = data.pose.pose.orientation
-        self._logger.debug(tf.transformations.tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w]))
+        self._logger.debug(tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w]))
 
 if __name__ == "__main__":
     from tester import Tester
