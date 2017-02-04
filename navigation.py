@@ -24,6 +24,7 @@ if __name__ == "__main__":
 
     class NavigationTest(Tester):
         def __init__(self):
+            self.navigation = Navigation()
             Tester.__init__(self, "Navigation")
 
         def main(self):
