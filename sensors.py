@@ -58,7 +58,7 @@ class Sensors():
         self.wheeldrop = bool(data.state == WheelDropEvent.DROPPED)
         self._logKobuki("WheelDrop", data.state, ("RAISED", "DROPPED"))
 
-    def _logKobuki(sensor, state, states, sensor_location = None):
+    def _logKobuki(self, sensor, state, states, sensor_location = None):
         """ Log useful Kobuki information. """
         if sensor_location is not None:
             sensor = self._SENSOR_LOCATION[sensor_location] + " " + sensor
