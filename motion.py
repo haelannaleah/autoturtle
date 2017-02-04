@@ -107,11 +107,12 @@ class Motion():
     def walk(self, speed=1):
         """ Move straight forward. """
         self.walking = True
+        target_speed = self._LIN_SPEED * min(speed, 1)
         
-        if self._move_cmd.linear.x < self._LIN_SPEED:
+        if self._move_cmd.linear.x < target_speed:
             self.accelerate(self._ACCEL_DELTA)
         else:
-            self._move_cmd.linear.x = self._LIN_SPEED * min(speed, 1)
+            self._move_cmd.linear.x = target_speed
             
         self._move_cmd.angular.z = 0
         self._publish()
