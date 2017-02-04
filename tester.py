@@ -40,10 +40,24 @@ class Tester():
         # set up test node logger
         self.logger = Logger(self.__name__)
         self.logger.info("hello world")
+    
+        while not rospy.is_shutdown():
+            self.main()
+            self.rate.sleep()
+
+    def main(self):
+        """ The main control loop.
+        
+        Note: This function must be overriden in the subclasses.
+        """
+        self.logger.error("The main function in the tester class must be overriden!")
+        self.shutdown()
 
     def shutdown(self):
-        """ Stop all robot operations. """
+        """ Stop all robot operations. 
         
+        Note: This function may be overridden in the subclasses.
+        """
         while self.motion.walking:
             self.motion.stop()
             self.rate.sleep()
