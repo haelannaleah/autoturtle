@@ -116,7 +116,6 @@ class Motion():
         self._move_cmd.angular.z = 0
         self._publish()
 
-
 if __name__ == "__main__":
     from tester import Tester
     from sensors import Sensors
@@ -137,8 +136,7 @@ if __name__ == "__main__":
             
                 # if we hit something, stop and turn
                 elif self.sensors.bump:
-                #self.motion.turn(self.sensors.bumper > 0)
-                    self.motion.stop()
+                    self.motion.turn(self.sensors.bumper > 0)
                 
                 # otherwise, just walk
                 else:
