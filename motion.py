@@ -116,6 +116,12 @@ class Motion():
         self._move_cmd.angular.z = 0
         self._publish()
 
+    def shutdown(self, rate):
+        """ Bring the robot to a gentle stop. """
+        while self.walking:
+            self.stop()
+            rate.sleep()
+
 if __name__ == "__main__":
     from tester import Tester
     from sensors import Sensors
@@ -126,6 +132,7 @@ if __name__ == "__main__":
         def __init__(self):
             # set up basic sensing
             self.sensors = Sensors()
+            self.motion = Motion()
             
             Tester.__init__(self, "Motion")
         
@@ -143,5 +150,10 @@ if __name__ == "__main__":
             # otherwise, just walk
             else:
                 self.motion.walk()
+
+        def shutdown(self):
+            """ Shutdown test. """
+            self.motion.shutdown(self.rate)
+            Tester.shutdown(self)
                 
     MotionTest()
