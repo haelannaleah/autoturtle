@@ -143,12 +143,5 @@ if __name__ == "__main__":
                     self.motion.walk()
     
                 self.rate.sleep()
-    
-        def shutdown(self):
-            while self.motion.walking:
-                self.motion.stop()
-                self.rate.sleep()
-            
-            Tester.shutdown(self)
                 
     MotionTest()

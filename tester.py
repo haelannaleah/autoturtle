@@ -42,4 +42,10 @@ class Tester():
         self.logger.info("hello world")
 
     def shutdown(self):
+        """ Stop all robot operations. """
+        
+        while self.motion.walking:
+            self.motion.stop()
+            self.rate.sleep()
+        
         self.logger.info("goodbye world")
