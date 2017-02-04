@@ -131,7 +131,7 @@ if __name__ == "__main__":
             while not rospy.is_shutdown():
                 
                 # if we see a cliff or get picked up, stop
-                if self.sensors.cliff or sensors.wheeldrop:
+                if self.sensors.cliff or self.sensors.wheeldrop:
                     self.motion.stop(now=True)
             
                 # if we hit something, stop and turn
