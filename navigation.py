@@ -40,7 +40,7 @@ class Navigation():
         # extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w])[-1]
 
-    def convertTurnAngle(self, turn):
+    def wrapTurnAngle(self, turn):
         """ Wrap around the pi to back to -pi, if necessary
     
         If the angles are in adjacent quadrants where the angles wrap around (since we go from -pi to pi),
