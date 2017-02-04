@@ -46,7 +46,7 @@ class Sensors():
 
     def _cliffCallback(self, data):
         """ Handle cliffs. """
-        if self.wheeldrop and self.cliff:
+        if self.wheeldrop and data.state == CliffEvent.CLIFF:
             return
         
         self.cliff = bool(data.state == CliffEvent.CLIFF)
