@@ -75,8 +75,9 @@ class Logger:
 if __name__ == "__main__":
     from tester import Tester
     
-    # run unit tests for the logger class
     class LoggerTest(Tester):
+        """ Unit tests for the Logger class. """
+        
         def __init__(self):
             # initalize test class
             Tester.__init__(self, "Logger")
