@@ -154,6 +154,6 @@ if __name__ == "__main__":
         def shutdown(self):
             """ Shutdown test. """
             self.motion.shutdown(self.rate)
-            Tester.shutdown(Self)
+            Tester.shutdown(self)
                 
     MotionTest()
