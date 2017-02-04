@@ -7,7 +7,7 @@ import rospy
 
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
-from logger import Logger():
+from logger import Logger
 
 class Navigation():
     """ """
