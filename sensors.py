@@ -32,7 +32,7 @@ class Sensors():
         # subscribe to cliff sensor
         self.cliff = False
         self.cliff_sensor = 0
-        rospy.Subscriber('mobile_base/events/clif', CliffEvent, self._cliffCallback)
+        rospy.Subscriber('mobile_base/events/cliff', CliffEvent, self._cliffCallback)
 
         # subscribe to wheel drop sensor
         self.wheeldrop = False
@@ -46,6 +46,9 @@ class Sensors():
 
     def _cliffCallback(self, data):
         """ Handle cliffs. """
+        if self.wheel_drop:
+            return
+        
         self.cliff = bool(data.state == CliffEvent.CLIFF)
         self.cliff_sensor = data.sensor - 1
         self._logKobuki("cliff", data.state, ("FLOOR", "CLIFF"), data.sensor)
