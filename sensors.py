@@ -46,6 +46,9 @@ class Sensors():
 
     def _cliffCallback(self, data):
         """ Handle cliffs. """
+        if self.wheeldrop and self.cliff:
+            return
+        
         self.cliff = bool(data.state == CliffEvent.CLIFF)
         self.cliff_sensor = data.sensor - 1
         self._logKobuki("cliff", data.state, ("FLOOR", "CLIFF"), data.sensor)
