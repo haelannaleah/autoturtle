@@ -7,6 +7,7 @@ Author:
 import rospy
 
 from logger import Logger
+from motion import Motion
 
 class Tester():
     """
@@ -17,6 +18,7 @@ class Tester():
         
     Attributes:
         logger (Logger): A custom logger for the tester.
+        motion (Motion): Acess to the motion module for robot movement.
         rate (rospy.Rate): Used to control the refresh rate of robot control loops.
     """
     def __init__(self, name):
@@ -31,6 +33,9 @@ class Tester():
         
         # set global test refresh rate (100 Hz)
         self.rate = rospy.Rate(100)
+        
+        # set up motion module
+        self.motion = Motion()
     
         # set up test node logger
         self.logger = Logger(self.__name__)
