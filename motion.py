@@ -90,7 +90,7 @@ class Motion():
             direction (bool): Turn direction is left if True, right if False
         """
         # if we're still moving forward, stop
-        if not self.linear_stop():
+        if not self._linear_stop():
             self._move_cmd.angular.z = 0
             self.turn_dir = None
 
