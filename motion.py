@@ -116,7 +116,6 @@ class Motion():
         self._move_cmd.angular.z = 0
         self._publish()
 
-
 if __name__ == "__main__":
     from tester import Tester
     from sensors import Sensors
