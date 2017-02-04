@@ -124,24 +124,24 @@ if __name__ == "__main__":
         """ Run unit test for the motion class. """
         
         def __init__(self):
-            Tester.__init__(self, "Motion")
-            
+            # set up basic sensing
             self.sensors = Sensors()
-
-            while not rospy.is_shutdown():
-                
-                # if we see a cliff or get picked up, stop
-                if self.sensors.cliff or self.sensors.wheeldrop:
-                    self.motion.stop(now=True)
             
-                # if we hit something, stop and turn
-                elif self.sensors.bump:
-                    self.motion.turn(self.sensors.bumper > 0)
-                
-                # otherwise, just walk
-                else:
-                    self.motion.walk()
-    
-                self.rate.sleep()
+            Tester.__init__(self, "Motion")
+        
+        def main(self):
+            """ The main control loop. """
+            
+            # if we see a cliff or get picked up, stop
+            if self.sensors.cliff or self.sensors.wheeldrop:
+                self.motion.stop(now=True)
+        
+            # if we hit something, stop and turn
+            elif self.sensors.bump:
+                self.motion.turn(self.sensors.bumper > 0)
+            
+            # otherwise, just walk
+            else:
+                self.motion.walk()
                 
     MotionTest()
