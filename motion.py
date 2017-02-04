@@ -126,6 +126,7 @@ if __name__ == "__main__":
         def __init__(self):
             # set up basic sensing
             self.sensors = Sensors()
+            self.motion = motion
             
             Tester.__init__(self, "Motion")
         
@@ -143,5 +144,13 @@ if __name__ == "__main__":
             # otherwise, just walk
             else:
                 self.motion.walk()
+
+        def shutdown(self):
+            """ Bring robot to a gentle stop. """
+            while self.motion.walking:
+                self.motion.stop()
+                self.rate.sleep()
+            
+            Tester.shutdown(Self)
                 
     MotionTest()
