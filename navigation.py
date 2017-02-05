@@ -106,6 +106,6 @@ if __name__ == "__main__":
             else:
                 if self.navigation.goToPosition(Point(0,0,0)):
                     self.logger.info("Returned home")
-                    reached_goal = False
+                    self.reached_goal = False
 
     NavigationTest()
