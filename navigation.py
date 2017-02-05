@@ -103,7 +103,14 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            self.testSquare()
+            self.testAngleWrapping()
+        
+        def testAngleWrapping(self):
+            """ Unit test for the angle wrapping function. """
+            
+            self.logger.debug(self.navigation.wrapAngle(2), var_name="2")
+            self.logger.debug(self.navigation.wrapAngle(-2), var_name="-2")
+            self.logger.debug(self.navigation.angle)
         
         def testLine(self):
             """ Test behavior with a simple line. """
