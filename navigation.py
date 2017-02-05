@@ -109,7 +109,11 @@ if __name__ == "__main__":
             """ Unit test for the angle wrapping function. """
             
             self.logger.debug(self.navigation.wrapAngle(pi / 2.0 + .01), var_name="positive pi/2")
-            self.logger.debug(self.navigation.wrapAngle(- pi / 2.0 - .01), var_name="negatice pi/2")
+            self.logger.debug(self.navigation.wrapAngle(- pi / 2.0 - .01), var_name="negative pi/2")
+            self.logger.debug(self.navigation.wrapAngle(2.5), var_name="positive 2.5")
+            self.logger.debug(self.navigation.wrapAngle(- 2.5), var_name="negative 2.5")
+            self.logger.debug(self.navigation.wrapAngle(pi + .01), var_name="positive pi")
+            self.logger.debug(self.navigation.wrapAngle(- pi - .01), var_name="negative pi")
             self.logger.debug(self.navigation.angle)
         
         def testLine(self):
