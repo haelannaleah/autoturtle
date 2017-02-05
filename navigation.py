@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            self.testLine()
+            self.testSquare()
         
         def testLine(self):
             """ Test behavior with a simple line. """
