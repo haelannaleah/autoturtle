@@ -68,7 +68,7 @@ class Navigation():
         """ Move from current position to desired waypoint.
             
         Args:
-            destination (geometry_msgs.msg.Point): A destination relative to the origin.
+            destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
         
         Returns:
             True if we are close to the desired location, False otherwise.
@@ -92,20 +92,58 @@ if __name__ == "__main__":
     class NavigationTest(Tester):
         def __init__(self):
             self.navigation = Navigation()
+            
+            # linear test
             self.reached_goal = False
+            
+            # square test
+            self.reached_corner = [False, False, False]
             
             Tester.__init__(self, "Navigation")
 
         def main(self):
+            """ The test currently being run. """
+            self.testLine()
         
-            # test a simple line
-            if not self.reached_goal:
-                if self.navigation.goToPosition(Point(.5,0,0)):
-                    self.logger.info("Reached goal point!!")
+        def testLine(self):
+            """ Test behavior with a simple line. """
+            if not self.reached_corner[0]:
+                if self.navigation.goToPosition(Point(1,0,0)):
+                    self.logger.info("Reached end point!")
+                    self.logger.debug(self.position)
                     self.reached_goal = True
             else:
                 if self.navigation.goToPosition(Point(0,0,0)):
                     self.logger.info("Returned home")
-                    self.reached_goal = False
+                    self.logger.debug(self.position)
+                    self.reached_corner = [False] * len(self.reached_corner)
+        
+        def testSquare(self):
+            """ Test behavior with a simple square. """
+        
+            # test a simple square
+            if not self.reached_corner[0]:
+                if self.navigation.goToPosition(Point(1,0,0)):
+                    self.logger.info("Reached corner 0")
+                    self.logger.debug(self.position)
+                    self.reached_corner[0] = True
+        
+            elif not self.reached_corner[1]:
+                if self.navigation.goToPosition(Point(1,1,0)):
+                    self.logger.info("Reached corner 2")
+                    self.logger.debug(self.position)
+                    self.reached_corner[1] = True
+                    
+            elif not self.reached_corner[2]:
+                if self.navigation.goToPosition(Point(0,1,0)):
+                    self.logger.info("Reached corner 2")
+                    self.logger.debug(self.position)
+                    self.reached_corner[2] = True
+        
+            else:
+                if self.navigation.goToPosition(Point(0,0,0)):
+                    self.logger.info("Returned home")
+                    self.logger.debug(self.position)
+                    self.reached_corner = [False] * len(self.reached_corner)
 
     NavigationTest()
