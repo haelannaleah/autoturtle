@@ -8,7 +8,7 @@ import tf
 import numpy as np
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion
-from math import pi
+from math import atan2, pi
 
 from logger import Logger
 from motion import Motion
