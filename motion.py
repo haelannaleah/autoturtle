@@ -125,7 +125,11 @@ class Motion():
         self._publish()
 
     def shutdown(self, rate):
-        """ Bring the robot to a gentle stop. """
+        """ Bring the robot to a gentle stop. 
+        
+        Args:
+            rate (rospy.Rate): The refresh rate of the enclosing module.
+        """
         while self.walking:
             self.stop()
             rate.sleep()
