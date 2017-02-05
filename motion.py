@@ -13,7 +13,7 @@ class Motion():
     """ Handle basic Turtlebot motion. 
     
     Attributes:
-        turn_dur (int): 1 if turning left, -1 if turning right, None if no turn.
+        turn_dir (int): 1 if turning left, -1 if turning right, None if no turn.
         walking (bool): True if robot is moving linearly, False otherwise.
     """
     
