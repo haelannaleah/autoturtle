@@ -107,7 +107,7 @@ if __name__ == "__main__":
         
         def testLine(self):
             """ Test behavior with a simple line. """
-            if not self.reached_corner[0]:
+            if not self.reached_goal:
                 if self.navigation.goToPosition(Point(1,0,0)):
                     self.logger.info("Reached end point!")
                     self.logger.debug(self.navigation.p)
@@ -116,7 +116,7 @@ if __name__ == "__main__":
                 if self.navigation.goToPosition(Point(0,0,0)):
                     self.logger.info("Returned home")
                     self.logger.debug(self.navigation.p)
-                    self.reached_corner = [False] * len(self.reached_corner)
+                    self.reached_goal = False
         
         def testSquare(self):
             """ Test behavior with a simple square. """
