@@ -92,17 +92,17 @@ if __name__ == "__main__":
     class NavigationTest(Tester):
         def __init__(self):
             self.navigation = Navigation()
-            reached_goal = False
+            self.reached_goal = False
             
             Tester.__init__(self, "Navigation")
 
         def main(self):
         
             # test a simple line
-            if not reached_goal:
+            if not self.reached_goal:
                 if self.navigation.goToPosition(Point(.5,0,0)):
                     self.logger.info("Reached goal point!!")
-                    reached_goal = True
+                    self.reached_goal = True
             else:
                 if self.navigation.goToPosition(Point(0,0,0)):
                     self.logger.info("Returned home")
