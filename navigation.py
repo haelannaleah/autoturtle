@@ -110,12 +110,12 @@ if __name__ == "__main__":
             if not self.reached_corner[0]:
                 if self.navigation.goToPosition(Point(1,0,0)):
                     self.logger.info("Reached end point!")
-                    self.logger.debug(self.position)
+                    self.logger.debug(self.p)
                     self.reached_goal = True
             else:
                 if self.navigation.goToPosition(Point(0,0,0)):
                     self.logger.info("Returned home")
-                    self.logger.debug(self.position)
+                    self.logger.debug(self.p)
                     self.reached_corner = [False] * len(self.reached_corner)
         
         def testSquare(self):
@@ -125,25 +125,25 @@ if __name__ == "__main__":
             if not self.reached_corner[0]:
                 if self.navigation.goToPosition(Point(1,0,0)):
                     self.logger.info("Reached corner 0")
-                    self.logger.debug(self.position)
+                    self.logger.debug(self.p)
                     self.reached_corner[0] = True
         
             elif not self.reached_corner[1]:
                 if self.navigation.goToPosition(Point(1,1,0)):
                     self.logger.info("Reached corner 2")
-                    self.logger.debug(self.position)
+                    self.logger.debug(self.p)
                     self.reached_corner[1] = True
                     
             elif not self.reached_corner[2]:
                 if self.navigation.goToPosition(Point(0,1,0)):
                     self.logger.info("Reached corner 2")
-                    self.logger.debug(self.position)
+                    self.logger.debug(self.p)
                     self.reached_corner[2] = True
         
             else:
                 if self.navigation.goToPosition(Point(0,0,0)):
                     self.logger.info("Returned home")
-                    self.logger.debug(self.position)
+                    self.logger.debug(self.p)
                     self.reached_corner = [False] * len(self.reached_corner)
 
     NavigationTest()
