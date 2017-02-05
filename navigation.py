@@ -5,6 +5,7 @@ Author:
 """
 import rospy
 import tf
+import numpy as np
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion
 from math import pi
@@ -27,6 +28,8 @@ class Navigation():
     
     def __init__(self):
         self._logger = Logger("Navigation")
+        
+        self.motion = Motion()
 
         self.p = None
         self.q = None
@@ -61,17 +64,48 @@ class Navigation():
 
         return turn
 
+    def goToPosition(self, destination):
+        """ Move from current position to desired waypoint.
+            
+        Args:
+            destination (geometry_msgs.msg.Point): A destination relative to the origin.
+        
+        Returns:
+            True if we are close to the desired location, False otherwise.
+        """
+        turn_angle = self.wrapAngle(atan2(destination.y - self.p.y, destination.x - self.p.x))
+
+        if np.isclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.05).all():
+            return True
+        
+        elif not np.isclose(self.angle, turn_angle, atol=0.15):
+            self.motion.turn(cur_orientation < desired_turn, .5)
+
+        else:
+            self.motion.walk()
+
+        return False
+
 if __name__ == "__main__":
     from tester import Tester
 
     class NavigationTest(Tester):
         def __init__(self):
             self.navigation = Navigation()
+            reached_goal = False
+            
             Tester.__init__(self, "Navigation")
 
         def main(self):
-            self.logger.debug(self.navigation.angle, var_name = "cur_angle")
-            self.logger.debug(self.navigation.wrapTurnAngle(-2), var_name="-2")
-            self.logger.debug(self.navigation.wrapTurnAngle(2), var_name="2")
+        
+            # test a simple line
+            if not reached_goal:
+                if self.navigation.goToPosition(Point(.5,0,0)):
+                    self.logger.info("Reached goal point!!")
+                    reached_goal = True
+            else:
+                if self.navigation.goToPosition(Point(0,0,0)):
+                    self.logger.info("Returned home")
+                    reached_goal = False
 
     NavigationTest()
