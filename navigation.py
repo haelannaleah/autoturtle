@@ -5,9 +5,10 @@ Author:
 """
 import rospy
 import tf
+import numpy as np
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion
-from math import pi
+from math import atan2, pi
 
 from logger import Logger
 from motion import Motion
@@ -27,6 +28,8 @@ class Navigation():
     
     def __init__(self):
         self._logger = Logger("Navigation")
+        
+        self.motion = Motion()
 
         self.p = None
         self.q = None
@@ -40,7 +43,7 @@ class Navigation():
         # extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w])[-1]
 
-    def wrapTurnAngle(self, turn):
+    def wrapAngle(self, turn):
         """ Wrap around the pi to back to -pi, if necessary
     
         If the angles are in adjacent quadrants where the angles wrap around (since we go from -pi to pi),
@@ -61,17 +64,86 @@ class Navigation():
 
         return turn
 
+    def goToPosition(self, destination):
+        """ Move from current position to desired waypoint.
+            
+        Args:
+            destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
+        
+        Returns:
+            True if we are close to the desired location, False otherwise.
+        """
+        turn_angle = self.wrapAngle(atan2(destination.y - self.p.y, destination.x - self.p.x))
+
+        if np.isclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.05).all():
+            return True
+        
+        elif not np.isclose(self.angle, turn_angle, atol=0.15):
+            self.motion.turn(self.angle < turn_angle, .5)
+
+        else:
+            self.motion.walk()
+
+        return False
+
 if __name__ == "__main__":
     from tester import Tester
 
     class NavigationTest(Tester):
         def __init__(self):
             self.navigation = Navigation()
+            
+            # linear test
+            self.reached_goal = False
+            
+            # square test
+            self.reached_corner = [False, False, False]
+            
             Tester.__init__(self, "Navigation")
 
         def main(self):
-            self.logger.debug(self.navigation.angle, var_name = "cur_angle")
-            self.logger.debug(self.navigation.wrapTurnAngle(-2), var_name="-2")
-            self.logger.debug(self.navigation.wrapTurnAngle(2), var_name="2")
+            """ The test currently being run. """
+            self.testSquare()
+        
+        def testLine(self):
+            """ Test behavior with a simple line. """
+            if not self.reached_goal:
+                if self.navigation.goToPosition(Point(1,0,0)):
+                    self.logger.info("Reached end point!")
+                    self.logger.debug(self.navigation.p)
+                    self.reached_goal = True
+            else:
+                if self.navigation.goToPosition(Point(0,0,0)):
+                    self.logger.info("Returned home")
+                    self.logger.debug(self.navigation.p)
+                    self.reached_goal = False
+        
+        def testSquare(self):
+            """ Test behavior with a simple square. """
+        
+            # test a simple square
+            if not self.reached_corner[0]:
+                if self.navigation.goToPosition(Point(1,0,0)):
+                    self.logger.info("Reached corner 0")
+                    self.logger.debug(self.navigation.p)
+                    self.reached_corner[0] = True
+        
+            elif not self.reached_corner[1]:
+                if self.navigation.goToPosition(Point(1,1,0)):
+                    self.logger.info("Reached corner 2")
+                    self.logger.debug(self.navigation.p)
+                    self.reached_corner[1] = True
+                    
+            elif not self.reached_corner[2]:
+                if self.navigation.goToPosition(Point(0,1,0)):
+                    self.logger.info("Reached corner 2")
+                    self.logger.debug(self.navigation.p)
+                    self.reached_corner[2] = True
+        
+            else:
+                if self.navigation.goToPosition(Point(0,0,0)):
+                    self.logger.info("Returned home")
+                    self.logger.debug(self.navigation.p)
+                    self.reached_corner = [False] * len(self.reached_corner)
 
     NavigationTest()
