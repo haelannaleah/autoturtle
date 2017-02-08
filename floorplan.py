@@ -189,13 +189,13 @@ if __name__ == "__main__":
 
     # verify that our readonly properties are treated properly
     try:
-        self.graph = None
+        myPlan.graph = None
     except Exception, e:
         print(e)
 
     # verify that our readonly properties are treated properly
     try:
-        self.landmarks = None
+        myPlan.landmarks = None
     except Exception, e:
         print(e)
 
