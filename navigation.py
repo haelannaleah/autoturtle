@@ -102,6 +102,7 @@ if __name__ == "__main__":
             self.testSquare()
         
         def gotToPos(self, name, x, y):
+            """ Default behavior for testing goToPosition. """
             if self.navigation.goToPosition(Point(x,y,0)):
                 self.logger.info("Reached " + str(name) + " at " + str((x,y)))
                 self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
