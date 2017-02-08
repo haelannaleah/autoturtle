@@ -93,45 +93,36 @@ if __name__ == "__main__":
             """ The test currently being run. """
             self.testSquare()
         
+        def gotToPos(self, name, x, y):
+            if self.navigation.goToPosition(Point(x,y,0)):
+                self.logger.info("Reached " + str(name) + " at " str((x,y)))
+                self.logger.info("Current pose: \n" + self.navigation.p)
+                return True
+            else:
+                return False
+        
         def testLine(self):
             """ Test behavior with a simple line. """
             if not self.reached_goal:
-                if self.navigation.goToPosition(Point(1,0,0)):
-                    self.logger.info("Reached end point!")
-                    self.logger.debug(self.navigation.p)
-                    self.reached_goal = True
+                self.reached_goal = self.goToPos("end point", 1, 0)
             else:
-                if self.navigation.goToPosition(Point(0,0,0)):
-                    self.logger.info("Returned home")
-                    self.logger.debug(self.navigation.p)
-                    self.reached_goal = False
+                self.reached_goal = self.goToPos("home", 0, 0)
         
         def testSquare(self):
             """ Test behavior with a simple square. """
         
             # test a simple square
             if not self.reached_corner[0]:
-                if self.navigation.goToPosition(Point(1,0,0)):
-                    self.logger.info("Reached corner 0")
-                    self.logger.debug(self.navigation.p)
-                    self.reached_corner[0] = True
+                self.reached_corner[0] = self.gotToPos("corner 1", 1, 0)
         
             elif not self.reached_corner[1]:
-                if self.navigation.goToPosition(Point(1,1,0)):
-                    self.logger.info("Reached corner 2")
-                    self.logger.debug(self.navigation.p)
-                    self.reached_corner[1] = True
+                self.reached_corner[1] = self.gotToPos("corner 2", 1, 1)
                     
             elif not self.reached_corner[2]:
-                if self.navigation.goToPosition(Point(0,1,0)):
-                    self.logger.info("Reached corner 2")
-                    self.logger.debug(self.navigation.p)
-                    self.reached_corner[2] = True
+                self.reached_corner[2] = self.gotToPos("corner 3", 0, 1)
         
             else:
-                if self.navigation.goToPosition(Point(0,0,0)):
-                    self.logger.info("Returned home")
-                    self.logger.debug(self.navigation.p)
+                if self.gotToPos("corner 0", 0, 0):
                     self.reached_corner = [False] * len(self.reached_corner)
 
     NavigationTest()
