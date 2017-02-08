@@ -174,6 +174,18 @@ if __name__ == "__main__":
 
     myPlan = FloorPlan(point_ids, locations, neighbors, landmarks, landmark_positions, landmark_orientations)
     
+    # verify that our readonly properties are treated properly
+    try:
+        myPlan.graph = None
+    except Exception, e:
+        print(e)
+
+    # verify that our readonly properties are treated properly
+    try:
+        myPlan.landmarks = None
+    except Exception, e:
+        print(e)
+    
     print("  GRAPH  ")
     for id in myPlan.graph:
         print(id)
@@ -186,18 +198,6 @@ if __name__ == "__main__":
 
     print("  PATH  ")
     print(myPlan.getShortestPath(Point(2,4,0), Point(9,6,0)))
-
-    # verify that our readonly properties are treated properly
-    try:
-        myPlan.graph = None
-    except Exception, e:
-        print(e)
-
-    # verify that our readonly properties are treated properly
-    try:
-        myPlan.landmarks = None
-    except Exception, e:
-        print(e)
 
     # TODO: create more unit tests
 
