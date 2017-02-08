@@ -89,7 +89,7 @@ class Motion():
             
         Args:
             direction (bool): Turn direction is left if True, right if False
-            speed (float, optiona): The percentage of the the maximum turn speed
+            speed (float, optional): The percentage of the the maximum turn speed
                 the robot will turn at.
         """
         # if we're still moving forward, stop
