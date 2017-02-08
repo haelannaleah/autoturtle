@@ -8,7 +8,6 @@ import tf
 from copy import deepcopy
 from geometry_msgs.msg import Point, Pose, Quaternion
 
-@read_only_properties('graph', 'landmarks')
 class FloorPlan():
     """ A simple graph reprentation of a floor plan.
         
@@ -25,22 +24,30 @@ class FloorPlan():
             xy plane; ie, how much has its perpendicular vector deviated from the y axis?
             
     Attributes:
-        graph (dict of Waypoints): Represent the floorplan in an easy to parse way.
-        landmarks (dict of Landmarks): Represent the precise pose of landmarks associated with
+        graph (dict of Waypoints, readonly): Represent the floorplan in an easy to parse way.
+        landmarks (dict of Landmarks, readonly): Represent the precise pose of landmarks associated with
             their landmark id.
     """
     def __init__(self, point_ids, locations, neighbors, landmark_ids = None, landmark_positions = None, landmark_angles = None):
     
         # construct graph out of waypoints
-        self.graph = {}
+        self._graph = {}
         for point_id in point_ids:
-            self.graph[point_id] = Waypoint(locations[point_id], neighbors[point_id])
+            self._graph[point_id] = Waypoint(locations[point_id], neighbors[point_id])
 
         # construct landmark map
-        self.landmarks = {}
+        self._landmarks = {}
         if landmark_ids is not None:
             for landmark_id in landmark_ids:
-                self.landmarks[landmark_id] = Landmark(landmark_positions[landmark_id], landmark_angles[landmark_id])
+                self._landmarks[landmark_id] = Landmark(landmark_positions[landmark_id], landmark_angles[landmark_id])
+    
+    @property
+    def landmarks(self):
+        return self._landmarks
+    
+    @property
+    def graph(self):
+        return self._graph
 
     def _dist2(self, point1, point2):
         """ Return the distance squared between two points. """
