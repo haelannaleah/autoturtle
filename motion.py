@@ -14,6 +14,7 @@ class Motion():
     
     Attributes:
         turn_dir (int): 1 if turning left, -1 if turning right, None if no turn.
+        turning (bool): True if the robot is turning, False otherwise.
         walking (bool): True if robot is moving linearly, False otherwise.
     """
     
@@ -29,6 +30,7 @@ class Motion():
     def __init__(self):
 
         self.turn_dir = None
+        self.turning = False
         self.walking = False
         self._accel_time = False
         
@@ -36,19 +38,19 @@ class Motion():
         self._move_publisher = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
         self._move_cmd = Twist()
     
-    def _linear_stop(self):
-        """ Gently stop forward motion of robot.
-            
-        Returns:
-            True if the robot has stopped, False otherwise.
-        """
+    def _gradual_stop(self):
+        """ Gently stop forward motion of robot. """
         if self._move_cmd.linear.x > 0:
             self.accelerate(self._DECEL_DELTA)
-            return False
         else:
             self._move_cmd.linear.x = 0
             self.walking = False
-            return True
+
+    def _rotational_stop(self):
+        """ Stop the robot and handle associated housekeeping. """
+        self.turning = False
+        self.turn_dir = None
+        self._move_cmd.angular.z = 0
     
     def _publish(self):
         self._move_publisher.publish(self._move_cmd)
@@ -69,6 +71,16 @@ class Motion():
             self._move_cmd.linear.x += delta
             self.accel_time = False
 
+    def stop_linear(self):
+        """ Stop robot's linear motion. """
+        self._gradual_stop()
+        self._publish()
+
+    def stop_rotation(self):
+        """ Stop the robot rotation. """
+        self._rotational_stop()
+        self._publish()
+
     def stop(self, now=False): 
         """ Stop the robot, immediately if necessary.
         
@@ -76,12 +88,12 @@ class Motion():
             now (bool): Robot stops immediately if true, else decelerates.
         """
         if not now:
-            self._linear_stop()
+            self._gradual_stop()
         else:
             self.walking = False
             self._move_cmd.linear.x = 0
-            
-        self._move_cmd.angular.z = 0
+        
+        self._rotational_stop()
         self._publish()
 
     def turn(self, direction, speed = 1):
@@ -92,17 +104,12 @@ class Motion():
             speed (float, optional): The percentage of the the maximum turn speed
                 the robot will turn at.
         """
-        # if we're still moving forward, stop
-        if not self._linear_stop():
-            self._move_cmd.angular.z = 0
-            self.turn_dir = None
+        # set turn direction
+        self.turning = True
+        if self.turn_dir is None:
+            self.turn_dir = self._TURN_LEFT if direction else self._TURN_RIGHT
 
-        else:
-            # set turn direction
-            if self.turn_dir is None:
-                self.turn_dir = self._TURN_LEFT if direction else self._TURN_RIGHT
-
-            self._move_cmd.angular.z = self.turn_dir * self._ROT_SPEED * min(speed, 1)
+        self._move_cmd.angular.z = self.turn_dir * self._ROT_SPEED * min(speed, 1)
         
         self._publish()
 
@@ -120,8 +127,7 @@ class Motion():
             self.accelerate(self._ACCEL_DELTA)
         else:
             self._move_cmd.linear.x = target_speed
-            
-        self._move_cmd.angular.z = 0
+    
         self._publish()
 
     def shutdown(self, rate):
@@ -150,17 +156,29 @@ if __name__ == "__main__":
         
         def main(self):
             """ The main control loop. """
+            self.circle()
+        
+        def circle(self):
+            """ Test simultaneous rotation and forward motion. """
+            self.motion.turn(True, 0.5)
+            self.motion.walk(0.5)
             
+        def wander(self):
+            """ Test general safe wandering behavior. """
             # if we see a cliff or get picked up, stop
             if self.sensors.cliff or self.sensors.wheeldrop:
                 self.motion.stop(now=True)
         
             # if we hit something, stop and turn
             elif self.sensors.bump:
+                if self.motion.walking:
+                    self.motion.stop(now=True)
                 self.motion.turn(self.sensors.bumper > 0)
             
             # otherwise, just walk
             else:
+                if self.motion.turning:
+                    self.motion.stop_rotation()
                 self.motion.walk()
 
         def shutdown(self):

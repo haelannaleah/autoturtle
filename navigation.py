@@ -66,11 +66,17 @@ class Navigation():
         
         # our orientation has gotten off
         elif not np.isclose(self.angle, turn_angle, atol=0.15):
-            self.motion.turn(self.angle < turn_angle, .5)
+            if self.motion.walking:
+                self.motion.stop_linear()
+            else:
+                self.motion.turn(self.angle < turn_angle, .5)
 
         # otherwise, move toward our goal
         else:
-            self.motion.walk()
+            if self.motion.turning:
+                self.motion.stop_rotation()
+            else:
+                self.motion.walk()
 
         return False
 
