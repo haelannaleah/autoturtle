@@ -57,7 +57,7 @@ class Navigation():
             The angle of the orientation accounting for wrap around.
         """
         # take the best angle of attack
-        return min([turn, turn + self._TWO_PI, turn - self._TWO_PI], key = lambda t: abs(t + self.angle))
+        return min([turn, turn + self._TWO_PI, turn - self._TWO_PI], key = lambda t: abs(t - self.angle))
 #        if self.angle > self._HALF_PI and turn < -self._HALF_PI:
 #            return turn + self._TWO_PI
 #            
