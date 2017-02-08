@@ -160,7 +160,7 @@ if __name__ == "__main__":
         
         def circle(self):
             """ Test simultaneous rotation and forward motion. """
-            self.motion.turn(0.5)
+            self.motion.turn(1, 0.5)
             self.motion.walk(0.5)
             
         def wander(self):
