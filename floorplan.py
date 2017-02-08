@@ -117,7 +117,7 @@ class Landmark():
     """
     def __init__(self, position, angle):
         # convert angle to quaternion
-        q = tf.transformations.quaternion_from_euler([0,0,angle])
+        q = tf.transformations.quaternion_from_euler(0,0,angle)
         
         # construct the landmark pose
         self.pose = Pose()
