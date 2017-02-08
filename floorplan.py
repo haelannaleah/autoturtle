@@ -169,12 +169,12 @@ if __name__ == "__main__":
     print("  GRAPH  ")
     for id in myPlan.graph:
         print(id)
-        print(self.graph[id])
+        print(myPlan.graph[id])
     
     print("  LANDMARKS  ")
     for id in myPlan.landmarks:
         print(id)
-        print(self.landmarks[id])
+        print(myPlan.landmarks[id])
 
     print("  PATH  ")
     print(myPlan.getShortestPath(Point(2,4,0), Point(9,6,0)))
