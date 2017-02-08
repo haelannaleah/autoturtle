@@ -31,23 +31,15 @@ class FloorPlan():
     def __init__(self, point_ids, locations, neighbors, landmark_ids = None, landmark_positions = None, landmark_angles = None):
     
         # construct graph out of waypoints
-        self._graph = {}
+        self.graph = {}
         for point_id in point_ids:
             self._graph[point_id] = Waypoint(locations[point_id], neighbors[point_id])
 
         # construct landmark map
-        self._landmarks = {}
+        self.landmarks = {}
         if landmark_ids is not None:
             for landmark_id in landmark_ids:
                 self._landmarks[landmark_id] = Landmark(landmark_positions[landmark_id], landmark_angles[landmark_id])
-    
-    @property
-    def landmarks(self):
-        return self._landmarks
-    
-    @property
-    def graph(self):
-        return self._graph
 
     def _dist2(self, point1, point2):
         """ Return the distance squared between two points. """
@@ -173,18 +165,6 @@ if __name__ == "__main__":
     landmark_orientations = {10:0, 17:pi/2}
 
     myPlan = FloorPlan(point_ids, locations, neighbors, landmarks, landmark_positions, landmark_orientations)
-    
-    # verify that our readonly properties are treated properly
-    try:
-        myPlan.graph = None
-    except Exception, e:
-        print(e)
-
-    # verify that our readonly properties are treated properly
-    try:
-        myPlan.landmarks = None
-    except Exception, e:
-        print(e)
     
     print("  GRAPH  ")
     for id in myPlan.graph:
