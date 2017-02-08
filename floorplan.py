@@ -8,6 +8,7 @@ import tf
 from copy import deepcopy
 from geometry_msgs.msg import Point, Pose, Quaternion
 
+@read_only_properties('graph', 'landmarks')
 class FloorPlan():
     """ A simple graph reprentation of a floor plan.
         
@@ -178,6 +179,18 @@ if __name__ == "__main__":
 
     print("  PATH  ")
     print(myPlan.getShortestPath(Point(2,4,0), Point(9,6,0)))
+
+    # verify that our readonly properties are treated properly
+    try:
+        self.graph = None
+    except e:
+        print(e)
+
+    # verify that our readonly properties are treated properly
+    try:
+        self.landmarks = None
+    except e:
+        print(e)
 
     # TODO: create more unit tests
 
