@@ -162,7 +162,7 @@ if __name__ == "__main__":
     landmark_orientations = {10:0, 17:pi/2}
 
     myPlan = FloorPlan(point_ids, locations, neighbors, landmarks, landmark_positions, landmark_orientations)
-    print(myPlan.landmarks)
+    print(myPlan.landmarks[0])
     print(myPlan.graph)
     print(myPlan.getShortestPath(Point(2,4,0), Point(9,6,0)))
 
