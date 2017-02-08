@@ -135,7 +135,7 @@ if __name__ == "__main__":
     
         def shutdown(self):
             self.navigation.shutdown(self.rate)
-            Tester.shutdown()
+            Tester.shutdown(self)
         
 
     NavigationTest()
