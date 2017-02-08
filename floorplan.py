@@ -33,13 +33,13 @@ class FloorPlan():
         # construct graph out of waypoints
         self.graph = {}
         for point_id in point_ids:
-            self._graph[point_id] = Waypoint(locations[point_id], neighbors[point_id])
+            self.graph[point_id] = Waypoint(locations[point_id], neighbors[point_id])
 
         # construct landmark map
         self.landmarks = {}
         if landmark_ids is not None:
             for landmark_id in landmark_ids:
-                self._landmarks[landmark_id] = Landmark(landmark_positions[landmark_id], landmark_angles[landmark_id])
+                self.landmarks[landmark_id] = Landmark(landmark_positions[landmark_id], landmark_angles[landmark_id])
 
     def _dist2(self, point1, point2):
         """ Return the distance squared between two points. """
