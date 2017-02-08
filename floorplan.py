@@ -1,4 +1,4 @@
-""" Fixed map
+""" Static map
     
 Author:
     Annaleah Ernst
@@ -128,8 +128,9 @@ class Landmark():
         self.angle = angle
 
     def __str__(self):
+        """ For debugging purposes, make getting a string easy. """
         return ("position: " + str((self.pose.position.x, self.pose.position.y)) + "\n"
-                + "quaternion: " + str((self.pose.orientation.x, self.pose.orientation.y, self.pose.orientation.z, self.pose.orientation.w)) + "\n"
+                + "quaternion: " + str([self.pose.orientation.x, self.pose.orientation.y, self.pose.orientation.z, self.pose.orientation.w]) + "\n"
                 + "angle: " + str(self.angle) + "\n")
 
 class Waypoint():
@@ -148,12 +149,14 @@ class Waypoint():
         self.neighbors = set(neighbors)
 
     def __str__(self):
+        """ For debugging purposes, make getting a string easy. """
         return ("location: " + str((self.location.x, self.location.y)) + "\n"
                 + "neighbors: " + str(self.neighbors))
 
 if __name__ == "__main__":
     from math import pi
     
+    # create a simple test map
     point_ids = {'A', 'B', 'C', 'D', 'E', 'F'}
     locations = {'A': (2,4), 'B': (5,5), 'C':(5,1), 'D':(9,6), 'E':(2,-2), 'F':(6,-4)}
     neighbors = {'A': ['C', 'B'], 'B': ['A', 'C', 'D'], 'C': ['A', 'B', 'E'], 'D':['B'], 'E':['C'], 'F':['C']}
@@ -162,9 +165,9 @@ if __name__ == "__main__":
     landmark_orientations = {10:0, 17:pi/2}
 
     myPlan = FloorPlan(point_ids, locations, neighbors, landmarks, landmark_positions, landmark_orientations)
-    print(myPlan.landmarks[10])
-    print(myPlan.graph)
-    print(myPlan.getShortestPath(Point(2,4,0), Point(9,6,0)))
+    print(myPlan.getShortestPath(Point(2,4,0), Point(9,6,0))))
+
+    # TODO: create more unit tests
 
 
 
