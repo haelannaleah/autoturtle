@@ -16,15 +16,19 @@ class FloorPlan():
         locations (dict): Point_ids mapped to tuples representing locations.
         neighbors (dict): Point_ids mapped to lists containing other point_ids representing 
             the current node's neighbors.
-        landmarks (dict, optional): Map AprilTag landmark ids to their absolute pose on 
-            the floorplan.
+        landmark_ids (set, optional): Unique identifier for each landmark in the graph.
+        landmark_positions (dict, conditionally optional): Map AprilTag landmark ids to their absolute 
+            position on the floorplan.
+        landmark_angles (dict, conditionally optional): Map AprilTag landmark ids to their absolute 
+            position on the floorplan. This specifies the angle of rotation of the landmark in the 
+            xy plane; ie, how much has its perpendicular vector deviated from the y axis?
             
     Attributes:
         graph (dict of Waypoints): Represent the floorplan in an easy to parse way.
         landmarks (dict of Landmarks): Represent the precise pose of landmarks associated with
             their landmark id.
     """
-    def __init__(self, point_ids, locations, neighbors, landmark_ids = None, landmark_positions = None, landmark_orientations = None):
+    def __init__(self, point_ids, locations, neighbors, landmark_ids = None, landmark_positions = None, landmark_angles = None):
     
         # construct graph out of waypoints
         self.graph = {}
@@ -35,7 +39,7 @@ class FloorPlan():
         self.landmarks = {}
         if landmark_ids is not None:
             for landmark_id in landmark_ids:
-                self.landmarks[landmark_id] = Landmark(landmark_positions[landmark_id], landmark_orientations[landmark_id])
+                self.landmarks[landmark_id] = Landmark(landmark_positions[landmark_id], landmark_angles[landmark_id])
 
     def _dist2(self, point1, point2):
         """ Return the distance squared between two points. """
@@ -106,9 +110,7 @@ class Landmark():
     
     Args:
         position (float tuple): Specify the waypoint's offset from the origin.
-        angle (float): Specify the angle of rotation of the landmark in the xy plane;
-            (how much has its perpendicular vector deviated from the y axis?).
-            Generally between -pi and pi.
+        angle (float): Specify the aboslute rotation of the landmark.
         
     Attributes:
         pose (geometry_msgs.msg.Pose): The location and orientation of the landmark.
@@ -144,8 +146,8 @@ if __name__ == "__main__":
     locations = {'A': (2,4), 'B': (5,5), 'C':(5,1), 'D':(9,6), 'E':(2,-2), 'F':(6,-4)}
     neighbors = {'A': ['C', 'B'], 'B': ['A', 'C', 'D'], 'C': ['A', 'B', 'E'], 'D':['B'], 'E':['C'], 'F':['C']}
     landmarks = {10, 17}
-    landmark_positions = [(0,0), (1,1)]
-    landmark_orientations = [0, pi/2]
+    landmark_positions = {10:(0,0), 17:(1,1)}
+    landmark_orientations = {10:0, 17:pi/2}
 
     myPlan = FloorPlan(point_ids, locations, neighbors, landmarks, landmark_positions, landmark_orientations)
     print(myPlan.landmarks)
