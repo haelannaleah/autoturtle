@@ -74,6 +74,14 @@ class Navigation():
 
         return False
 
+    def shutdown(self, rate):
+        """ Bring the robot to a gentle stop. 
+        
+        Args:
+            rate (rospy.Rate): The refresh rate of the enclosing module.
+        """
+        self.motion.shutdown(rate)
+
 if __name__ == "__main__":
     from tester import Tester
 
@@ -124,5 +132,10 @@ if __name__ == "__main__":
             else:
                 if self.gotToPos("corner 0", 0, 0):
                     self.reached_corner = [False] * len(self.reached_corner)
+    
+        def shutdown(self):
+            self.navigation.shutdown(self.rate)
+            Tester.shutdown()
+        
 
     NavigationTest()
