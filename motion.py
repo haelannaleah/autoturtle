@@ -127,7 +127,7 @@ class Motion():
             self.accelerate(self._ACCEL_DELTA)
         else:
             self._move_cmd.linear.x = target_speed
-            
+    
         self._publish()
 
     def shutdown(self, rate):
@@ -156,7 +156,15 @@ if __name__ == "__main__":
         
         def main(self):
             """ The main control loop. """
+            self.circle()
+        
+        def circle(self):
+            """ Test simultaneous rotation and forward motion. """
+            self.motion.walk(0.5)
+            self.motion.turn(0.25)
             
+        def wander(self):
+            """ Test general safe wandering behavior. """
             # if we see a cliff or get picked up, stop
             if self.sensors.cliff or self.sensors.wheeldrop:
                 self.motion.stop(now=True)
