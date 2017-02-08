@@ -190,13 +190,13 @@ if __name__ == "__main__":
     # verify that our readonly properties are treated properly
     try:
         self.graph = None
-    except, e:
+    except Exception, e:
         print(e)
 
     # verify that our readonly properties are treated properly
     try:
         self.landmarks = None
-    except, e:
+    except Exception, e:
         print(e)
 
     # TODO: create more unit tests
