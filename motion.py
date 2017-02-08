@@ -13,7 +13,7 @@ class Motion():
     """ Handle basic Turtlebot motion. 
     
     Attributes:
-        turn_dur (int): 1 if turning left, -1 if turning right, None if no turn.
+        turn_dir (int): 1 if turning left, -1 if turning right, None if no turn.
         walking (bool): True if robot is moving linearly, False otherwise.
     """
     
@@ -125,7 +125,11 @@ class Motion():
         self._publish()
 
     def shutdown(self, rate):
-        """ Bring the robot to a gentle stop. """
+        """ Bring the robot to a gentle stop. 
+        
+        Args:
+            rate (rospy.Rate): The refresh rate of the enclosing module.
+        """
         while self.walking:
             self.stop()
             rate.sleep()

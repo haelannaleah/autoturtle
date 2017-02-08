@@ -43,29 +43,8 @@ class Navigation():
         # extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w])[-1]
 
-    def wrapAngle(self, turn):
-        """ Wrap around the pi to back to -pi, if necessary
-    
-        If the angles are in adjacent quadrants where the angles wrap around (since we go from -pi to pi),
-            we need to make sure that they stil treat each other like adjacent quadrants when we're trying
-            to stick to a course.
-        
-        Args:
-            turn (float): The desired orientation of the robot in radians to achieve our goal.
-            
-        Ret:
-            The angle of the orientation accounting for wrap around.
-        """
-        if self.angle > self._HALF_PI and turn < -self._HALF_PI:
-            return turn + self._TWO_PI
-            
-        if turn > self._HALF_PI and self.angle < -self._HALF_PI:
-            return turn - self._TWO_PI
-
-        return turn
-
     def goToPosition(self, destination):
-        """ Move from current position to desired waypoint.
+        """ Move from current position to desired waypoint in the odomety frame.
             
         Args:
             destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
@@ -73,18 +52,35 @@ class Navigation():
         Returns:
             True if we are close to the desired location, False otherwise.
         """
-        turn_angle = self.wrapAngle(atan2(destination.y - self.p.y, destination.x - self.p.x))
+        # take the angle between our position and destination in the odom frame
+        turn = atan2(destination.y - self.p.y, destination.x - self.p.x)
+        
+        # Set the turn angle to behave as the angle that is the minimum distance from our current pose.
+        # The closest equivalent angle may be slightly greater than pi or slightly less than -pi, and since
+        # our math is always bounded by pi and -pi, we may need to adjust to be the most efficient.
+        turn_angle = min([turn, turn + self._TWO_PI, turn - self._TWO_PI], key = lambda t: abs(t - self.angle))
 
+        # we're near our final location
         if np.isclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.05).all():
             return True
         
+        # our orientation has gotten off
         elif not np.isclose(self.angle, turn_angle, atol=0.15):
             self.motion.turn(self.angle < turn_angle, .5)
 
+        # otherwise, move toward our goal
         else:
             self.motion.walk()
 
         return False
+
+    def shutdown(self, rate):
+        """ Bring the robot to a gentle stop. 
+        
+        Args:
+            rate (rospy.Rate): The refresh rate of the enclosing module.
+        """
+        self.motion.shutdown(rate)
 
 if __name__ == "__main__":
     from tester import Tester
@@ -103,58 +99,43 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            self.testAngleWrapping()
+            self.testSquare()
         
-        def testAngleWrapping(self):
-            """ Unit test for the angle wrapping function. """
-            
-            self.logger.debug(self.navigation.wrapAngle(pi / 2.0 + .01), var_name="positive pi/2")
-            self.logger.debug(self.navigation.wrapAngle(- pi / 2.0 - .01), var_name="negative pi/2")
-            self.logger.debug(self.navigation.wrapAngle(2.5), var_name="positive 2.5")
-            self.logger.debug(self.navigation.wrapAngle(- 2.5), var_name="negative 2.5")
-            self.logger.debug(self.navigation.wrapAngle(pi + .01), var_name="positive pi")
-            self.logger.debug(self.navigation.wrapAngle(- pi - .01), var_name="negative pi")
-            self.logger.debug(self.navigation.angle)
+        def gotToPos(self, name, x, y):
+            if self.navigation.goToPosition(Point(x,y,0)):
+                self.logger.info("Reached " + str(name) + " at " + str((x,y)))
+                self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
+                return True
+            else:
+                return False
         
         def testLine(self):
             """ Test behavior with a simple line. """
             if not self.reached_goal:
-                if self.navigation.goToPosition(Point(1,0,0)):
-                    self.logger.info("Reached end point!")
-                    self.logger.debug(self.navigation.p)
-                    self.reached_goal = True
+                self.reached_goal = self.goToPos("end point", 1, 0)
             else:
-                if self.navigation.goToPosition(Point(0,0,0)):
-                    self.logger.info("Returned home")
-                    self.logger.debug(self.navigation.p)
-                    self.reached_goal = False
+                self.reached_goal = self.goToPos("home", 0, 0)
         
         def testSquare(self):
             """ Test behavior with a simple square. """
         
             # test a simple square
             if not self.reached_corner[0]:
-                if self.navigation.goToPosition(Point(1,0,0)):
-                    self.logger.info("Reached corner 0")
-                    self.logger.debug(self.navigation.p)
-                    self.reached_corner[0] = True
+                self.reached_corner[0] = self.gotToPos("corner 1", 1, 0)
         
             elif not self.reached_corner[1]:
-                if self.navigation.goToPosition(Point(1,1,0)):
-                    self.logger.info("Reached corner 2")
-                    self.logger.debug(self.navigation.p)
-                    self.reached_corner[1] = True
+                self.reached_corner[1] = self.gotToPos("corner 2", 1, 1)
                     
             elif not self.reached_corner[2]:
-                if self.navigation.goToPosition(Point(0,1,0)):
-                    self.logger.info("Reached corner 2")
-                    self.logger.debug(self.navigation.p)
-                    self.reached_corner[2] = True
+                self.reached_corner[2] = self.gotToPos("corner 3", 0, 1)
         
             else:
-                if self.navigation.goToPosition(Point(0,0,0)):
-                    self.logger.info("Returned home")
-                    self.logger.debug(self.navigation.p)
+                if self.gotToPos("corner 0", 0, 0):
                     self.reached_corner = [False] * len(self.reached_corner)
+    
+        def shutdown(self):
+            self.navigation.shutdown(self.rate)
+            Tester.shutdown(self)
+        
 
     NavigationTest()
