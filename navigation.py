@@ -56,13 +56,17 @@ class Navigation():
         Ret:
             The angle of the orientation accounting for wrap around.
         """
-        if self.angle > self._HALF_PI and turn < -self._HALF_PI:
-            return turn + self._TWO_PI
-            
-        if turn > self._HALF_PI and self.angle < -self._HALF_PI:
-            return turn - self._TWO_PI
+        # take the best angle of attack
+        return min([turn, turn + self._TWO_PI, turn - self._TWO_PI], key = lambda t: abs(t + self.angle))
+#        if self.angle > self._HALF_PI and turn < -self._HALF_PI:
+#            return turn + self._TWO_PI
+#            
+#        if turn > self._HALF_PI and self.angle < -self._HALF_PI:
+#            return turn - self._TWO_PI
+#
+#        return turn
 
-        return turn
+        
 
     def goToPosition(self, destination):
         """ Move from current position to desired waypoint.
