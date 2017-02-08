@@ -123,6 +123,14 @@ class Landmark():
         self.pose = Pose()
         self.pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
         self.pose.position = Point(position[0], position[1], 0)
+    
+        # for convenience, save the angle
+        self.angle = angle
+
+    def __str__(self):
+        return ("position: " + str((self.pose.position.x, self.pose.position.y)) + "\n"
+            + "quaternion: " + str((self.pose.orientation.x, self.pose.orientation.y, self.pose.orientation.z, self.pose.orientation.w)) + "\n"
+            + "angle: " + str(self.angle)) + "\n"
 
 class Waypoint():
     """ ALl necessary waypoint information.
@@ -138,6 +146,10 @@ class Waypoint():
     def __init__(self, location, neighbors):
         self.location = Point(location[0], location[1], 0)
         self.neighbors = set(neighbors)
+
+    def __str__(self):
+        return "location: " + str((self.location.x, self.location.y)) + "\n"
+            + "neighbors: " + str(self.neighbors)
 
 if __name__ == "__main__":
     from math import pi
