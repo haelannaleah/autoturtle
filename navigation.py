@@ -96,7 +96,7 @@ if __name__ == "__main__":
         def gotToPos(self, name, x, y):
             if self.navigation.goToPosition(Point(x,y,0)):
                 self.logger.info("Reached " + str(name) + " at " + str((x,y)))
-                self.logger.info("Current pose: \n" + str(self.navigation.p))
+                self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
                 return True
             else:
                 return False
