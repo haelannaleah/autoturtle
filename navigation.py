@@ -43,33 +43,8 @@ class Navigation():
         # extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w])[-1]
 
-    def wrapAngle(self, turn):
-        """ Wrap around the pi to back to -pi, if necessary
-    
-        If the angles are in adjacent quadrants where the angles wrap around (since we go from -pi to pi),
-            we need to make sure that they stil treat each other like adjacent quadrants when we're trying
-            to stick to a course.
-        
-        Args:
-            turn (float): The desired orientation of the robot in radians to achieve our goal.
-            
-        Ret:
-            The angle of the orientation accounting for wrap around.
-        """
-        # take the best angle of attack
-        return min([turn, turn + self._TWO_PI, turn - self._TWO_PI], key = lambda t: abs(t - self.angle))
-#        if self.angle > self._HALF_PI and turn < -self._HALF_PI:
-#            return turn + self._TWO_PI
-#            
-#        if turn > self._HALF_PI and self.angle < -self._HALF_PI:
-#            return turn - self._TWO_PI
-#
-#        return turn
-
-        
-
     def goToPosition(self, destination):
-        """ Move from current position to desired waypoint.
+        """ Move from current position to desired waypoint in the odomety frame.
             
         Args:
             destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
@@ -77,16 +52,23 @@ class Navigation():
         Returns:
             True if we are close to the desired location, False otherwise.
         """
-        turn_angle = self.wrapAngle(atan2(destination.y - self.p.y, destination.x - self.p.x))
+        # take the angle between our position and destination in the odom frame
+        turn = self.wrapAngle(atan2(destination.y - self.p.y, destination.x - self.p.x))
+        
+        # Set the turn angle to behave as the angle that is the minimum distance from our current pose.
+        # The closest equivalent angle may be slightly greater than pi or slightly less than -pi, and since
+        # our math is always bounded by pi and -pi, we may need to adjust to be the most efficient.
+        turn_angle = min([turn, turn + self._TWO_PI, turn - self._TWO_PI], key = lambda t: abs(t - self.angle))
 
+        # we're near our final location
         if np.isclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.05).all():
             return True
         
+        # our orientation has gotten off
         elif not np.isclose(self.angle, turn_angle, atol=0.15):
             self.motion.turn(self.angle < turn_angle, .5)
-            self._logger.debug(self.angle, var_name = "cur_angle")
-            self._logger.debug(turn_angle, var_name = "turn_angle")
 
+        # otherwise, move toward our goal
         else:
             self.motion.walk()
 
@@ -110,17 +92,6 @@ if __name__ == "__main__":
         def main(self):
             """ The test currently being run. """
             self.testSquare()
-        
-        def testAngleWrapping(self):
-            """ Unit test for the angle wrapping function. """
-            
-            self.logger.debug(self.navigation.wrapAngle(pi / 2.0 + .01), var_name="positive pi/2")
-            self.logger.debug(self.navigation.wrapAngle(- pi / 2.0 - .01), var_name="negative pi/2")
-            self.logger.debug(self.navigation.wrapAngle(2.5), var_name="positive 2.5")
-            self.logger.debug(self.navigation.wrapAngle(- 2.5), var_name="negative 2.5")
-            self.logger.debug(self.navigation.wrapAngle(pi + .01), var_name="positive pi")
-            self.logger.debug(self.navigation.wrapAngle(- pi - .01), var_name="negative pi")
-            self.logger.debug(self.navigation.angle)
         
         def testLine(self):
             """ Test behavior with a simple line. """
