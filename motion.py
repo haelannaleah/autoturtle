@@ -71,7 +71,7 @@ class Motion():
             self._move_cmd.linear.x += delta
             self.accel_time = False
 
-    def stop_linear(Self):
+    def stop_linear(self):
         """ Stop robot's linear motion. """
         self._gradual_stop()
         self._publish()
