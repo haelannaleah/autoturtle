@@ -165,7 +165,19 @@ if __name__ == "__main__":
     landmark_orientations = {10:0, 17:pi/2}
 
     myPlan = FloorPlan(point_ids, locations, neighbors, landmarks, landmark_positions, landmark_orientations)
-    print(myPlan.getShortestPath(Point(2,4,0), Point(9,6,0))))
+    
+    print("  GRAPH  ")
+    for id, waypoint in myPlan.graph:
+        print(id)
+        print(waypoint)
+    
+    print("  LANDMARKS  ")
+    for id, landmark in myPlan.landmark:
+        print(id)
+        print(landmark)
+
+    print("  PATH  ")
+    print(myPlan.getShortestPath(Point(2,4,0), Point(9,6,0)))
 
     # TODO: create more unit tests
 
