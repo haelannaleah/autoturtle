@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="viso2_ros" type="mono_odometer" name="mono_odometer"/>
+</launch>
