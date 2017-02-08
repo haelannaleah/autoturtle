@@ -128,7 +128,6 @@ class Motion():
         else:
             self._move_cmd.linear.x = target_speed
             
-        self._move_cmd.angular.z = 0
         self._publish()
 
     def shutdown(self, rate):
