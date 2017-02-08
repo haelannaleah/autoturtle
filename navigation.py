@@ -53,7 +53,7 @@ class Navigation():
             True if we are close to the desired location, False otherwise.
         """
         # take the angle between our position and destination in the odom frame
-        turn = self.wrapAngle(atan2(destination.y - self.p.y, destination.x - self.p.x))
+        turn = atan2(destination.y - self.p.y, destination.x - self.p.x)
         
         # Set the turn angle to behave as the angle that is the minimum distance from our current pose.
         # The closest equivalent angle may be slightly greater than pi or slightly less than -pi, and since
