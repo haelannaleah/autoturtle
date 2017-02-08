@@ -13,5 +13,7 @@
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
     
     <!-- Launch localization package -->
-    <include file="robot_pose_ekf.launch.xml" />
+    <include file="robot_pose_ekf.launch.xml">
+        <arg name="use_vo" value="false" />
+    </include>
 </launch>
