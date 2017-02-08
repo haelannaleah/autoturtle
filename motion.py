@@ -165,7 +165,7 @@ if __name__ == "__main__":
             # if we hit something, stop and turn
             elif self.sensors.bump:
                 if self.motion.walking:
-                    self.motion.stop_linear()
+                    self.motion.stop(now=True)
                 self.motion.turn(self.sensors.bumper > 0)
             
             # otherwise, just walk
