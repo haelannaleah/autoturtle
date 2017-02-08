@@ -167,14 +167,14 @@ if __name__ == "__main__":
     myPlan = FloorPlan(point_ids, locations, neighbors, landmarks, landmark_positions, landmark_orientations)
     
     print("  GRAPH  ")
-    for id, waypoint in myPlan.graph:
+    for id in myPlan.graph:
         print(id)
-        print(waypoint)
+        print(self.graph[id])
     
     print("  LANDMARKS  ")
-    for id, landmark in myPlan.landmark:
+    for id in myPlan.landmarks:
         print(id)
-        print(landmark)
+        print(self.landmarks[id])
 
     print("  PATH  ")
     print(myPlan.getShortestPath(Point(2,4,0), Point(9,6,0)))
