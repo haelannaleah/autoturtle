@@ -80,6 +80,8 @@ class Navigation():
         
         elif not np.isclose(self.angle, turn_angle, atol=0.15):
             self.motion.turn(self.angle < turn_angle, .5)
+            self._logger.debug(self.angle, var_name = "cur_angle")
+            self._logger.debug(turn_angle, var_name = "turn_angle")
 
         else:
             self.motion.walk()
@@ -103,7 +105,7 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            self.testAngleWrapping()
+            self.testSquare()
         
         def testAngleWrapping(self):
             """ Unit test for the angle wrapping function. """
