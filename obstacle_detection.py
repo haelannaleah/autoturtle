@@ -23,6 +23,7 @@ class ObstacleDetection():
 
     def __init__(self):
         self._logger = Logger("ObstacleDetection")
+        self.bridge = CvBridge()
         
         self.obstacle = False
         self.obstacle_dir = 0
