@@ -80,3 +80,5 @@ if __name__ == "__main__":
 
         def shutdown(self):
             self.motion.shutdown()
+
+SafeMotionTest()
