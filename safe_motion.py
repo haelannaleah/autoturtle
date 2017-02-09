@@ -20,8 +20,8 @@ class SafeMotion(Motion):
         turning (bool): True if the robot is turning, False otherwise.
         walking (bool): True if robot is moving linearly, False otherwise.
     """
-    def __init__(self):
-        Motion.__init__(self, safety_level=0)
+    def __init__(self, safety_level=0):
+        Motion.__init__(self)
         self.sensors = Sensors()
         self.avoiding = True
         self._logger = Logger("SafeMotion")
