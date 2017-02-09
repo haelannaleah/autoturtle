@@ -48,7 +48,7 @@ class Navigation():
             destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
         
         Returns:
-            True if we are close to the desired location, -1 if the goal is toward the left, 1 if the goal is 
+            True if we are close to the desired location, -1 if the goal is toward the left, 1 if the goal is
                 to the right, 0 if the goal is straight ahead
         """
         # take the angle between our position and destination in the odom frame
@@ -121,6 +121,7 @@ if __name__ == "__main__":
                 if self.motion.walking:
                     self.motion.stop_linear()
                 else:
+                    print nav_val
                     self.motion.turn(nav_val < 0)
             
             return False
