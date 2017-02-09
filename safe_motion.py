@@ -40,7 +40,7 @@ class SafeMotion(Motion):
         else:
             func(self, *args, **kwargs)
 
-    def _safety(self, func, *args, **kwargs):
+    def _safetyStop(self, func, *args, **kwargs):
         """ The generic safety wrapper for the Turtlebot. """
         # if we see a cliff or get picked up, stop
         if self.sensors.cliff or self.sensors.wheeldrop:
@@ -61,18 +61,18 @@ class SafeMotion(Motion):
         self._safetyModifier(Motion.turn, speed)
 
     def stop(self, now=False):
-        self._safety(Motion.turn, now)
+        self._safetyStop(Motion.turn, now)
 
     def linear_stop(self, now=False):
-        self._safety(Motion.linear_stop, now)
+        self._safetyStop(Motion.linear_stop, now)
 
     def rotational_stop(self, now=False):
-        self._safety(Motion.rotational_stop, now)
+        self._safetyStop(Motion.rotational_stop, now)
 
     def shutdown(self, rate):
-        while self.walking or self.turning:
-            self.stop()
-            rate.sleep()
+        self.logger.debug("reached shutdown")
+        self._safetyStop(Motion.shutdown, rate)
+        self.logger.debug("completed motion shutdown")
 
 if __name__ == "__main__":
     from tester import Tester
