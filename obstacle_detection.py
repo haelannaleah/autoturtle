@@ -56,7 +56,7 @@ class ObstacleDetection():
         sample = self._getBlurredDepthSlice(0, img_height, w_center - s_width, w_center + s_width)
 
         # check distance to closest object
-        min_index = self._getMinIndex(self, sample)
+        min_index = self._getMinIndex(sample)
         if min_index is None:
             obstacle = True
             return
