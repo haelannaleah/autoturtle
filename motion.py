@@ -94,12 +94,12 @@ class Motion():
         self._publish()
 
     def stop_linear(self, now=False):
-        """ Stop robot's linear motion. """
+        """ Stop robot's linear motion, immediately if necessary. """
         self._linear_stop(now)
         self._publish()
 
     def stop_rotation(self, now=False):
-        """ Stop the robot rotation. """
+        """ Stop the robot rotation, immediately if necessary. """
         self._rotational_stop(now)
         self._publish()
 
