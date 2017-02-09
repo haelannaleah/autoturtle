@@ -33,6 +33,7 @@ class Navigation():
         rospy.Subscriber('/robot_pose_ekf/odom_combined', PoseWithCovarianceStamped, self._ekfCallback)
 
     def _ekfCallback(self, data):
+        """ Process robot_pose_ekf data. """
         self.p = data.pose.pose.position
         self.q = data.pose.pose.orientation
         
@@ -93,8 +94,16 @@ if __name__ == "__main__":
             # self.testLine(1)
         
         def gotToPos(self, name, x, y):
-            """ Default behavior for testing goToPosition. """
+            """ Default behavior for testing goToPosition. 
+            
+            Args:
+                name (str): Name of the waypoint we are approaching.
+                x (float): The x coordinate of the desired location (in meters from the origin).
+                y (float): The y coordinate of the desired location (in meters from the origin).
+            """
             nav_val = self.navigation.goToPosition(Point(x,y,0))
+            
+            # did we reach our waypoint?
             if nav_val is True:
                 self.logger.info("Reached " + str(name) + " at " + str((x,y)))
                 self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
@@ -117,7 +126,11 @@ if __name__ == "__main__":
             return False
         
         def testLine(self, length):
-            """ Test behavior with a simple line. """
+            """ Test behavior with a simple line. 
+            
+            Args:
+                length (float): Length of the desired line (in meters).
+            """
             if not self.reached_goal:
                 self.reached_goal = self.goToPos("end point", length, 0)
             else:
@@ -127,7 +140,7 @@ if __name__ == "__main__":
             """ Test behavior with a simple square. 
             
             Args:
-                length (float): Length of the sides of the square in meters.
+                length (float): Length of the sides of the square (in meters).
             """
         
             # test a simple square
