@@ -43,9 +43,10 @@ class ObstacleDetection():
             self._logger.error("Encountered all NaN slice in depth image.")
             return None
     
-    def _extractObstacle(self, img_height, img_width):
+    def _extractObstacle(self):
         """ If there is an obstacle nearby, find it. """
         # get slice to check distance on
+        img_height, img_width = self.depth_img.shape
         s_width = int(img_width * self._SAMPLE_WIDTH)
         w_center = img_width // 2
     
@@ -70,6 +71,7 @@ class ObstacleDetection():
     def _depthCallback(self):
         """ Process incoming depth data. """
         self._logger.debug("depth callback")
+        
         # get the depth image
         self.depth_img = self.bridge.imgmsg_to_cv2(data, 'passthrough')
 
