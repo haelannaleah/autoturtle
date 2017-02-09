@@ -122,7 +122,7 @@ if __name__ == "__main__":
                 if self.motion.walking:
                     self.motion.stop_linear()
                 else:
-                    self.motion.turn(nav_val < 0, .5)
+                    self.motion.turn(nav_val < 0)
             
             return False
         
