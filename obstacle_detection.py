@@ -39,7 +39,7 @@ class ObstacleDetection():
     def _getMinIndex(self, img):
         """ Get the index of the shortest distance in the depth image slice. """
         try:
-            return np.unravel_index(np.nanargmin(img[np.nonzero(img)]), sample.shape)
+            return np.unravel_index(np.nanargmin(img[np.nonzero(img)]), img.shape)
         except ValueError:
             # fail as safely as possible
             self._logger.error("Encountered all NaN slice in depth image.")
