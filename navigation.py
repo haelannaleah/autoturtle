@@ -108,12 +108,12 @@ if __name__ == "__main__":
             
             # did we reach our waypoint?
             if nav_val is True or self.stopping is True:
-                self.logger.info("Reached " + str(name) + " at " + str((x,y)))
-                self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
                 if self.motion.walking or self.motion.turning:
                     self.motion.stop()
                     self.stopping = True
                 else:
+                    self.logger.info("Reached " + str(name) + " at " + str((x,y)))
+                    self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
                     self.stopping = False
                     return True
             
@@ -126,7 +126,7 @@ if __name__ == "__main__":
             
             # we need to turn to reach our goal
             else:
-                self.motion.turn(nav_val < 0, .5 if self.motion.walking else 1)
+                self.motion.turn(nav_val < 0, .25 if self.motion.walking else 1)
             
             return False
         
