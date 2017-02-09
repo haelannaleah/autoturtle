@@ -71,6 +71,7 @@ class SafeMotion(Motion):
         self._safetyStop(Motion.rotational_stop, now)
 
     def shutdown(self, rate):
+        self.avoiding = False
         Motion.shutdown(self, rate)
 
 if __name__ == "__main__":
