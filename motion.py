@@ -146,7 +146,7 @@ class Motion():
         Args:
             rate (rospy.Rate): The refresh rate of the enclosing module.
         """
-        while self.walking:
+        while self.walking or self.turning:
             self.stop()
             rate.sleep()
 
