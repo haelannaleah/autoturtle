@@ -70,9 +70,9 @@ class SafeMotion(Motion):
         self._safetyStop(Motion.rotational_stop, now)
 
     def shutdown(self, rate):
-        self.logger.debug("reached shutdown")
+        self._logger.debug("reached shutdown")
         self._safetyStop(Motion.shutdown, rate)
-        self.logger.debug("completed motion shutdown")
+        self._logger.debug("completed motion shutdown")
 
 if __name__ == "__main__":
     from tester import Tester
