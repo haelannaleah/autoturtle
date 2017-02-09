@@ -113,7 +113,7 @@ if __name__ == "__main__":
             # our goal is straight ahead
             elif nav_val == 0:
                 if self.motion.turning:
-                    self.motion.stop_rotation()
+                    self.motion.stop_rotation(now=True)
                 else:
                     self.motion.walk()
             
