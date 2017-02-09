@@ -61,16 +61,18 @@ class SafeMotion(Motion):
         self._safetyModifier(Motion.turn, speed)
 
     def stop(self, now=False):
-        self._safetyModifier(Motion.turn, now)
+        self._safety(Motion.turn, now)
 
     def linear_stop(self, now=False):
-        self._safetyModifier(Motion.linear_stop, now)
+        self._safety(Motion.linear_stop, now)
 
     def rotational_stop(self, now=False):
-        self._safetyModifier(Motion.rotational_stop, now)
+        self._safety(Motion.rotational_stop, now)
 
     def shutdown(self, rate):
-        Motion.shutdown(self, rate)
+        while self.walking or self.turning:
+            self.stop()
+            rate.sleep()
 
 if __name__ == "__main__":
     from tester import Tester
