@@ -31,16 +31,8 @@ class SafeMotion(Motion):
     def _avoid(self, func, *args, **kwargs):
         """ Both be safe and premptive. """
         # if we see a cliff or get picked up, stop
-        if self.sensors.wheeldrop:
+        if self.sensors.cliff or self.sensors.wheeldrop:
             Motion.stop(self, now=True)
-        
-        # if we see a cliff, turn away
-        elif self.sensors.cliff:
-            if self.walking:
-                Motion.stop_linear(self, now=True)
-            else:
-                self.avoiding = True
-                Motion.turn(self, self.sensors.cliff_sensor > 0)
     
         # if we hit something, stop
         elif self.sensors.bump:
