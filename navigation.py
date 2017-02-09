@@ -105,7 +105,8 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            self.testSquare()
+            self.testSquare(1)
+            # self.testLine(1)
         
         def gotToPos(self, name, x, y):
             """ Default behavior for testing goToPosition. """
@@ -116,25 +117,29 @@ if __name__ == "__main__":
             else:
                 return False
         
-        def testLine(self):
+        def testLine(self, length):
             """ Test behavior with a simple line. """
             if not self.reached_goal:
-                self.reached_goal = self.goToPos("end point", 1, 0)
+                self.reached_goal = self.goToPos("end point", length, 0)
             else:
                 self.reached_goal = self.goToPos("home", 0, 0)
         
-        def testSquare(self):
-            """ Test behavior with a simple square. """
+        def testSquare(self, length):
+            """ Test behavior with a simple square. 
+            
+            Args:
+                length (float): Length of the sides of the square in meters.
+            """
         
             # test a simple square
             if not self.reached_corner[0]:
-                self.reached_corner[0] = self.gotToPos("corner 1", 1, 0)
+                self.reached_corner[0] = self.gotToPos("corner 1", length, 0)
         
             elif not self.reached_corner[1]:
-                self.reached_corner[1] = self.gotToPos("corner 2", 1, 1)
+                self.reached_corner[1] = self.gotToPos("corner 2", length, length)
                     
             elif not self.reached_corner[2]:
-                self.reached_corner[2] = self.gotToPos("corner 3", 0, 1)
+                self.reached_corner[2] = self.gotToPos("corner 3", 0, length)
         
             else:
                 if self.gotToPos("corner 0", 0, 0):
