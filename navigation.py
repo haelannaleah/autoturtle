@@ -84,7 +84,8 @@ if __name__ == "__main__":
             self.reached_goal = False
             
             # square test
-            self.reached_corner = [False, False, False]
+            self.reached_corner = [False, False, False, False]
+            self.corner_counter = 0
             
             Tester.__init__(self, "Navigation")
 
@@ -114,7 +115,7 @@ if __name__ == "__main__":
                 if self.motion.turning:
                     self.motion.stop_rotation()
                 else:
-                    self.motion.walk(.5)
+                    self.motion.walk()
             
             # we need to turn to reach our goal
             else:
@@ -144,18 +145,14 @@ if __name__ == "__main__":
             """
         
             # test a simple square
-            if not self.reached_corner[0]:
-                self.reached_corner[0] = self.gotToPos("corner 1", length, 0)
-        
-            elif not self.reached_corner[1]:
-                self.reached_corner[1] = self.gotToPos("corner 2", length, length)
-                    
-            elif not self.reached_corner[2]:
-                self.reached_corner[2] = self.gotToPos("corner 3", 0, length)
-        
+            if not self.reached_corner[self.corner_counter]:
+                x_coord = length * (self.corner_counter == 1 or self.corner_counter == 2)
+                y_coord = length * (self.corner_counter == 2 or self.corner_counter == 3)
+                self.reached_corner[self.corner_counter] = self.gotToPos("corner " + str(self.corner_counter), x_coord, y_coord)
             else:
-                if self.gotToPos("corner 0", 0, 0):
+                if self.corner_counter == len(self.reached_corner) - 1:
                     self.reached_corner = [False] * len(self.reached_corner)
+                self.corner_counter = (self.corner_counter + 1) % len(self.reached_corner)
     
         def shutdown(self):
             self.motion.shutdown(self.rate)
