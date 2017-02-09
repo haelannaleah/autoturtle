@@ -73,12 +73,13 @@ class Navigation():
 
 if __name__ == "__main__":
     from tester import Tester
-    from motion import Motion
-
+    #from motion import Motion
+    from safe_motion import SafeMotion
+    
     class NavigationTest(Tester):
         def __init__(self):
             self.navigation = Navigation()
-            self.motion = Motion()
+            self.motion = SafeMotion(0)
             
             self.stopping = False
             
