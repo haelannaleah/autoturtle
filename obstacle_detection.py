@@ -23,6 +23,7 @@ class ObstacleDetection():
 
     def __init__(self):
         self._logger = Logger("ObstacleDetection")
+        
         self.obstacle = False
         self.obstacle_dir = 0
         
@@ -68,6 +69,7 @@ class ObstacleDetection():
 
     def _depthCallback(self):
         """ Process incoming depth data. """
+        self._logger.debug("depth callback")
         # get the depth image
         self.depth_img = self.bridge.imgmsg_to_cv2(data, 'passthrough')
 
