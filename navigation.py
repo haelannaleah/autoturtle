@@ -65,7 +65,7 @@ class Navigation():
         
         # our orientation has gotten off
         elif not np.isclose(self.angle, turn_angle, atol=0.15):
-            return 1 if self.angle < turn_angle else -1
+            return -1 if self.angle < turn_angle else 1
 
         # otherwise, move toward our goal
         else:
