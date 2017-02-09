@@ -166,7 +166,7 @@ if __name__ == "__main__":
         
         def main(self):
             """ The main control loop. """
-            self.circle()
+            self.wander()
         
         def circle(self):
             """ Test simultaneous rotation and forward motion. """
