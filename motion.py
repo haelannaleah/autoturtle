@@ -22,14 +22,16 @@ class Motion():
     _ROT_SPEED = radians(60)
     _LIN_SPEED = 0.2
     _ACCEL_TIME = 0.1
-    _ACCEL_DELTA = .003
-    _DECEL_DELTA = -.004
+    _ROT_ACCEL = .025
+    _ROT_DECCEL = -.05
+    _LIN_ACCEL = .003
+    _LIN_DECCEL = -.004
     _TURN_LEFT = 1
     _TURN_RIGHT = -1
     
     def __init__(self):
 
-        self.turn_dir = None
+        self.turn_dir = 0
         self.turning = False
         self.walking = False
         self._accel_time = False
@@ -38,19 +40,22 @@ class Motion():
         self._move_publisher = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
         self._move_cmd = Twist()
     
-    def _gradual_stop(self):
+    def _linear_stop(self, now):
         """ Gently stop forward motion of robot. """
-        if self._move_cmd.linear.x > 0:
-            self.accelerate(self._DECEL_DELTA)
-        else:
+        if self._move_cmd.linear.x <= 0 or now:
             self._move_cmd.linear.x = 0
             self.walking = False
+        else:
+            self._move_cmd.linear.x += self.accelerate(self._LIN_DECCEL)
 
-    def _rotational_stop(self):
+    def _rotational_stop(self, now):
         """ Stop the robot and handle associated housekeeping. """
-        self.turning = False
-        self.turn_dir = None
-        self._move_cmd.angular.z = 0
+        if self.turn_dir * self._move_cmd.angular.z <= 0 or now:
+            self.turning = False
+            self.turn_dir = 0
+            self._move_cmd.angular.z = 0
+        else:
+            self._move_cmd.angular.z += self.accelerate(self.turn_dir * self._ROT_DECCEL)
     
     def _publish(self):
         self._move_publisher.publish(self._move_cmd)
@@ -61,6 +66,9 @@ class Motion():
         Args:
             delta (float): The change in robot speed at each time step. Positive to accelerate,
                 negative to accelerate.
+        
+        Returns:
+            Delta if it is time to increment, 0 otherwise.
         """
         # initialize the acceleration time
         if self._accel_time is False:
@@ -68,17 +76,19 @@ class Motion():
         
         # otherwise, if it's time to increment speed...
         elif time() - self._accel_time > self._ACCEL_TIME:
-            self._move_cmd.linear.x += delta
             self.accel_time = False
+            return delta
 
-    def stop_linear(self):
+        return 0
+
+    def stop_linear(self, now=False):
         """ Stop robot's linear motion. """
-        self._gradual_stop()
+        self._linear_stop(now)
         self._publish()
 
-    def stop_rotation(self):
+    def stop_rotation(self, now=False):
         """ Stop the robot rotation. """
-        self._rotational_stop()
+        self._rotational_stop(now)
         self._publish()
 
     def stop(self, now=False): 
@@ -87,13 +97,9 @@ class Motion():
         Args:
             now (bool): Robot stops immediately if true, else decelerates.
         """
-        if not now:
-            self._gradual_stop()
-        else:
-            self.walking = False
-            self._move_cmd.linear.x = 0
-        
-        self._rotational_stop()
+        self._linear_stop(now)
+        self._rotational_stop(now)
+    
         self._publish()
 
     def turn(self, direction, speed = 1):
@@ -106,10 +112,14 @@ class Motion():
         """
         # set turn direction
         self.turning = True
-        if self.turn_dir is None:
+        if self.turn_dir is 0:
             self.turn_dir = self._TURN_LEFT if direction else self._TURN_RIGHT
 
-        self._move_cmd.angular.z = self.turn_dir * self._ROT_SPEED * min(speed, 1)
+        target_speed = self._ROT_SPEED * min(speed, 1)
+        if abs(self._move_cmd.angular.z) < target_speed:
+            self._move_cmd.angular.z += self.accelerate(self.turn_dir * self._ROT_ACCEL)
+        else:
+            self._move_cmd.angular.z = self.turn_dir * target_speed
         
         self._publish()
 
@@ -124,7 +134,7 @@ class Motion():
         target_speed = self._LIN_SPEED * min(speed, 1)
         
         if self._move_cmd.linear.x < target_speed:
-            self.accelerate(self._ACCEL_DELTA)
+            self._move_cmd.linear.x += self.accelerate(self._LIN_ACCEL)
         else:
             self._move_cmd.linear.x = target_speed
     
@@ -136,7 +146,7 @@ class Motion():
         Args:
             rate (rospy.Rate): The refresh rate of the enclosing module.
         """
-        while self.walking:
+        while self.walking or self.turning:
             self.stop()
             rate.sleep()
 
@@ -156,7 +166,7 @@ if __name__ == "__main__":
         
         def main(self):
             """ The main control loop. """
-            self.circle()
+            self.wander()
         
         def circle(self):
             """ Test simultaneous rotation and forward motion. """
