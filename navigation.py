@@ -48,8 +48,8 @@ class Navigation():
             destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
         
         Returns:
-            True if we are close to the desired location, -1 if the goal is toward the left, 1 if the goal is
-                to the right, 0 if the goal is straight ahead
+            True if we are close to the desired location, 0 if the goal is straight ahead, and the difference 
+                between the current angle and the desired angle if we are not on course.
         """
         # take the angle between our position and destination in the odom frame
         turn = atan2(destination.y - self.p.y, destination.x - self.p.x)
@@ -64,8 +64,8 @@ class Navigation():
             return True
         
         # our orientation has gotten off
-        elif not np.isclose(self.angle, turn_angle, atol=0.15):
-            return -1 if self.angle < turn_angle else 1
+        elif not np.isclose(self.angle, turn_angle, atol=0.05):
+            return self.angle - turn_angle
 
         # otherwise, move toward our goal
         else:
@@ -79,6 +79,8 @@ if __name__ == "__main__":
         def __init__(self):
             self.navigation = Navigation()
             self.motion = Motion()
+            
+            self.stopping = False
             
             # linear test
             self.reached_goal = False
@@ -105,24 +107,29 @@ if __name__ == "__main__":
             nav_val = self.navigation.goToPosition(Point(x,y,0))
             
             # did we reach our waypoint?
-            if nav_val is True:
-                self.logger.info("Reached " + str(name) + " at " + str((x,y)))
-                self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
-                return True
+            if nav_val is True or self.stopping is True:
+                if self.motion.walking or self.motion.turning:
+                    self.motion.stop()
+                    self.stopping = True
+                else:
+                    self.logger.info("Reached " + str(name) + " at " + str((x,y)))
+                    self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
+                    self.stopping = False
+                    return True
             
             # our goal is straight ahead
             elif nav_val == 0:
                 if self.motion.turning:
-                    self.motion.stop_rotation()
+                    self.motion.stop_rotation(now=True)
                 else:
                     self.motion.walk()
             
             # we need to turn to reach our goal
             else:
-                if self.motion.walking:
-                    self.motion.stop_linear()
+                if self.motion.walking and abs(nav_val) > pi / 2:
+                    self.motion.stop()
                 else:
-                    self.motion.turn(nav_val < 0)
+                    self.motion.turn(nav_val < 0, .25 if self.motion.walking else 1)
             
             return False
         
