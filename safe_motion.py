@@ -10,22 +10,37 @@ from sensors import Sensors
 class SafeMotion(Motion):
     """ Handle basic Turtlebot motion while being aware of safety issues.
     
+    Args:
+        safety_level (int): Indicates the level of interference safety precautions will
+            wreak on normal motion. At 0, the robot stops is picked up, bumped, or encounters 
+            a cliff.
+        
     Attributes:
         turn_dir (int): 1 if turning left, -1 if turning right, None if no turn.
         turning (bool): True if the robot is turning, False otherwise.
         walking (bool): True if robot is moving linearly, False otherwise.
     """
     def __init__(self):
-        Motion.__init__(self)
+        Motion.__init__(self, safety_level=0)
         self.sensors = Sensors()
         self.avoiding = True
         self._logger = Logger("SafeMotion")
     
+        self._motionModifier = self._avoid if safety_level > 0 else self._safetyStop
+    
     def _avoid(self, func, *args, **kwargs):
         """ Both be safe and premptive. """
         # if we see a cliff or get picked up, stop
-        if self.sensors.cliff or self.sensors.wheeldrop:
+        if self.sensors.wheeldrop:
             Motion.stop(self, now=True)
+        
+        # if we see a cliff, turn away
+        elif self.sensors.cliff:
+            if self.walking:
+                Motion.stop_linear(self, now=True)
+            else:
+                self.avoiding = True
+                Motion.turn(self, self.sensors.cliff_sensor > 0)
     
         # if we hit something, stop
         elif self.sensors.bump:
@@ -84,7 +99,7 @@ class SafeMotion(Motion):
             speed (float, optional): The percentage of the the maximum turn speed
                 the robot will turn at.
         """
-        self._avoid(Motion.turn, speed)
+        self._motionModifier(Motion.turn, speed)
 
     def walk(self, speed=1):
         """ Move straight forward.
@@ -93,7 +108,7 @@ class SafeMotion(Motion):
             speed (float, optiona): The percentage of the the maximum linear speed
                 the robot will move at.
         """
-        self._avoid(Motion.walk, speed)
+        self._motionModifier(Motion.walk, speed)
 
     def shutdown(self, rate):
         """ Bring the robot to a gentle stop. 
@@ -112,7 +127,7 @@ if __name__ == "__main__":
         
         def __init__(self):
             # set up basic sensing
-            self.motion = SafeMotion()
+            self.motion = SafeMotion(1)
             
             Tester.__init__(self, "SafeMotion")
 
