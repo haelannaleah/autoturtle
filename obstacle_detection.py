@@ -85,6 +85,6 @@ if __name__ == "__main__":
             Tester.__init__(self, "ObstacleDetection")
 
         def main(self):
-            rospy.spin()
+            self.rate.sleep()
 
     ObstacleDetectionTest()
