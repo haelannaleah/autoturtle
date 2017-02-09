@@ -31,7 +31,7 @@ class Motion():
     
     def __init__(self):
 
-        self.turn_dir = None
+        self.turn_dir = 0
         self.turning = False
         self.walking = False
         self._accel_time = False
@@ -52,7 +52,7 @@ class Motion():
         """ Stop the robot and handle associated housekeeping. """
         if self.turn_dir * self._move_cmd.angular.z <= 0 or now:
             self.turning = False
-            self.turn_dir = None
+            self.turn_dir = 0
             self._move_cmd.angular.z = 0
         else:
             self._move_cmd.angular.z += self.accelerate(self.turn_dir * self._ROT_DECCEL)
@@ -112,7 +112,7 @@ class Motion():
         """
         # set turn direction
         self.turning = True
-        if self.turn_dir is None:
+        if self.turn_dir is 0:
             self.turn_dir = self._TURN_LEFT if direction else self._TURN_RIGHT
 
         target_speed = self._ROT_SPEED * min(speed, 1)
