@@ -85,10 +85,10 @@ if __name__ == "__main__":
     class ObstacleDetectionTest(Tester):
         """ Behavioral tests for ObstacleDectection. """
         def __init__(self):
+            self.obstacle_detector = ObstacleDetection()
             Tester.__init__(self, "ObstacleDetection")
 
         def main(self):
-            self.logger.debug("logging")
             self.rate.sleep()
 
     ObstacleDetectionTest()
