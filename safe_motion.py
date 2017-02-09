@@ -32,7 +32,7 @@ class SafeMotion(Motion):
             
         elif self.avoiding:
             if self.walking or self.turning:
-                self.motion.stop()
+                Motion.stop(self)
             else:
                 self.avoiding = False
         
