@@ -72,7 +72,9 @@ class SafeMotion(Motion):
 
     def shutdown(self, rate):
         self.avoiding = False
-        self.stop(now=True)
+        while self.walking or self.turning:
+            self.stop()
+            rate.sleep()
 
 if __name__ == "__main__":
     from tester import Tester
