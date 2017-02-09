@@ -21,19 +21,19 @@ class SafeMotion(Motion):
         """ Both be safe and premptive. """
         # if we see a cliff or get picked up, stop
         if self.sensors.cliff or self.sensors.wheeldrop:
-            self.stop(self, now=True)
+            Motion.stop(self, now=True)
     
         # if we hit something, stop
         elif self.sensors.bump:
             if self.walking:
-                self.stop_linear(self, now=True)
+                Motion.stop_linear(self, now=True)
             else:
                 self.avoiding = True
-                self.turn(self, self.sensors.bumper > 0)
+                Motion.turn(self, self.sensors.bumper > 0)
             
         elif self.avoiding:
             if self.walking or self.turning:
-                self.stop(self)
+                Motion.stop(self)
             else:
                 self.avoiding = False
         
@@ -45,11 +45,11 @@ class SafeMotion(Motion):
         """ The generic safety wrapper for the Turtlebot. """
         # if we see a cliff or get picked up, stop
         if self.sensors.cliff or self.sensors.wheeldrop:
-            self.stop(self, now=True)
+            Motion.stop(self, now=True)
 
         # if we hit something, stop
         elif self.sensors.bump:
-            self.stop_linear(self, now=True)
+            Motion.stop_linear(self, now=True)
         
         # otherwise, we keep going
         else:
