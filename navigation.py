@@ -11,7 +11,6 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion
 from math import atan2, pi
 
 from logger import Logger
-from motion import Motion
 
 class Navigation():
     """ Local navigation.
@@ -28,8 +27,6 @@ class Navigation():
     
     def __init__(self):
         self._logger = Logger("Navigation")
-        
-        self.motion = Motion()
 
         self.p = None
         self.q = None
@@ -50,7 +47,8 @@ class Navigation():
             destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
         
         Returns:
-            True if we are close to the desired location, False otherwise.
+            True if we are close to the desired location, -1 if the goal is toward the left, 1 if the goal is 
+                to the right, 0 if the goal is straight ahead
         """
         # take the angle between our position and destination in the odom frame
         turn = atan2(destination.y - self.p.y, destination.x - self.p.x)
@@ -66,34 +64,20 @@ class Navigation():
         
         # our orientation has gotten off
         elif not np.isclose(self.angle, turn_angle, atol=0.15):
-            if self.motion.walking:
-                self.motion.stop_linear()
-            else:
-                self.motion.turn(self.angle < turn_angle, .5)
+            return 1 if self.angle < turn_angle else -1
 
         # otherwise, move toward our goal
         else:
-            if self.motion.turning:
-                self.motion.stop_rotation()
-            else:
-                self.motion.walk()
-
-        return False
-
-    def shutdown(self, rate):
-        """ Bring the robot to a gentle stop. 
-        
-        Args:
-            rate (rospy.Rate): The refresh rate of the enclosing module.
-        """
-        self.motion.shutdown(rate)
+            return 0
 
 if __name__ == "__main__":
     from tester import Tester
+    from motion import Motion
 
     class NavigationTest(Tester):
         def __init__(self):
             self.navigation = Navigation()
+            self.motion = Motion()
             
             # linear test
             self.reached_goal = False
@@ -110,12 +94,27 @@ if __name__ == "__main__":
         
         def gotToPos(self, name, x, y):
             """ Default behavior for testing goToPosition. """
-            if self.navigation.goToPosition(Point(x,y,0)):
+            nav_val = self.navigation.goToPosition(Point(x,y,0))
+            if nav_val is True:
                 self.logger.info("Reached " + str(name) + " at " + str((x,y)))
                 self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
                 return True
+            
+            # our goal is straight ahead
+            elif nav_val == 0:
+                if self.motion.turning:
+                    self.motion.stop_rotation()
+                else:
+                    self.motion.walk()
+            
+            # we need to turn to reach our goal
             else:
-                return False
+                if self.motion.walking:
+                    self.motion.stop_linear()
+                else:
+                    self.motion.turn(nav_val < 0)
+            
+            return False
         
         def testLine(self, length):
             """ Test behavior with a simple line. """
