@@ -34,7 +34,7 @@ class SafeMotion(Motion):
         """ The generic safety wrapper for the Turtlebot. """
         # if we see a cliff or get picked up, stop
         if self.sensors.cliff or self.sensors.wheeldrop:
-            Motion.stop(self, now)
+            Motion.stop(self, now=True)
 
         # if we hit something, stop
         elif self.sensors.bump:
