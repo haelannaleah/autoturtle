@@ -113,13 +113,13 @@ if __name__ == "__main__":
             # our goal is straight ahead
             elif nav_val == 0:
                 if self.motion.turning:
-                    self.motion.stop_rotation()
+                    self.motion.stop_rotation(now)
                 self.motion.walk()
             
             # we need to turn to reach our goal
             elif abs(nav_val) > pi / 2.0 and self.motion.walking:
                 if self.motion.walking:
-                    self.motion.stop_linear()
+                    self.motion.stop_linear(now)
                 
             else:
                 if self.motion.walking:
