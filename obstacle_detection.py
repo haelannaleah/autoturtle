@@ -87,7 +87,7 @@ if __name__ == "__main__":
             Tester.__init__(self, "ObstacleDetection")
 
         def main(self):
-            self.logger.debug(logging)
+            self.logger.debug("logging")
             self.rate.sleep()
 
     ObstacleDetectionTest()
