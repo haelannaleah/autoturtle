@@ -20,12 +20,12 @@ class SafeMotion(Motion):
         """ Both be safe and premptive. """
         # if we see a cliff or get picked up, stop
         if self.sensors.cliff or self.sensors.wheeldrop:
-            Motion.stop(self, now)
+            Motion.stop(self, now=True)
     
         # if we hit something, stop
         elif self.sensors.bump:
             if self.walking:
-                Motion.stop_linear(self)
+                Motion.stop_linear(self, now=True)
             else:
                 Motion.turn(self, self.sensors.bumper > 0)
         
