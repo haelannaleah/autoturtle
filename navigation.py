@@ -124,7 +124,10 @@ if __name__ == "__main__":
                     self.motion.turn(nav_val < 0)
                 
             else:
-                self.motion.turn(nav_val < 0, .5)
+                if self.motion.walking:
+                    self.motion.turn(nav_val < 0, .25)
+                else:
+                    self.motion.turn(nav_val < 0)
             
             return False
         
