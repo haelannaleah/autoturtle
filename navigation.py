@@ -114,14 +114,14 @@ if __name__ == "__main__":
                 if self.motion.turning:
                     self.motion.stop_rotation()
                 else:
-                    self.motion.walk()
+                    self.motion.walk(.5)
             
             # we need to turn to reach our goal
             else:
                 if self.motion.walking:
                     self.motion.stop_linear()
                 else:
-                    self.motion.turn(nav_val < 0)
+                    self.motion.turn(nav_val < 0, .5)
             
             return False
         
