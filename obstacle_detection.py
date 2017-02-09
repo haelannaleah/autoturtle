@@ -49,7 +49,7 @@ class ObstacleDetection():
         """ If there is an obstacle nearby, find it. """
         # get slice to check distance on
         img_height, img_width = self.depth_img.shape
-        s_width = int(img_width * self._SAMPLE_WIDTH)
+        s_width = int(img_width * self._OBSTACLE_SAMPLE_WIDTH)
         w_center = img_width // 2
     
         # apply blur to smooth out irregularities
@@ -62,7 +62,7 @@ class ObstacleDetection():
             return
         
         # if the closest thing in our slice is too close, likely an obstacle
-        if sample[min_index] < self._DIST_THRESH:
+        if sample[min_index] < self._OBSTACLE_DIST_THRESH:
             if not self.obstacle:
                 self.obstacle_dir = -1 if min_index[1] < w_center else 1
                 self.obstacle = True
