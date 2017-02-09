@@ -1,0 +1,20 @@
+<!-- ROS launchfile for testing local navigation with visual avoidance
+ 
+ Author:
+    Annaleah Ernst
+ -->
+
+<launch>
+    <!-- Set up mappings for the localization package -->
+    <remap from="mobile_base/sensors/imu_data" to="imu_data" />
+    <remap from="mobile_base/odom" to="odom" />
+
+    <!-- Launch Turtlebot -->
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
+    <include file="$(find turtlebot_bringup)/launch/3dsensor.launch" />
+    
+    <!-- Launch localization package -->
+    <include file="robot_pose_ekf.launch.xml">
+        <arg name="use_vo" value="false" />
+    </include>
+</launch>
