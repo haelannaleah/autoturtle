@@ -24,8 +24,8 @@ class Motion():
     _ACCEL_TIME = 0.1
     _ROT_ACCEL = .025
     _ROT_DECCEL = -.05
-    _LIN_ACCEL = .003
-    _LIN_DECCEL = -.004
+    _LIN_ACCEL = .03
+    _LIN_DECCEL = -.04
     _TURN_LEFT = 1
     _TURN_RIGHT = -1
     
