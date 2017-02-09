@@ -13,6 +13,7 @@ class SafeMotion(Motion):
         Motion.__init__(self)
         self.sensors = Sensors()
         self.avoiding = True
+        self._logger = Logger("SafeMotion")
     
         self._safetyModifier = self._avoidance
     
