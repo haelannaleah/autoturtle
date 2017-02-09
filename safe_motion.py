@@ -8,7 +8,13 @@ from motion import Motion
 from sensors import Sensors
 
 class SafeMotion(Motion):
+    """ Handle basic Turtlebot motion while being aware of safety issues.
     
+    Attributes:
+        turn_dir (int): 1 if turning left, -1 if turning right, None if no turn.
+        turning (bool): True if the robot is turning, False otherwise.
+        walking (bool): True if robot is moving linearly, False otherwise.
+    """
     def __init__(self):
         Motion.__init__(self)
         self.sensors = Sensors()
@@ -117,4 +123,4 @@ if __name__ == "__main__":
         def shutdown(self):
             self.motion.shutdown(self.rate)
 
-SafeMotionTest()
+    SafeMotionTest()
