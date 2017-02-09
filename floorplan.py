@@ -84,7 +84,7 @@ class FloorPlan():
             if closest_id == end:
                 break
 
-            # update minimum path lengths:
+            # update minimum path lengths greedily
             for neighbor in closest.neighbors:
                 test_dist2 = dist2[closest_id] + self._dist2(self.graph[neighbor].location, closest.location)
                 if test_dist2 < dist2[neighbor]:
