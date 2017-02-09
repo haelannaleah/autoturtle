@@ -126,7 +126,10 @@ if __name__ == "__main__":
             
             # we need to turn to reach our goal
             else:
-                self.motion.turn(nav_val < 0, .25 if self.motion.walking else 1)
+                if self.motion.walking and abs(nav_val) > pi / 2:
+                    self.motion.stop()
+                else:
+                    self.motion.turn(nav_val < 0, .25 if self.motion.walking else 1)
             
             return False
         
