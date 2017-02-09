@@ -27,11 +27,17 @@ class SafeMotion(Motion):
             if self.walking:
                 Motion.stop_linear(self, now=True)
             else:
+                self.avoiding = True
                 Motion.turn(self, self.sensors.bumper > 0)
+            
+        elif self.avoiding:
+            if self.walking or self.turning:
+                self.motion.stop()
+            else:
+                self.avoiding = False
         
         # otherwise, we keep going
         else:
-            self.avoiding = False
             func(self, *args, **kwargs)
 
     def _safety(self, func, *args, **kwargs):
