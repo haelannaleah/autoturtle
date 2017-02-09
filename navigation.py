@@ -48,8 +48,8 @@ class Navigation():
             destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
         
         Returns:
-            True if we are close to the desired location, -1 if the goal is toward the left, 1 if the goal is
-                to the right, 0 if the goal is straight ahead
+            True if we are close to the desired location, 0 if the goal is straight ahead, and the difference 
+                between the current angle and the desired angle if we are not on course.
         """
         # take the angle between our position and destination in the odom frame
         turn = atan2(destination.y - self.p.y, destination.x - self.p.x)
@@ -65,7 +65,7 @@ class Navigation():
         
         # our orientation has gotten off
         elif not np.isclose(self.angle, turn_angle, atol=0.15):
-            return -1 if self.angle < turn_angle else 1
+            return self.angle - turn_angle
 
         # otherwise, move toward our goal
         else:
@@ -114,15 +114,17 @@ if __name__ == "__main__":
             elif nav_val == 0:
                 if self.motion.turning:
                     self.motion.stop_rotation()
-                else:
-                    self.motion.walk()
+                self.motion.walk()
             
             # we need to turn to reach our goal
-            else:
+            elif abs(nav_val) > pi / 2.0:
                 if self.motion.walking:
                     self.motion.stop_linear()
                 else:
                     self.motion.turn(nav_val < 0)
+                
+            else:
+                self.motion.turn(nav_val < 0, .5)
             
             return False
         
