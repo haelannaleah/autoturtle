@@ -72,7 +72,7 @@ class SafeMotion(Motion):
 
     def shutdown(self, rate):
         self.avoiding = False
-        Motion.shutdown(self, rate)
+        self.stop(now=True)
 
 if __name__ == "__main__":
     from tester import Tester
