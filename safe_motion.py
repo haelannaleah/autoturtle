@@ -12,6 +12,9 @@ class SafeMotion(Motion):
     def __init__(self):
         Motion.__init__(self)
         self.sensors = Sensors()
+        self.avoiding = True
+    
+        self._safetyModifier = self._avoidance
     
     def _avoidance(self, func, *args, **kwargs):
         """ Both be safe and premptive. """
@@ -28,6 +31,7 @@ class SafeMotion(Motion):
         
         # otherwise, we keep going
         else:
+            self.avoiding = False
             func(self, *args, **kwargs)
 
     def _safety(self, func, *args, **kwargs):
@@ -38,29 +42,29 @@ class SafeMotion(Motion):
 
         # if we hit something, stop
         elif self.sensors.bump:
-            Motion.stop_linear(self)
+            Motion.stop_linear(self, now=True)
         
         # otherwise, we keep going
         else:
             func(self, *args, **kwargs)
 
     def walk(self, speed=1):
-        self._safety(Motion.walk, speed)
+        self._safetyModifier(Motion.walk, speed)
 
     def turn(self, speed=1):
-        self._safety(Motion.turn, speed)
+        self._safetyModifier(Motion.turn, speed)
 
     def stop(self, now=False):
-        self._safety(Motion.turn, now)
+        self._safetyModifier(Motion.turn, now)
 
     def linear_stop(self, now=False):
-        self._safety(Motion.linear_stop, now)
+        self._safetyModifier(Motion.linear_stop, now)
 
     def rotational_stop(self, now=False):
-        self._safety(Motion.rotational_stop, now)
+        self._safetyModifier(Motion.rotational_stop, now)
 
     def shutdown(self, rate):
-        self._safety(Motion.shutdown, rate)
+        self._safetyModifier(Motion.shutdown, rate)
 
 if __name__ == "__main__":
     from tester import Tester
