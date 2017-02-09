@@ -22,10 +22,10 @@ class Motion():
     _ROT_SPEED = radians(60)
     _LIN_SPEED = 0.2
     _ACCEL_TIME = 0.1
-    _ROT_ACCEL = .2
-    _ROT_DECCEL = -.25
-    _LIN_ACCEL = .03
-    _LIN_DECCEL = -.035
+    _ROT_ACCEL = .25
+    _ROT_DECCEL = -.3
+    _LIN_ACCEL = .025
+    _LIN_DECCEL = -.03
     _TURN_LEFT = 1
     _TURN_RIGHT = -1
     
