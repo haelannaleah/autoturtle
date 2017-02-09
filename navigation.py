@@ -121,7 +121,6 @@ if __name__ == "__main__":
                 if self.motion.walking:
                     self.motion.stop_linear()
                 else:
-                    print nav_val
                     self.motion.turn(nav_val < 0)
             
             return False
@@ -159,7 +158,7 @@ if __name__ == "__main__":
                     self.reached_corner = [False] * len(self.reached_corner)
     
         def shutdown(self):
-            self.navigation.shutdown(self.rate)
+            self.motion.shutdown(self.rate)
             Tester.shutdown(self)
         
 
