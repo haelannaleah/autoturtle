@@ -83,7 +83,7 @@ class SafeMotion(Motion):
         """
         self._safetyStop(Motion.stop, now)
     
-    def turn(self, speed=1):
+    def turn(self, direction, speed=1):
         """ Turn the Turtlebot in the desired direction.
             
         Args:
@@ -91,7 +91,7 @@ class SafeMotion(Motion):
             speed (float, optional): The percentage of the the maximum turn speed
                 the robot will turn at.
         """
-        self._motionModifier(Motion.turn, speed)
+        self._motionModifier(Motion.turn, direction, speed)
 
     def walk(self, speed=1):
         """ Move straight forward.
