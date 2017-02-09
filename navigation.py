@@ -80,6 +80,8 @@ if __name__ == "__main__":
             self.navigation = Navigation()
             self.motion = Motion()
             
+            self.stopping = False
+            
             # linear test
             self.reached_goal = False
             
@@ -105,10 +107,15 @@ if __name__ == "__main__":
             nav_val = self.navigation.goToPosition(Point(x,y,0))
             
             # did we reach our waypoint?
-            if nav_val is True:
+            if nav_val is True or self.stopping is True:
                 self.logger.info("Reached " + str(name) + " at " + str((x,y)))
                 self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
-                return True
+                if self.motion.walking or self.motion.turning:
+                    self.motion.stop()
+                    self.stopping = True
+                else:
+                    self.stopping = False
+                    return True
             
             # our goal is straight ahead
             elif nav_val == 0:
@@ -119,10 +126,7 @@ if __name__ == "__main__":
             
             # we need to turn to reach our goal
             else:
-                if self.motion.walking:
-                    self.motion.stop_linear()
-                else:
-                    self.motion.turn(nav_val < 0)
+                self.motion.turn(nav_val < 0, .5 if self.motion.walking else 1)
             
             return False
         
