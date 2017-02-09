@@ -117,7 +117,7 @@ if __name__ == "__main__":
                 self.motion.walk()
             
             # we need to turn to reach our goal
-            elif abs(nav_val) > pi / 2.0 and walking:
+            elif abs(nav_val) > pi / 2.0 and self.motion.walking:
                 if self.motion.walking:
                     self.motion.stop_linear()
                 
