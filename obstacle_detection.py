@@ -68,7 +68,7 @@ class ObstacleDetection():
         else:
             self.obstacle = False
 
-    def _depthCallback(self):
+    def _depthCallback(self, data):
         """ Process incoming depth data. """
         self._logger.debug("depth callback")
         
