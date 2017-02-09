@@ -40,27 +40,7 @@ class Motion():
         self._move_publisher = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
         self._move_cmd = Twist()
     
-    def _linear_stop(self, now):
-        """ Gently stop forward motion of robot. """
-        if self._move_cmd.linear.x <= 0 or now:
-            self._move_cmd.linear.x = 0
-            self.walking = False
-        else:
-            self._move_cmd.linear.x += self.accelerate(self._LIN_DECCEL)
-
-    def _rotational_stop(self, now):
-        """ Stop the robot and handle associated housekeeping. """
-        if self.turn_dir * self._move_cmd.angular.z <= 0 or now:
-            self.turning = False
-            self.turn_dir = 0
-            self._move_cmd.angular.z = 0
-        else:
-            self._move_cmd.angular.z += self.accelerate(self.turn_dir * self._ROT_DECCEL)
-    
-    def _publish(self):
-        self._move_publisher.publish(self._move_cmd)
-
-    def accelerate(self, delta):
+    def _accelerate(self, delta):
         """ Smooth out starts and stops. 
             
         Args:
@@ -76,20 +56,31 @@ class Motion():
         
         # otherwise, if it's time to increment speed...
         elif time() - self._accel_time > self._ACCEL_TIME:
-            self.accel_time = False
+            self._accel_time = False
             return delta
 
         return 0
+    
+    def _linear_stop(self, now):
+        """ Gently stop forward motion of robot. """
+        if self._move_cmd.linear.x <= 0 or now:
+            self._move_cmd.linear.x = 0
+            self.walking = False
+        else:
+            self._move_cmd.linear.x += self._accelerate(self._LIN_DECCEL)
 
-    def stop_linear(self, now=False):
-        """ Stop robot's linear motion. """
-        self._linear_stop(now)
-        self._publish()
-
-    def stop_rotation(self, now=False):
-        """ Stop the robot rotation. """
-        self._rotational_stop(now)
-        self._publish()
+    def _rotational_stop(self, now):
+        """ Stop the robot and handle associated housekeeping. """
+        if self.turn_dir * self._move_cmd.angular.z <= 0 or now:
+            self.turning = False
+            self.turn_dir = 0
+            self._move_cmd.angular.z = 0
+        else:
+            self._move_cmd.angular.z += self._accelerate(self.turn_dir * self._ROT_DECCEL)
+    
+    def _publish(self):
+        """ Output commands to the Turtlebot. """
+        self._move_publisher.publish(self._move_cmd)
 
     def stop(self, now=False): 
         """ Stop the robot, immediately if necessary.
@@ -100,6 +91,16 @@ class Motion():
         self._linear_stop(now)
         self._rotational_stop(now)
     
+        self._publish()
+
+    def stop_linear(self, now=False):
+        """ Stop robot's linear motion. """
+        self._linear_stop(now)
+        self._publish()
+
+    def stop_rotation(self, now=False):
+        """ Stop the robot rotation. """
+        self._rotational_stop(now)
         self._publish()
 
     def turn(self, direction, speed = 1):
@@ -117,7 +118,7 @@ class Motion():
 
         target_speed = self._ROT_SPEED * min(speed, 1)
         if abs(self._move_cmd.angular.z) < target_speed:
-            self._move_cmd.angular.z += self.accelerate(self.turn_dir * self._ROT_ACCEL)
+            self._move_cmd.angular.z += self._accelerate(self.turn_dir * self._ROT_ACCEL)
         else:
             self._move_cmd.angular.z = self.turn_dir * target_speed
         
@@ -134,7 +135,7 @@ class Motion():
         target_speed = self._LIN_SPEED * min(speed, 1)
         
         if self._move_cmd.linear.x < target_speed:
-            self._move_cmd.linear.x += self.accelerate(self._LIN_ACCEL)
+            self._move_cmd.linear.x += self._accelerate(self._LIN_ACCEL)
         else:
             self._move_cmd.linear.x = target_speed
     
@@ -189,7 +190,8 @@ if __name__ == "__main__":
             else:
                 if self.motion.turning:
                     self.motion.stop_rotation()
-                self.motion.walk()
+                else:
+                    self.motion.walk()
 
         def shutdown(self):
             """ Shutdown test. """
