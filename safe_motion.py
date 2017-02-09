@@ -70,6 +70,9 @@ class SafeMotion(Motion):
     def rotational_stop(self, now=False):
         self._safetyStop(Motion.rotational_stop, now)
 
+    def shutdown(self, rate):
+        pass
+
 if __name__ == "__main__":
     from tester import Tester
     from sensors import Sensors
