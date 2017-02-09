@@ -1,8 +1,8 @@
-import cv2
-import numpy as np
-
-from sensor_msgs.msg import Image
-
+""" Safe motion.
+    
+Author:
+    Annaleah Ernst
+"""
 from logger import Logger
 from motion import Motion
 from sensors import Sensors
@@ -15,9 +15,7 @@ class SafeMotion(Motion):
         self.avoiding = True
         self._logger = Logger("SafeMotion")
     
-        self._safetyModifier = self._avoidance
-    
-    def _avoidance(self, func, *args, **kwargs):
+    def _avoid(self, func, *args, **kwargs):
         """ Both be safe and premptive. """
         # if we see a cliff or get picked up, stop
         if self.sensors.cliff or self.sensors.wheeldrop:
@@ -30,7 +28,8 @@ class SafeMotion(Motion):
             else:
                 self.avoiding = True
                 Motion.turn(self, self.sensors.bumper > 0)
-            
+        
+        # this means that we're avoiding nothing!
         elif self.avoiding:
             if self.walking or self.turning:
                 Motion.stop(self)
@@ -55,22 +54,47 @@ class SafeMotion(Motion):
         else:
             func(self, *args, **kwargs)
 
-    def walk(self, speed=1):
-        self._safetyModifier(Motion.walk, speed)
-
-    def turn(self, speed=1):
-        self._safetyModifier(Motion.turn, speed)
-
-    def stop(self, now=False):
-        self._safetyStop(Motion.stop, now)
-
     def linear_stop(self, now=False):
+        """ Stop robot's linear motion, immediately if necessary. """
         self._safetyStop(Motion.linear_stop, now)
 
     def rotational_stop(self, now=False):
+        """ Stop the robot rotation, immediately if necessary. """
         self._safetyStop(Motion.rotational_stop, now)
+    
+    def stop(self, now=False):
+        """ Stop the robot, immediately if necessary.
+        
+        Args:
+            now (bool): Robot stops immediately if true, else decelerates.
+        """
+        self._safetyStop(Motion.stop, now)
+    
+    def turn(self, speed=1):
+        """ Turn the Turtlebot in the desired direction.
+            
+        Args:
+            direction (bool): Turn direction is left if True, right if False
+            speed (float, optional): The percentage of the the maximum turn speed
+                the robot will turn at.
+        """
+        self._avoid(Motion.turn, speed)
+
+    def walk(self, speed=1):
+        """ Move straight forward.
+        
+        Args:
+            speed (float, optiona): The percentage of the the maximum linear speed
+                the robot will move at.
+        """
+        self._avoid(Motion.walk, speed)
 
     def shutdown(self, rate):
+        """ Bring the robot to a gentle stop. 
+        
+        Args:
+            rate (rospy.Rate): The refresh rate of the enclosing module.
+        """
         self._safetyStop(Motion.shutdown, rate)
 
 if __name__ == "__main__":
@@ -87,6 +111,7 @@ if __name__ == "__main__":
             Tester.__init__(self, "SafeMotion")
 
         def main(self):
+            # running walk here should behave like wander in the motion module test
             self.motion.walk()
 
         def shutdown(self):
