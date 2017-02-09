@@ -59,8 +59,8 @@ class SafeMotion(Motion):
     def rotational_stop(self, now=False):
         self._safety(Motion.rotational_stop, now)
 
-    def shutdown(self):
-        self._safety(Motion.shutdown)
+    def shutdown(self, rate):
+        self._safety(Motion.shutdown,)
 
 if __name__ == "__main__":
     from tester import Tester
@@ -79,6 +79,6 @@ if __name__ == "__main__":
             self.walk()
 
         def shutdown(self):
-            self.motion.shutdown()
+            self.motion.shutdown(self.rate)
 
 SafeMotionTest()
