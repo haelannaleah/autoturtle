@@ -70,7 +70,7 @@ class SafeMotion(Motion):
         self._safetyModifier(Motion.rotational_stop, now)
 
     def shutdown(self, rate):
-        self._safetyModifier(Motion.shutdown, rate)
+        self._safety(Motion.shutdown, rate)
 
 if __name__ == "__main__":
     from tester import Tester
