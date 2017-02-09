@@ -76,7 +76,7 @@ if __name__ == "__main__":
             Tester.__init__(self, "SafeMotion")
 
         def main(self):
-            self.walk()
+            self.motion.walk()
 
         def shutdown(self):
             self.motion.shutdown(self.rate)
