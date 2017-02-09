@@ -72,8 +72,6 @@ class ObstacleDetection():
 
     def _depthCallback(self, data):
         """ Process incoming depth data. """
-        self._logger.debug("depth callback")
-        
         # get the depth image
         self.depth_img = self.bridge.imgmsg_to_cv2(data, 'passthrough')
 
