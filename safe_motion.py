@@ -70,11 +70,6 @@ class SafeMotion(Motion):
     def rotational_stop(self, now=False):
         self._safetyStop(Motion.rotational_stop, now)
 
-    def shutdown(self, rate):
-        self._logger.debug("reached shutdown")
-        self._safetyStop(Motion.shutdown, rate)
-        self._logger.debug("completed motion shutdown")
-
 if __name__ == "__main__":
     from tester import Tester
     from sensors import Sensors
