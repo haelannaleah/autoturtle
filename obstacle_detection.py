@@ -36,12 +36,11 @@ class ObstacleDetection():
         """ Get a prepped slice of the image. """
         return cv2.medianBlur(self.depth_img[min_height:max_height, min_width:max_width], 5)
     
-    def _getMinIndex(self, img):
+    def _getIndex(self, img, operation):
         """ Get the index of the shortest distance in the depth image slice. """
         try:
-            return np.unravel_index(np.nanargmin(img[np.nonzero(img)]), img.shape)
+            return np.unravel_index(operation(img[np.nonzero(img)]), img.shape)
         except ValueError:
-            # fail as safely as possible
             self._logger.error("Encountered all NaN slice in depth image.")
             return None
     
@@ -56,9 +55,10 @@ class ObstacleDetection():
         sample = self._getBlurredDepthSlice(0, img_height, w_center - s_width, w_center + s_width)
 
         # check distance to closest object
-        min_index = self._getMinIndex(sample)
+        min_index = self._getIndex(sample, np.nanargmin)
         if min_index is None:
-            obstacle = True
+            # fail as safely as possible
+            self.obstacle = True
             return
         
         # if the closest thing in our slice is too close, likely an obstacle
