@@ -28,10 +28,6 @@ class Navigation():
     
     def __init__(self):
         self._logger = Logger("Navigation")
-        
-        # reset the Turtlebot odometry
-        reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
-        reset.publish(Empty)
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -105,7 +101,10 @@ if __name__ == "__main__":
             """ The test currently being run. """
             # self.testCCsquare(.5)
             # self.testCsquare(.5)
-            self.testLine(1)
+            # self.testLine(1)
+            # reset the Turtlebot odometry
+            reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
+            reset.publish(Empty)
         
         def gotToPos(self, name, x, y):
             """ Default behavior for testing goToPosition. 
