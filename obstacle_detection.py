@@ -36,7 +36,7 @@ class ObstacleDetector():
         except ValueError:
             return None
     
-    def _extractObstacle(self, depth_img):
+    def extractObstacle(self, depth_img):
         """ If there is an obstacle nearby, find it. """
         # get slice to check distance on
         img_height, img_width = depth_img.shape
