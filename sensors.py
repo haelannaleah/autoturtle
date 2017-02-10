@@ -8,6 +8,7 @@ import rospy
 from kobuki_msgs.msg import BumperEvent, CliffEvent, WheelDropEvent
 
 from logger import Logger
+from obstacle_detection import ObstacleDetector
 
 class Sensors():
     """ Basic low level sensor suite for the Turtlebot.
@@ -33,6 +34,12 @@ class Sensors():
         self.cliff = False
         self.cliff_sensor = 0
         rospy.Subscriber('mobile_base/events/cliff', CliffEvent, self._cliffCallback)
+        
+        # subscribe to depth image
+        self.obstacle = False
+        self.obstacle_dir = None
+        self.obstacleDetector = ObstacleDetector()
+        rospy.Subscriber('/camera/depth/image', Image, self._depthCallback)
 
         # subscribe to wheel drop sensor
         self.wheeldrop = False
@@ -53,6 +60,21 @@ class Sensors():
         if not self.wheeldrop:
             self._logKobuki("cliff", data.state, ("FLOOR", "CLIFF"), data.sensor)
 
+    def _depthCallback(self, data):
+        """ Process incoming depth data. """
+        # get the depth image
+        self.depth_img = self.bridge.imgmsg_to_cv2(data, 'passthrough')
+
+        # detect obstacles
+        if self.obstacleDetector.extractObstacle(self.depth_img) is False:
+            self._logger.error("Encountered all NaN slice in depth image.")
+    
+        elif self.obstacleDetector.obstacle and not self.obstacle:
+            self._logger.warn("Encountered obstacle on the " + ["right.", "left."][min_index[1] < w_center])
+    
+        self.obstacle = self.obstacleDetector.obstacle
+        self.obstacle_dir = self.obstacleDetector.obstacle
+
     def _wheelDropCallback(self, data):
         """ Handle wheel drops. """
         self.wheeldrop = bool(data.state == WheelDropEvent.DROPPED)
@@ -64,3 +86,17 @@ class Sensors():
             sensor = self._SENSOR_LOCATION[sensor_location] + " " + sensor
         
         self._logger.warn(sensor + " event: " + states[state])
+
+if __name__ == "__main__":
+    from tester import Tester
+
+    class SensorsTest(Tester):
+        """ Behavioral tests for ObstacleDectection. """
+        def __init__(self):
+            self.obstacle_detector = ObstacleDetector()
+            Tester.__init__(self, "Sensors")
+
+        def main(self):
+            self.rate.sleep()
+
+    SensorsTest()
