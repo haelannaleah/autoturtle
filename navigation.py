@@ -32,11 +32,11 @@ class Navigation():
         # reset Turtlebot odometry information on launch
         reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
         reset.publish(Empty())
-        rospy.sleep(1)
+        rospy.sleep(2)
 
         # subscibe to the robot_pose_ekf odometry information
-        self.p = None
-        self.q = None
+        self.p = Point(0,0,0)
+        self.q = Quaternion(0,0,0,1)
         rospy.Subscriber('/robot_pose_ekf/odom_combined', PoseWithCovarianceStamped, self._ekfCallback)
 
     def _ekfCallback(self, data):
