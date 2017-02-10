@@ -42,6 +42,22 @@ class SafeMotion(Motion):
                 self.avoiding = True
                 Motion.turn(self, self.sensors.bumper > 0)
         
+        # if we hit something, stop
+        elif self.sensors.bump:
+            if self.walking:
+                Motion.stop_linear(self, now=True)
+            else:
+                self.avoiding = True
+                Motion.turn(self, self.sensors.bumper > 0)
+
+        # if we see something coming, avoid
+        elif self.sensors.obstacle:
+            if self.walking:
+                Motion.stop_linear(self)
+            else:
+                self.avoiding = True
+                Motion.turn(self, self.sensors.obstacle_dir > 0)
+        
         # this means that we're avoiding nothing!
         elif self.avoiding:
             if self.walking or self.turning:
@@ -59,9 +75,13 @@ class SafeMotion(Motion):
         if self.sensors.cliff or self.sensors.wheeldrop:
             Motion.stop(self, now=True)
 
-        # if we hit something, stop
+        # if we hit something
         elif self.sensors.bump:
             Motion.stop_linear(self, now=True)
+        
+        # if we see an obstacle
+        elif self.sensors.bump:
+            Motion.stop_linear(self)
         
         # otherwise, we keep going
         else:
@@ -124,7 +144,7 @@ if __name__ == "__main__":
 
         def main(self):
             # running walk here should behave like wander in the motion module test
-            self.motion.walk()
+            self.motion.walk(safety_level=1)
 
         def shutdown(self):
             self.motion.shutdown(self.rate)
