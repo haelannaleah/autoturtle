@@ -159,11 +159,11 @@ if __name__ == "__main__":
         """ Run unit test for the motion class. """
         
         def __init__(self):
+            Tester.__init__(self, "Motion")
+            
             # set up basic sensing
             self.sensors = Sensors()
             self.motion = Motion()
-            
-            Tester.__init__(self, "Motion")
         
         def main(self):
             """ The main control loop. """
