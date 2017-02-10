@@ -9,6 +9,7 @@ import numpy as np
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion
 from math import atan2, pi
+from std_msgs.msg import Empty
 
 from logger import Logger
 
@@ -27,7 +28,12 @@ class Navigation():
     
     def __init__(self):
         self._logger = Logger("Navigation")
+        
+        # reset the Turtlebot odometry
+        reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
+        reset.publish(Empty)
 
+        # subscibe to the robot_pose_ekf odometry information
         self.p = None
         self.q = None
         rospy.Subscriber('/robot_pose_ekf/odom_combined', PoseWithCovarianceStamped, self._ekfCallback)
@@ -77,6 +83,7 @@ if __name__ == "__main__":
     from safe_motion import SafeMotion
     
     class NavigationTest(Tester):
+        """ Run local navigation tests. """
         def __init__(self):
             self.navigation = Navigation()
             self.motion = SafeMotion(0)
@@ -88,14 +95,17 @@ if __name__ == "__main__":
             
             # square test
             self.reached_corner = [False, False, False, False]
+            self.cc_square = [(0,0), (1,0), (1,1), (0,1)]
+            self.c_square = [(0,0), (0,1), (1,1), (1,0)]
             self.corner_counter = 0
             
             Tester.__init__(self, "Navigation")
 
         def main(self):
             """ The test currently being run. """
-            self.testSquare(.5)
-            # self.testLine(1)
+            # self.testCCsquare(.5)
+            # self.testCsquare(.5)
+            self.testLine(1)
         
         def gotToPos(self, name, x, y):
             """ Default behavior for testing goToPosition. 
@@ -144,19 +154,25 @@ if __name__ == "__main__":
                 self.reached_goal = self.goToPos("end point", length, 0)
             else:
                 self.reached_goal = self.goToPos("home", 0, 0)
+    
+        def testCCsquare(self, length):
+            """ Test a counter clockwise square. """
+            self.testSquare(length, self.cc_square)
         
-        def testSquare(self, length):
+        def testCsquare(self, length):
+            """ Test a clockwise square. """
+            self.testSquare(length, self.c_square)
+    
+        def testSquare(self, length, corners):
             """ Test behavior with a simple square. 
             
             Args:
                 length (float): Length of the sides of the square (in meters).
             """
-        
             # test a simple square
             if not self.reached_corner[self.corner_counter]:
-                x_coord = length * (self.corner_counter == 1 or self.corner_counter == 2)
-                y_coord = length * (self.corner_counter == 2 or self.corner_counter == 3)
-                self.reached_corner[self.corner_counter] = self.gotToPos("corner " + str(self.corner_counter), x_coord, y_coord)
+                self.reached_corner[self.corner_counter] = self.gotToPos("corner " + str(self.corner_counter), \
+                    corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
             else:
                 if self.corner_counter == len(self.reached_corner) - 1:
                     self.reached_corner = [False] * len(self.reached_corner)
