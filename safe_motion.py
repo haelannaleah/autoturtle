@@ -41,6 +41,14 @@ class SafeMotion(Motion):
             else:
                 self.avoiding = True
                 Motion.turn(self, self.sensors.bumper > 0)
+
+        # if we see something coming, avoid
+        elif self.sensors.obstacle:
+            if self.walking:
+                Motion.stop_linear(self)
+            else:
+                self.avoiding = True
+                Motion.turn(self, self.sensors.obstacle_dir > 0)
         
         # this means that we're avoiding nothing!
         elif self.avoiding:
@@ -59,9 +67,17 @@ class SafeMotion(Motion):
         if self.sensors.cliff or self.sensors.wheeldrop:
             Motion.stop(self, now=True)
 
-        # if we hit something, stop
+        # if we hit something
         elif self.sensors.bump:
             Motion.stop_linear(self, now=True)
+            
+        # if we see something coming, avoid
+        elif self.sensors.obstacle:
+            Motion.stop_linear(self)
+        
+        # if we see an obstacle
+        elif self.sensors.bump:
+            Motion.stop_linear(self)
         
         # otherwise, we keep going
         else:
@@ -118,7 +134,7 @@ if __name__ == "__main__":
         
         def __init__(self):
             # set up basic sensing
-            self.motion = SafeMotion(1)
+            self.motion = SafeMotion(safety_level=1)
             
             Tester.__init__(self, "SafeMotion")
 
