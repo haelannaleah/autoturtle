@@ -75,12 +75,12 @@ class Sensors():
         if self._obstacleDetector.extractObstacle(self.depth_img) is False:
             self._logger.error("Encountered all NaN slice in depth image.")
     
-        elif self.obstacleDetector.obstacle and not self.obstacle:
+        elif self._obstacleDetector.obstacle and not self.obstacle:
             self._logKobuki("ObstacleDetector", self.obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
     
         # update the class variables
-        self.obstacle = self.obstacleDetector.obstacle
-        self.obstacle_dir = self.obstacleDetector.obstacle
+        self.obstacle = self._obstacleDetector.obstacle
+        self.obstacle_dir = self._obstacleDetector.obstacle
 
     def _wheelDropCallback(self, data):
         """ Handle wheel drops. """
