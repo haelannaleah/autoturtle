@@ -41,14 +41,6 @@ class SafeMotion(Motion):
             else:
                 self.avoiding = True
                 Motion.turn(self, self.sensors.bumper > 0)
-        
-        # if we hit something, stop
-        elif self.sensors.bump:
-            if self.walking:
-                Motion.stop_linear(self, now=True)
-            else:
-                self.avoiding = True
-                Motion.turn(self, self.sensors.bumper > 0)
 
         # if we see something coming, avoid
         elif self.sensors.obstacle:
@@ -78,6 +70,10 @@ class SafeMotion(Motion):
         # if we hit something
         elif self.sensors.bump:
             Motion.stop_linear(self, now=True)
+            
+        # if we see something coming, avoid
+        elif self.sensors.obstacle:
+            Motion.stop_linear(self)
         
         # if we see an obstacle
         elif self.sensors.bump:
