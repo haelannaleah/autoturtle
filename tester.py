@@ -26,8 +26,9 @@ class Tester():
         # set module name
         self.__name__ = str(name) + "Tester"
         
-        # initialize test node
+        # initialize test node (and give it time to come online)
         rospy.init_node(self.__name__, anonymous = False)
+        rospy.sleep(1)
         
         # set up ctrl-C shutdown behavior
         rospy.on_shutdown(self.shutdown)
