@@ -40,6 +40,7 @@ class Sensors():
         self.obstacle = False
         self.obstacle_dir = None
         self.obstacleDetector = ObstacleDetector()
+        self._bridge = CvBridge()
         rospy.Subscriber('/camera/depth/image', Image, self._depthCallback)
 
         # subscribe to wheel drop sensor
@@ -64,7 +65,7 @@ class Sensors():
     def _depthCallback(self, data):
         """ Process incoming depth data. """
         # get the depth image
-        self.depth_img = self.bridge.imgmsg_to_cv2(data, 'passthrough')
+        self.depth_img = self._bridge.imgmsg_to_cv2(data, 'passthrough')
 
         # detect obstacles
         if self.obstacleDetector.extractObstacle(self.depth_img) is False:
