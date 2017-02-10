@@ -5,9 +5,12 @@ Author:
 """
 import rospy
 
+from cv_bridge import CvBridge
 from kobuki_msgs.msg import BumperEvent, CliffEvent, WheelDropEvent
+from sensor_msgs.msg import Image
 
 from logger import Logger
+from obstacle_detection import ObstacleDetector
 
 class Sensors():
     """ Basic low level sensor suite for the Turtlebot.
@@ -17,6 +20,9 @@ class Sensors():
         bumper (int): -1 if left bumper, 0 if middle bumper, 1 if right bumper.
         cliff (bool): True if robot is near an edge, False otherwise.
         cliff_sensor (int): -1 if left sensor, 0 if middle sensor, 1 if right sensor.
+        obstacle (bool): True if obstacle in distance threshold, False otherwise.
+        obstacle_dir (int): -1 if obstacle on the left, 1 if obstacle on the right, 0 if extracting
+            obstacle failed.
         wheeldrop (bool): True if robot is not on the ground, False otherwise.
     """
     _SENSOR_LOCATION = ["Left", "Center", "Right"]
@@ -33,6 +39,13 @@ class Sensors():
         self.cliff = False
         self.cliff_sensor = 0
         rospy.Subscriber('mobile_base/events/cliff', CliffEvent, self._cliffCallback)
+        
+        # subscribe to depth image
+        self.obstacle = False
+        self.obstacle_dir = 0
+        self._obstacleDetector = ObstacleDetector()
+        self._bridge = CvBridge()
+        rospy.Subscriber('/camera/depth/image', Image, self._depthCallback)
 
         # subscribe to wheel drop sensor
         self.wheeldrop = False
@@ -42,7 +55,7 @@ class Sensors():
         """ Handle bump events. """
         self.bump = bool(data.state == BumperEvent.PRESSED)
         self.bumper = data.bumper - 1
-        self._logKobuki("bumper", data.state, ("RELEASED", "PRESSED"), data.bumper)
+        self._logKobuki("Bumper", data.state, ("RELEASED", "PRESSED"), data.bumper)
 
     def _cliffCallback(self, data):
         """ Handle cliffs. """
@@ -51,7 +64,23 @@ class Sensors():
         
         # only log cliff data if it's independent of a wheel drop
         if not self.wheeldrop:
-            self._logKobuki("cliff", data.state, ("FLOOR", "CLIFF"), data.sensor)
+            self._logKobuki("Cliff", data.state, ("FLOOR", "CLIFF"), data.sensor)
+
+    def _depthCallback(self, data):
+        """ Process incoming depth data. """
+        # get the depth image
+        self.depth_img = self._bridge.imgmsg_to_cv2(data, 'passthrough')
+
+        # detect obstacles
+        if self._obstacleDetector.extractObstacle(self.depth_img) is False:
+            self._logger.error("Encountered all NaN slice in depth image.")
+    
+        elif self._obstacleDetector.obstacle and not self.obstacle:
+            self._logKobuki("ObstacleDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
+    
+        # update the class variables
+        self.obstacle = self._obstacleDetector.obstacle
+        self.obstacle_dir = self._obstacleDetector.obstacle
 
     def _wheelDropCallback(self, data):
         """ Handle wheel drops. """
@@ -64,3 +93,17 @@ class Sensors():
             sensor = self._SENSOR_LOCATION[sensor_location] + " " + sensor
         
         self._logger.warn(sensor + " event: " + states[state])
+
+if __name__ == "__main__":
+    from tester import Tester
+
+    class SensorsTest(Tester):
+        """ Behavioral tests for ObstacleDectection. """
+        def __init__(self):
+            self.sensors = Sensors()
+            Tester.__init__(self, "Sensors")
+
+        def main(self):
+            self.rate.sleep()
+
+    SensorsTest()

@@ -23,7 +23,7 @@ class SafeMotion(Motion):
     def __init__(self, safety_level=0):
         Motion.__init__(self)
         self.sensors = Sensors()
-        self.avoiding = True
+        self.avoiding = False
         self._logger = Logger("SafeMotion")
     
         self._motionModifier = self._avoid if safety_level > 0 else self._safetyStop
@@ -112,7 +112,6 @@ class SafeMotion(Motion):
 
 if __name__ == "__main__":
     from tester import Tester
-    from sensors import Sensors
 
     class SafeMotionTest(Tester):
         """ Run unit test for the motion class. """
