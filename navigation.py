@@ -10,6 +10,7 @@ import numpy as np
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion
 from math import atan2, pi
 from std_msgs.msg import Empty
+from time import time
 
 from logger import Logger
 
@@ -26,7 +27,7 @@ class Navigation():
     _HALF_PI = pi / 2.0
     _TWO_PI = 2.0 * pi
     
-    def __init__(self, rate):
+    def __init__(self):
         self._logger = Logger("Navigation")
 
         # subscibe to the robot_pose_ekf odometry information
@@ -36,10 +37,10 @@ class Navigation():
         rospy.Subscriber('/robot_pose_ekf/odom_combined', PoseWithCovarianceStamped, self._ekfCallback)
     
         # reset Turtlebot odometry information on launch
-        while not rospy.is_shutdown():
-            reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
+        reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
+        timer = time()
+        while time() - timer < 1 or self.p is None:
             reset.publish(Empty())
-            rate.sleep()
 
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
@@ -90,7 +91,7 @@ if __name__ == "__main__":
         def __init__(self):
             Tester.__init__(self, "Navigation")
             
-            self.navigation = Navigation(self.rate)
+            self.navigation = Navigation()
             self.motion = SafeMotion(0)
             
             self.stopping = False
