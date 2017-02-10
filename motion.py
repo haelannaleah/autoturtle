@@ -198,4 +198,4 @@ if __name__ == "__main__":
             self.motion.shutdown(self.rate)
             Tester.shutdown(self)
                 
-    MotionTest()
+    MotionTest().run()
