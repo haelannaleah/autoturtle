@@ -44,7 +44,7 @@ class ObstacleDetector():
         w_center = img_width // 2
     
         # apply blur to smooth out irregularities
-        sample = self._getBlurredDepthSlice(0, img_height, w_center - s_width, w_center + s_width)
+        sample = self._getBlurredDepthSlice(depth_img, 0, img_height, w_center - s_width, w_center + s_width)
 
         # check distance to closest object
         min_index = self._getIndex(sample, np.nanargmin)
