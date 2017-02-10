@@ -73,8 +73,9 @@ class Sensors():
             self._logger.error("Encountered all NaN slice in depth image.")
     
         elif self.obstacleDetector.obstacle and not self.obstacle:
-            self._logger.warn("Encountered obstacle on the " + ["right.", "left."][min_index[1] < w_center])
+            self._logger.warn("Encountered obstacle on the " + ["left.", "right."][self.obstacleDetector.obstacle_dir < 0])
     
+        # update the local variables
         self.obstacle = self.obstacleDetector.obstacle
         self.obstacle_dir = self.obstacleDetector.obstacle
 
