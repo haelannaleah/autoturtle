@@ -23,7 +23,7 @@ class ObstacleDetector():
     _OBSTACLE_SAMPLE_WIDTH = 0.3
 
     def __init__(self):
-        self._logger = Logger("ObstacleDetection")
+        self._logger = Logger("ObstacleDetector")
         self.bridge = CvBridge()
         
         self.obstacle = False
