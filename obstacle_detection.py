@@ -90,4 +90,4 @@ if __name__ == "__main__":
         def main(self):
             self.rate.sleep()
 
-    ObstacleDetectionTest()
+    ObstacleDetectorTest()
