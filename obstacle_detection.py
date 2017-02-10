@@ -16,7 +16,7 @@ class ObstacleDetector():
         obstacle (bool): True if there is an obstacle that needs attention, False otherwise.
         obstacle_dir (int): -1 if the obstacle is on the left, 1 if the obstacle is on the right.
     """
-    _OBSTACLE_DIST_THRESH =  0.6
+    _OBSTACLE_DIST_THRESH =  0.55
     _OBSTACLE_SAMPLE_WIDTH = 0.3
 
     def __init__(self):
