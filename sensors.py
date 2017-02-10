@@ -6,6 +6,7 @@ Author:
 import rospy
 
 from kobuki_msgs.msg import BumperEvent, CliffEvent, WheelDropEvent
+from sensor_msgs.msg import Image
 
 from logger import Logger
 from obstacle_detection import ObstacleDetector

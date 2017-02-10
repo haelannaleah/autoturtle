@@ -8,7 +8,6 @@ import numpy as np
 import rospy
 
 from cv_bridge import CvBridge
-from sensor_msgs.msg import Image
 
 from logger import Logger
 
