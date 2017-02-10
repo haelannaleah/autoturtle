@@ -51,6 +51,7 @@ class ObstacleDetector():
         if min_index is None:
             # fail as safely as possible
             self.obstacle = True
+            self.obstacle_dir = 0
             return False
         
         # if the closest thing in our slice is too close, likely an obstacle
