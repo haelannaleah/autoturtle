@@ -38,15 +38,11 @@ class Navigation():
     
         # set up the odometry reset publisher (publishing Empty messages here will reset odom)
         self.reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=1)
-        self.reset_odom.publish(Empty())
-    
-        while self.p is None:
-            pass
         
-#        # reset odometry (these messages take a few iterations to get through)
-#        timer = time()
-#        while time() - timer < 0.25 or self.p is None:
-#            self.reset_odom.publish(Empty())
+        # reset odometry (these messages take a few iterations to get through)
+        timer = time()
+        while time() - timer < 0.1 or self.p is None:
+            self.reset_odom.publish(Empty())
 
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
