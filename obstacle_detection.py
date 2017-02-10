@@ -12,7 +12,7 @@ from sensor_msgs.msg import Image
 
 from logger import Logger
 
-class ObstacleDetection():
+class ObstacleDetector():
     """ Detect obstacles.
     
     Attributes:
@@ -81,10 +81,10 @@ class ObstacleDetection():
 if __name__ == "__main__":
     from tester import Tester
 
-    class ObstacleDetectionTest(Tester):
+    class ObstacleDetectorTest(Tester):
         """ Behavioral tests for ObstacleDectection. """
         def __init__(self):
-            self.obstacle_detector = ObstacleDetection()
+            self.obstacle_detector = ObstacleDetector()
             Tester.__init__(self, "ObstacleDetection")
 
         def main(self):
