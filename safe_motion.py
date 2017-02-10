@@ -134,7 +134,7 @@ if __name__ == "__main__":
         
         def __init__(self):
             # set up basic sensing
-            self.motion = SafeMotion(safety_level=0)
+            self.motion = SafeMotion(safety_level=1)
             
             Tester.__init__(self, "SafeMotion")
 
