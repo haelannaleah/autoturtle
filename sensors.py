@@ -93,7 +93,7 @@ if __name__ == "__main__":
     class SensorsTest(Tester):
         """ Behavioral tests for ObstacleDectection. """
         def __init__(self):
-            self.obstacle_detector = ObstacleDetector()
+            self.sensors = Sensors()
             Tester.__init__(self, "Sensors")
 
         def main(self):
