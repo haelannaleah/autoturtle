@@ -73,7 +73,7 @@ class Sensors():
             self._logger.error("Encountered all NaN slice in depth image.")
     
         elif self.obstacleDetector.obstacle and not self.obstacle:
-            self._logKobuki("ObstacleDetector", self.obstacleDetector.obstacle_dir < 0, ["LEFT", "RIGHT"])
+            self._logKobuki("ObstacleDetector", self.obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
     
         # update the class variables
         self.obstacle = self.obstacleDetector.obstacle
