@@ -104,7 +104,7 @@ if __name__ == "__main__":
             # self.testLine(1)
             # reset the Turtlebot odometry
             reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
-            reset.publish(Empty)
+            reset.publish(Empty())
         
         def gotToPos(self, name, x, y):
             """ Default behavior for testing goToPosition. 
