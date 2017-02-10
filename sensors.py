@@ -52,7 +52,7 @@ class Sensors():
         """ Handle bump events. """
         self.bump = bool(data.state == BumperEvent.PRESSED)
         self.bumper = data.bumper - 1
-        self._logKobuki("bumper", data.state, ("RELEASED", "PRESSED"), data.bumper)
+        self._logKobuki("Bumper", data.state, ("RELEASED", "PRESSED"), data.bumper)
 
     def _cliffCallback(self, data):
         """ Handle cliffs. """
@@ -61,7 +61,7 @@ class Sensors():
         
         # only log cliff data if it's independent of a wheel drop
         if not self.wheeldrop:
-            self._logKobuki("cliff", data.state, ("FLOOR", "CLIFF"), data.sensor)
+            self._logKobuki("Cliff", data.state, ("FLOOR", "CLIFF"), data.sensor)
 
     def _depthCallback(self, data):
         """ Process incoming depth data. """
@@ -73,9 +73,9 @@ class Sensors():
             self._logger.error("Encountered all NaN slice in depth image.")
     
         elif self.obstacleDetector.obstacle and not self.obstacle:
-            self._logger.warn("Encountered obstacle on the " + ["left.", "right."][self.obstacleDetector.obstacle_dir < 0])
+            self._logKobuki("ObstacleDetector", self.obstacleDetector.obstacle_dir < 0, ["LEFT", "RIGHT"])
     
-        # update the local variables
+        # update the class variables
         self.obstacle = self.obstacleDetector.obstacle
         self.obstacle_dir = self.obstacleDetector.obstacle
 
@@ -89,7 +89,7 @@ class Sensors():
         if sensor_location is not None:
             sensor = self._SENSOR_LOCATION[sensor_location] + " " + sensor
         
-        self._logger.warn(sensor + " event: " + states[state])
+        self._logger.warn(sensor + " event: " + msg + states[state])
 
 if __name__ == "__main__":
     from tester import Tester
