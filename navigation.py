@@ -26,7 +26,7 @@ class Navigation():
     _HALF_PI = pi / 2.0
     _TWO_PI = 2.0 * pi
     
-    def __init__(self):
+    def __init__(self, rate):
         self._logger = Logger("Navigation")
 
         # subscibe to the robot_pose_ekf odometry information
@@ -39,6 +39,7 @@ class Navigation():
         while self.p is None:
             reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
             reset.publish(Empty())
+            rate.sleep()
 
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
@@ -89,7 +90,7 @@ if __name__ == "__main__":
         def __init__(self):
             Tester.__init__(self, "Navigation")
             
-            self.navigation = Navigation()
+            self.navigation = Navigation(self.rate)
             self.motion = SafeMotion(0)
             
             self.stopping = False
