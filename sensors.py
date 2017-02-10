@@ -100,10 +100,10 @@ if __name__ == "__main__":
     class SensorsTest(Tester):
         """ Behavioral tests for ObstacleDectection. """
         def __init__(self):
-            self.sensors = Sensors()
             Tester.__init__(self, "Sensors")
+            self.sensors = Sensors()
 
         def main(self):
             self.rate.sleep()
 
-    SensorsTest()
+    SensorsTest().run()

@@ -133,10 +133,10 @@ if __name__ == "__main__":
         """ Run unit test for the motion class. """
         
         def __init__(self):
+            Tester.__init__(self, "SafeMotion")
+            
             # set up basic sensing
             self.motion = SafeMotion(safety_level=1)
-            
-            Tester.__init__(self, "SafeMotion")
 
         def main(self):
             # running walk here should behave like wander in the motion module test
@@ -145,4 +145,4 @@ if __name__ == "__main__":
         def shutdown(self):
             self.motion.shutdown(self.rate)
 
-    SafeMotionTest()
+    SafeMotionTest().run()

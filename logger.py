@@ -100,4 +100,4 @@ if __name__ == "__main__":
 
             self.signal_shutdown("Logger test complete.")
 
-    LoggerTest()
+    LoggerTest().run()
