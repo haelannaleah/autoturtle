@@ -36,8 +36,8 @@ class Navigation():
         rospy.Subscriber('/robot_pose_ekf/odom_combined', PoseWithCovarianceStamped, self._ekfCallback)
     
         # reset Turtlebot odometry information on launch
-        reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
         while self.p is None:
+            reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
             reset.publish(Empty())
 
     def _ekfCallback(self, data):
@@ -106,12 +106,8 @@ if __name__ == "__main__":
         def main(self):
             """ The test currently being run. """
             #self.testCCsquare(.5)
-            #self.testCsquare(.5)
+            self.testCsquare(.5)
             #self.testLine(1)
-            
-            # reset Turtlebot odometry information on launch
-            reset = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
-            reset.publish(Empty())
         
         def gotToPos(self, name, x, y):
             """ Default behavior for testing goToPosition. 
