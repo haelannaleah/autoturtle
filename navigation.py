@@ -152,9 +152,9 @@ if __name__ == "__main__":
                 length (float): Length of the desired line (in meters).
             """
             if not self.reached_goal:
-                self.reached_goal = self.goToPos("end point", length, 0)
+                self.reached_goal = self.gotToPos("end point", length, 0)
             else:
-                self.reached_goal = self.goToPos("home", 0, 0)
+                self.reached_goal = self.gotToPos("home", 0, 0)
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. """
