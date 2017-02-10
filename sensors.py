@@ -5,6 +5,7 @@ Author:
 """
 import rospy
 
+from cv_bridge import CvBridge
 from kobuki_msgs.msg import BumperEvent, CliffEvent, WheelDropEvent
 from sensor_msgs.msg import Image
 

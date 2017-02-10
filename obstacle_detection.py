@@ -7,8 +7,6 @@ import cv2
 import numpy as np
 import rospy
 
-from cv_bridge import CvBridge
-
 from logger import Logger
 
 class ObstacleDetector():
