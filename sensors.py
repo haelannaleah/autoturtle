@@ -89,7 +89,7 @@ class Sensors():
         if sensor_location is not None:
             sensor = self._SENSOR_LOCATION[sensor_location] + " " + sensor
         
-        self._logger.warn(sensor + " event: " + msg + states[state])
+        self._logger.warn(sensor + " event: " + states[state])
 
 if __name__ == "__main__":
     from tester import Tester
