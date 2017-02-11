@@ -20,7 +20,7 @@ class Tester():
         rate (rospy.Rate): Used to control the refresh rate of robot control loops.
         
     Note: When inheriting from the Tester class, its initialization sequence should be
-        the last thing to run in the inherting class's __init__ function.
+        the first thing to run in the inherting class's __init__ function.
     """
     def __init__(self, name):
         # set module name
@@ -38,11 +38,6 @@ class Tester():
         # set up test node logger
         self.logger = Logger(self.__name__)
         self.logger.info("hello world")
-    
-        # run the main control loop
-        while not rospy.is_shutdown():
-            self.main()
-            self.rate.sleep()
 
     def main(self):
         """ The main control loop.
@@ -50,6 +45,16 @@ class Tester():
         Note: This function must be overriden in the subclasses.
         """
         self.signal_shutdown("The main function in the Tester class must be overriden!")
+    
+    def run(self):
+        """ Actually run the robot tests, etc.
+        
+        Note: This function should not be overridden!
+        """
+        # run the main control loop
+        while not rospy.is_shutdown():
+            self.main()
+            self.rate.sleep()
 
     def shutdown(self):
         """ Stop all robot operations. 
