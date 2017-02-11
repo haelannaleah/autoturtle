@@ -41,7 +41,7 @@ class Navigation():
         
         # reset odometry (these messages take a few iterations to get through)
         timer = time()
-        while time() - timer < 0.25 or self.p is None:
+        while time() - timer < 0.5 or self.p is None:
             self.reset_odom.publish(Empty())
 
     def _ekfCallback(self, data):
@@ -109,8 +109,8 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            #self.testCCsquare(.5)
-            self.testCsquare(.5)
+            self.testCCsquare(.5)
+            #self.testCsquare(.5)
             #self.testLine(1)
         
         def gotToPos(self, name, x, y):
