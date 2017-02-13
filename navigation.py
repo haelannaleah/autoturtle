@@ -138,12 +138,16 @@ if __name__ == "__main__":
             nav_val = self.navigation.goToPosition(Point(x,y,0))
             
             # did we reach our waypoint?
-            if nav_val is True or self.motion.stopping is True:
+            if nav_val is True or self.reached_goal is True:
+            
+                self.reached_goal = True
+                
                 if self.motion.walking or self.motion.turning:
                     self.motion.stop(now = self.jerky)
                 else:
                     self.logger.info("Reached " + str(name) + " at " + str((x,y)))
                     self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
+                    self.reached_goal = False
                     return True
             
             # our goal is straight ahead
@@ -168,10 +172,10 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if not self.reached_goal:
-                self.reached_goal = self.gotToPos("end point", length, 0)
+            if not self.reached_corner[0]
+                self.reached_corner[0] = self.gotToPos("end point", length, 0)
             else:
-                self.reached_goal = self.gotToPos("home", 0, 0)
+                self.reached_corner[0] = self.gotToPos("home", 0, 0)
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. """
