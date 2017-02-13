@@ -172,7 +172,7 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if not self.reached_corner[0]
+            if not self.reached_corner[0]:
                 self.reached_corner[0] = self.gotToPos("end point", length, 0)
             else:
                 self.reached_corner[0] = self.gotToPos("home", 0, 0)
