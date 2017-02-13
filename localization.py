@@ -59,6 +59,6 @@ if __name__ == "__main__":
             self.localization = Localization()
 
         def main(self):
-            self.logger.info(self.localization.tags)
+            pass
 
     LocalizationTest().run()
