@@ -16,6 +16,7 @@ class Localization():
     
     Attributes:
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view.
+            Note: in the /camera_rgb_optical_frame.
     """
     def __init__(self):
         self._logger = Logger("Localization")
@@ -34,12 +35,12 @@ class Localization():
         """
         if data.markers:
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self._getRelativePos()
+            self._transformPos()
         else:
             self.tags = {}
 
-    def _getRelativePos(self):
-        """ Attempt a transformation. """
+    def _transformPos(self):
+        """ Attempt a frame transformation. """
         for id in self.tags:
             try:
                 self._logger.info(self._tf_listener.transformPose('/base_footprint',  self.tags[id]))
