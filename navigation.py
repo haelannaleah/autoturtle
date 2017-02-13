@@ -41,11 +41,12 @@ class Navigation():
         
         # reset odometry (these messages take a few iterations to get through)
         timer = time()
-        while time() - timer < 0.5 or self.p is None:
+        while time() - timer < 1 or self.p is None:
             self.reset_odom.publish(Empty())
 
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
+        # get the direct data
         self.p = data.pose.pose.position
         self.q = data.pose.pose.orientation
         
@@ -85,7 +86,7 @@ class Navigation():
 
 if __name__ == "__main__":
     from tester import Tester
-    #from motion import Motion
+    from motion import Motion
     from safe_motion import SafeMotion
     
     class NavigationTest(Tester):
@@ -96,7 +97,20 @@ if __name__ == "__main__":
             self.navigation = Navigation()
             self.motion = SafeMotion(0)
             
-            self.stopping = False
+            # tests to run:
+            #   square with Motion module, minimal.launch
+            #   square with Motion module, navigation launch
+            #   square with SafeMotion module, minimal launch
+            #   square with SafeMotion module, navigation launch
+            # expect all to turn out the same, but need to sanity check
+            #self.motion = Motion()
+            
+            # flag for a jerky stop
+            self.jerky = False
+            
+            # I'm a bit concerned about robot safety if we don't slow things down,
+            # but I'm also worried it won't be an accurate test if we change the speed
+            self.walking_speed = 1 # if not self.jerky else .5
             
             # linear test
             self.reached_goal = False
@@ -112,7 +126,7 @@ if __name__ == "__main__":
             self.testCCsquare(.5)
             #self.testCsquare(.5)
             #self.testLine(1)
-        
+            
         def gotToPos(self, name, x, y):
             """ Default behavior for testing goToPosition. 
             
@@ -124,14 +138,16 @@ if __name__ == "__main__":
             nav_val = self.navigation.goToPosition(Point(x,y,0))
             
             # did we reach our waypoint?
-            if nav_val is True or self.stopping is True:
+            if nav_val is True or self.reached_goal is True:
+            
+                self.reached_goal = True
+                
                 if self.motion.walking or self.motion.turning:
-                    self.motion.stop()
-                    self.stopping = True
+                    self.motion.stop(now = self.jerky)
                 else:
                     self.logger.info("Reached " + str(name) + " at " + str((x,y)))
                     self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
-                    self.stopping = False
+                    self.reached_goal = False
                     return True
             
             # our goal is straight ahead
@@ -139,12 +155,12 @@ if __name__ == "__main__":
                 if self.motion.turning:
                     self.motion.stop_rotation(now=True)
                 else:
-                    self.motion.walk()
+                    self.motion.walk(speed=self.walking_speed)
             
             # we need to turn to reach our goal
             else:
                 if self.motion.walking and abs(nav_val) > pi / 2:
-                    self.motion.stop()
+                    self.motion.stop(now = self.jerky)
                 else:
                     self.motion.turn(nav_val < 0, .25 if self.motion.walking else 1)
             
@@ -156,10 +172,10 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if not self.reached_goal:
-                self.reached_goal = self.gotToPos("end point", length, 0)
+            if not self.reached_corner[0]:
+                self.reached_corner[0] = self.gotToPos("end point", length, 0)
             else:
-                self.reached_goal = self.gotToPos("home", 0, 0)
+                self.reached_corner[0] = self.gotToPos("home", 0, 0)
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. """
@@ -188,5 +204,4 @@ if __name__ == "__main__":
             self.motion.shutdown(self.rate)
             Tester.shutdown(self)
         
-
     NavigationTest().run()
