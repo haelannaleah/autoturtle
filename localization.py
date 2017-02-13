@@ -6,7 +6,7 @@ from ar_track_alvar_msgs.msg import AlvarMarkers
 from logger import Logger
 
 class Localization():
-    def __init__(self, tag_dict):
+    def __init__(self):
         
         # listen to the raw AprilTag data
         self.tags = None
