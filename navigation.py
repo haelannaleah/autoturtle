@@ -107,6 +107,7 @@ if __name__ == "__main__":
             
             # flag for a jerky stop
             self.jerky = True
+            self.walking_speed = 1 if not self.jerky else .5
             
             # linear test
             self.reached_goal = False
@@ -147,7 +148,7 @@ if __name__ == "__main__":
                 if self.motion.turning:
                     self.motion.stop_rotation(now=True)
                 else:
-                    self.motion.walk()
+                    self.motion.walk(speed=self.walking_speed)
             
             # we need to turn to reach our goal
             else:
