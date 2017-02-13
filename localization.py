@@ -40,11 +40,10 @@ class Localization():
 
     def _getRelativePos(self):
         """ Attempt a transformation. """
-        print self.tags
         for id in self.tags:
             try:
                 self._logger.info(self._tf_listener.transformPose('/base_footprint',  self.tags[id]))
-        
+                self._logger.info(self._tf_listener.transformPose('/odom',  self.tags[id]))
             except Exception as e:
                 self._logger.error(e)
 
