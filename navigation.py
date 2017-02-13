@@ -106,7 +106,7 @@ if __name__ == "__main__":
             #self.motion = Motion()
             
             # flag for a jerky stop
-            self.jerky = False
+            self.jerky = True
             
             # linear test
             self.reached_goal = False
