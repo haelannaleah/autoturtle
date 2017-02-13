@@ -40,6 +40,7 @@ class Localization():
 
     def _getRelativePos(self):
         """ Attempt a transformation. """
+        print self.tags
         for id, tag in self.tags:
             try:
                 self._logger(self._tf_listener.transformPose('/base_footprint',  tag))
