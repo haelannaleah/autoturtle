@@ -33,7 +33,7 @@ class Localization():
         Note: Tag data comes in the camera frame, not the map frame.
         """
         if data.markers:
-            self.tags = {marker.id : PoseStamped(marker.pose.pose, marker.header) for marker in data.markers}
+            self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
             self._getRelativePos()
         else:
             self.tags = {}
