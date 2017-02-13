@@ -46,6 +46,7 @@ class Navigation():
 
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
+        # get the direct data
         self.p = data.pose.pose.position
         self.q = data.pose.pose.orientation
         
@@ -85,7 +86,7 @@ class Navigation():
 
 if __name__ == "__main__":
     from tester import Tester
-    #from motion import Motion
+    from motion import Motion
     from safe_motion import SafeMotion
     
     class NavigationTest(Tester):
@@ -96,7 +97,16 @@ if __name__ == "__main__":
             self.navigation = Navigation()
             self.motion = SafeMotion(0)
             
-            self.stopping = False
+            # tests to run:
+            #   square with Motion module, minimal.launch
+            #   square with Motion module, navigation launch
+            #   square with SafeMotion module, minimal launch
+            #   square with SafeMotion module, navigation launch
+            # expect all to turn out the same, but need to sanity check
+            #self.motion = Motion()
+            
+            # flag for a jerky stop
+            self.jerky = False
             
             # linear test
             self.reached_goal = False
@@ -112,7 +122,7 @@ if __name__ == "__main__":
             self.testCCsquare(.5)
             #self.testCsquare(.5)
             #self.testLine(1)
-        
+            
         def gotToPos(self, name, x, y):
             """ Default behavior for testing goToPosition. 
             
@@ -124,14 +134,12 @@ if __name__ == "__main__":
             nav_val = self.navigation.goToPosition(Point(x,y,0))
             
             # did we reach our waypoint?
-            if nav_val is True or self.stopping is True:
+            if nav_val is True or self.motion.stopping is True:
                 if self.motion.walking or self.motion.turning:
-                    self.motion.stop()
-                    self.stopping = True
+                    self.motion.stop(now = self.jerky)
                 else:
                     self.logger.info("Reached " + str(name) + " at " + str((x,y)))
                     self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
-                    self.stopping = False
                     return True
             
             # our goal is straight ahead
@@ -144,7 +152,7 @@ if __name__ == "__main__":
             # we need to turn to reach our goal
             else:
                 if self.motion.walking and abs(nav_val) > pi / 2:
-                    self.motion.stop()
+                    self.motion.stop(now = self.jerky)
                 else:
                     self.motion.turn(nav_val < 0, .25 if self.motion.walking else 1)
             
@@ -188,5 +196,4 @@ if __name__ == "__main__":
             self.motion.shutdown(self.rate)
             Tester.shutdown(self)
         
-
     NavigationTest().run()

@@ -16,6 +16,7 @@ class Motion():
         turn_dir (int): 1 if turning left, -1 if turning right, None if no turn.
         turning (bool): True if the robot is turning, False otherwise.
         walking (bool): True if robot is moving linearly, False otherwise.
+        stopping (bool): True if the robot is in the process of stopping, False otherwise.
     """
     
     # Define Turtlebot constants
@@ -34,6 +35,7 @@ class Motion():
         self.turn_dir = 0
         self.turning = False
         self.walking = False
+        self.stopping = False
         self._accel_time = False
         
         # set up publisher/subscriber
@@ -66,7 +68,9 @@ class Motion():
         if self._move_cmd.linear.x <= 0 or now:
             self._move_cmd.linear.x = 0
             self.walking = False
+            self.stopping = False
         else:
+            self.stopping = True
             self._move_cmd.linear.x += self._accelerate(self._LIN_DECCEL)
 
     def _rotational_stop(self, now):
@@ -132,6 +136,7 @@ class Motion():
                 the robot will move at.
         """
         self.walking = True
+        self.stopping = False
         target_speed = self._LIN_SPEED * min(speed, 1)
         
         if self._move_cmd.linear.x < target_speed:
