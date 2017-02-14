@@ -70,6 +70,8 @@ if __name__ == "__main__":
         def main(self):
             # print some ids
             for id in self.localization.landmarks_relative:
+                if self.localization.landmarks_relative[id] is None:
+                    continue
                 q = self.localization.landmarks_relative.pose.orientation
                 self.logger.info(id)
                 self.logger.info(tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w]))
