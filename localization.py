@@ -43,7 +43,9 @@ class Localization():
         """ Attempt a frame transformation. """
         for id in self.tags:
             try:
-                self._logger.info(self._tf_listener.transformPose('/base_footprint',  self.tags[id]))
+                base_frame = self._tf_listener.transformPose('/base_footprint',  self.tags[id])
+                self._logger.info(base_frame)
+                self._logger.info(tf.transformations.euler_from_quaternion([base_frame.pose.orientation.x, base_frame.pose.orientation.y, base_frame.pose.orientation.z, base_frame.pose.orientation.w]))
                 self._logger.info(self._tf_listener.transformPose('/odom',  self.tags[id]))
             except Exception as e:
                 self._logger.error(e)
