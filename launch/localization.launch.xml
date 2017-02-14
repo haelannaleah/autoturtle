@@ -1,0 +1,17 @@
+<!-- ROS launchfile for testing localization.
+ 
+ Author:
+    Annaleah Ernst
+ -->
+
+<launch>
+
+    <!-- Launch Turtlebot -->
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
+    <include file="$(find turtlebot_bringup)/launch/3dsensor.launch" />
+    
+    <!-- Launch AprilTag package -->
+    <include file="ar_tags.launch.xml">
+        <arg name="marker_size" value="3" />
+    </include>
+</launch>
