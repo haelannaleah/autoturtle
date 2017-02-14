@@ -35,8 +35,8 @@ class Localization():
         """
         if data.markers:
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self.landmarks_relative = {id : self._transformPos('base_footprint', self.tags[id]) for id in self.tags}
-            self.landmarks_odom = {id : self._transformPos('odom', self.tags[id]) for id in self.tags}
+            self.landmarks_relative = {id : self._transformPos('/base_footprint', self.tags[id]) for id in self.tags}
+            self.landmarks_odom = {id : self._transformPos('/odom', self.tags[id]) for id in self.tags}
         else:
             self.tags = {}
             self.landmarks_relative = {}
