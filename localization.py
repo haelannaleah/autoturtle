@@ -60,6 +60,7 @@ class Localization():
 
 if __name__ == "__main__":
     from tester import Tester
+    from math import degrees
 
     class LocalizationTest(Tester):
         """ Run localization tests. """
@@ -75,7 +76,6 @@ if __name__ == "__main__":
                 if self.localization.landmarks_relative[id] is None:
                     continue
                 q = self.localization.landmarks_relative[id].pose.orientation
-                self.logger.info(id)
-                self.logger.info(tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w]))
+                self.logger.info([degrees(t) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name=id)
 
     LocalizationTest().run()
