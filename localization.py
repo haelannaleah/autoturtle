@@ -72,6 +72,6 @@ if __name__ == "__main__":
             for id in self.localization.landmarks_relative:
                 q = self.localization.landmarks_relative.pose.orientation
                 self.logger.info(id)
-                self.logger.info(tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])))
+                self.logger.info(tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w]))
 
     LocalizationTest().run()
