@@ -23,6 +23,8 @@ class Localization():
         
         # listen to the raw AprilTag data
         self.tags = {}
+        self.landmarks_relative = {}
+        self.landmarks_odom = {}
         rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)
     
         # listen for frame transformations
