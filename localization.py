@@ -17,6 +17,9 @@ class Localization():
     Attributes:
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view.
             Note: in the /camera_rgb_optical_frame.
+        landmarks_relative (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base
+            frame.
+        landmarks_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
     """
     def __init__(self):
         self._logger = Logger("Localization")
@@ -37,19 +40,36 @@ class Localization():
         """
         if data.markers:
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self.landmarks_relative = {id : self._transformPos('/base_footprint', self.tags[id]) for id in self.tags}
-            self.landmarks_odom = {id : self._transformPos('/odom', self.tags[id]) for id in self.tags}
+            self.landmarks_relative = self._transformTags('/base_footprint')
+            self.landmarks_odom = self._transformTags('/odom')
         else:
             self.tags = {}
             self.landmarks_relative = {}
             self.landmarks_odom = {}
 
-    def _transformPos(self, target_frame, marker):
+    def _transformTags(self, target_frame):
+        """ Convert all of the visible tags to target frame.
+        
+        Args:
+            target_frame (string): The desired final coordinate frame.
+            
+        Returns:
+            A geometry_msgs.msg.PoseStamped dictionary containing the positions in the target frame
+                of the visible AprilTags (contingent on successful transformation).
+        """
+        transformed = {id : self._transformPose(target_frame, pose) for (id, pose) in self.tags}
+        return {id : pose for (id, pose) in transformed where pose is not None}
+
+    def _transformPose(self, target_frame, marker):
         """ Attempt a frame transformation. 
         
         Args:
             target_frame (string): The desired final coordinate frame.
-            marker
+            marker (geometry_msgs.msg.PoseStamped): The pose we wish to transform.
+        
+        Returns:
+            A transformed geometry_msgs.msg.PoseStamped object if the transformation was successful,    
+                None otherwise.
         """
         try:
             return self._tf_listener.transformPose(target_frame,  marker)
