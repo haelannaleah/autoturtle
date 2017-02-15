@@ -52,8 +52,8 @@ class Localization():
     def _debugPrint(self):
         """ Just a scratch function for printing. """
         # print some things for debugging purposes
-        for id in self.landmarks_odom:
-            q = self.landmarks_odom[id].pose.orientation
+        for id in self.landmarks_relative:
+            q = self.landmarks_relative[id].pose.orientation
             #self._logger.debug(q, var_name=id)
             self._logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([0, 0, q.z, q.w])], var_name=id)
 
