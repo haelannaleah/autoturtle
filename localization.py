@@ -33,7 +33,7 @@ class Localization():
     def _tagCallback(self, data):
         """ Extract raw tag data from the ar_pose_marker topic.
         
-        Note: Tag data comes in the camera frame, not the map frame.
+        Note: Raw tag data comes in the camera frame, not the map frame.
         """
         if data.markers:
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
