@@ -46,10 +46,14 @@ class Localization():
             self.tags = {}
             self.landmarks_relative = {}
             self.landmarks_odom = {}
-        
+
+        self._debugPrint()
+
+    def _debugPrint(self):
+        """ Just a scratch function for printing. """
         # print some things for debugging purposes
-        for id in self.landmarks_relative:
-            q = self.landmarks_relative[id].pose.orientation
+        for id in self.landmarks_odom:
+            q = self.landmarks_odom[id].pose.orientation
             self._logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name=id)
 
     def _transformTags(self, target_frame):
