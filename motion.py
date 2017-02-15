@@ -22,7 +22,7 @@ class Motion():
     # Define Turtlebot constants
     _ROT_SPEED = radians(60)
     _LIN_SPEED = 0.2
-    _ACCEL_TIME = 0.1
+    _ACCEL_TIME = 0.2
     _ROT_ACCEL = 3.5
     _ROT_DECCEL = -4
     _LIN_ACCEL = .2
@@ -58,7 +58,7 @@ class Motion():
         delta_time = self._accel_time - self._prev_accel_time
         
         # we've just begun accelerating since it's been more than a second since the last change
-        if delta_time > 1:
+        if delta_time > self._ACCEL_TIME:
             return 0
         
         return delta_time * float(accel)
