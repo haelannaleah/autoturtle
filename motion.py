@@ -57,7 +57,7 @@ class Motion():
         self._accel_time = time()
         delta_time = self._accel_time - self._prev_accel_time
         
-        # we've just begun accelerating since it's been more than a second since the last change
+        # we've just begun accelerating since it's been too long since the last step
         if delta_time > self._ACCEL_TIME:
             return 0
         
