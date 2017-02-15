@@ -58,7 +58,7 @@ class Localization():
                 of the visible AprilTags (contingent on successful transformation).
         """
         transformed = {id : self._transformPose(target_frame, pose) for (id, pose) in self.tags}
-        return {id : pose for (id, pose) in transformed where pose is not None}
+        return {id : pose for (id, pose) in transformed if pose is not None}
 
     def _transformPose(self, target_frame, marker):
         """ Attempt a frame transformation. 
