@@ -50,7 +50,7 @@ class Localization():
         # print some things for debugging purposes
         for id in self.landmarks_relative:
             q = self.landmarks_relative[id].pose.orientation
-            self._logger.debug([degrees(t) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name=id)
+            self._logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name=id)
 
     def _transformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
