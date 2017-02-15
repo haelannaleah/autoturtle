@@ -93,8 +93,6 @@ if __name__ == "__main__":
         def main(self):
             # print some ids
             for id in self.localization.landmarks_relative:
-                if self.localization.landmarks_relative[id] is None:
-                    continue
                 q = self.localization.landmarks_relative[id].pose.orientation
                 self.logger.debug([degrees(t) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name=id)
 
