@@ -46,11 +46,6 @@ class Localization():
             self.tags = {}
             self.landmarks_relative = {}
             self.landmarks_odom = {}
-        
-        # print some things for debugging purposes
-        for id in self.landmarks_relative:
-            q = self.landmarks_relative[id].pose.orientation
-            self._logger.debug([degrees(t) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name=id)
 
     def _transformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
@@ -96,6 +91,9 @@ if __name__ == "__main__":
             self.localization = Localization()
 
         def main(self):
-            pass
+            # just print some orientations
+            for id in self.localization.landmarks_relative:
+                q = self.localization.landmarks_relative[id].pose.orientation
+                self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name=id)
 
     LocalizationTest().run()
