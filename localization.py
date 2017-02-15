@@ -57,8 +57,8 @@ class Localization():
             A geometry_msgs.msg.PoseStamped dictionary containing the positions in the target frame
                 of the visible AprilTags (contingent on successful transformation).
         """
-        transformed = {id : self._transformPose(target_frame, pose) for (id, pose) in self.tags}
-        return {id : pose for (id, pose) in transformed if pose is not None}
+        transformed = {id : self._transformPose(target_frame, self.tags[id]) for id in self.tags}
+        return {id : transformed[id] for id in transformed if transformed[id] is not None}
 
     def _transformPose(self, target_frame, marker):
         """ Attempt a frame transformation. 
