@@ -54,8 +54,8 @@ class Localization():
         # print some things for debugging purposes
         for id in self.landmarks_odom:
             q = self.landmarks_odom[id].pose.orientation
-            self._logger.debug(q, var_name=id)
-            #self._logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name=id)
+            #self._logger.debug(q, var_name=id)
+            self._logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([0, 0, q.z, q.w])], var_name=id)
 
     def _transformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
