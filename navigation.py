@@ -96,7 +96,7 @@ if __name__ == "__main__":
             
             self.navigation = Navigation()
             self.motion = SafeMotion(0)
-            
+            self.rate = rospy.Rate(10)
             # tests to run:
             #   square with Motion module, minimal.launch
             #   square with Motion module, navigation launch
