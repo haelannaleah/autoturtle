@@ -16,7 +16,7 @@ class Localization():
     
     Attributes:
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view.
-            Note: in the /camera_rgb_optical_frame.
+            Note: in the /ar_marker_<id> frame.
         landmarks_relative (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base
             frame.
         landmarks_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
@@ -39,7 +39,16 @@ class Localization():
         Note: Raw tag data comes in the camera frame, not the map frame.
         """
         if data.markers:
-            self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
+            # convert marker data into PoseStamped
+            for marker in data.markers:
+                self.tags[marker.id] = PoseStamped(marker.header, marker.pose.pose)
+                
+                # set the frame of the data
+                self.tags[marker.id].header.frame_id = '/ar_marker_' + str(marker.id)
+                
+                # set the time to show that we only care about the most recent available transform
+                self.tags[marker.id].header.stamp = rospy.Time(0)
+            
             self.landmarks_relative = self._transformTags('/base_footprint')
             self.landmarks_odom = self._transformTags('/odom')
         else:
@@ -81,6 +90,7 @@ class Localization():
 if __name__ == "__main__":
     from tester import Tester
     from math import degrees
+    from copy import deepcopy
 
     class LocalizationTest(Tester):
         """ Run localization tests. """
@@ -91,9 +101,21 @@ if __name__ == "__main__":
             self.localization = Localization()
 
         def main(self):
-            # just print some orientations
-            for id in self.localization.landmarks_relative:
-                q = self.localization.landmarks_relative[id].pose.orientation
-                self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name=id)
+            """ Run main tests. """
+            #self.logOrientation(self.localization.landmarks_relative)
+            self.logPosition(self.localization.landmarks_odom)
+            
+        def logPosition(self, incoming_landmarks):
+            """ Print the position of landmarks in meters. """
+            landmarks = deepcopy(incoming_landmarks)
+            for id in landmarks:
+                self.logger.debug("\n" + str(landmarks[id].pose.position), var_name = id)
+        
+        def logOrientation(self, incoming_landmarks):
+            """ Print the orientation of landmarks as a Euler Angle in degrees. """
+            landmarks = deepcopy(incoming_landmarks)
+            for id in landmarks:
+                q = landmarks[id].pose.orientation
+                self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name = id)
 
     LocalizationTest().run()
