@@ -110,6 +110,6 @@ if __name__ == "__main__":
             landmarks = deepcopy(incoming_landmarks)
             for id in landmarks:
                 q = landmarks[id].pose.orientation
-                self.logger.debug(round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w]), var_name = id)
+                self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name = id)
 
     LocalizationTest().run()
