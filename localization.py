@@ -39,10 +39,14 @@ class Localization():
         Note: Raw tag data comes in the camera frame, not the map frame.
         """
         if data.markers:
-            # convert marker data into PoseStamped data in the ar_frame at the most recent time
+            # convert marker data into PoseStamped
             for marker in data.markers:
                 self.tags[marker.id] = PoseStamped(marker.header, marker.pose.pose)
+                
+                # set the frame of the data
                 self.tags[marker.id].header.frame_id = '/ar_marker_' + str(marker.id)
+                
+                # set the time to show that we only care about the most recent available transform
                 self.tags[marker.id].header.stamp = rospy.Time(0)
             
             self.landmarks_relative = self._transformTags('/base_footprint')
@@ -98,15 +102,16 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            self.printOrientation(self.localization.landmarks_relative)
-        
-        def printPosition(self, incoming_landmarks):
+            #self.logOrientation(self.localization.landmarks_relative)
+            self.logPosition(self.localization.landmarks_relative)
+            
+        def logPosition(self, incoming_landmarks):
             """ Print the position of landmarks in meters. """
             landmarks = deepcopy(incoming_landmarks)
             for id in landmarks:
                 self.logger.debug("\n" + str(landmarks[id].pose.position), var_name = id)
         
-        def printOrientation(self, incoming_landmarks):
+        def logOrientation(self, incoming_landmarks):
             """ Print the orientation of landmarks as a Euler Angle in degrees. """
             landmarks = deepcopy(incoming_landmarks)
             for id in landmarks:
