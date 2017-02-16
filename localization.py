@@ -39,7 +39,11 @@ class Localization():
         Note: Raw tag data comes in the camera frame, not the map frame.
         """
         if data.markers:
-            self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
+            # convert marker data into PoseStamped data
+            for marker in data.markers:
+                self.tags[marker.id] = PoseStamped(marker.header, marker.pose.pose)
+                self.tags[marker.id].header.frame_id = '/ar_marker_' + str(marker.id)
+            
             self.landmarks_relative = self._transformTags('/base_footprint')
             self.landmarks_odom = self._transformTags('/odom')
         else:
