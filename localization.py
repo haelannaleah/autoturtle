@@ -44,7 +44,7 @@ class Localization():
                 self.tags[marker.id] = PoseStamped(marker.header, marker.pose.pose)
                 
                 # set the frame of the data
-                #self.tags[marker.id].header.frame_id = '/ar_marker_' + str(marker.id)
+                self.tags[marker.id].header.frame_id = '/ar_marker_' + str(marker.id)
                 
                 # set the time to show that we only care about the most recent available transform
                 self.tags[marker.id].header.stamp = rospy.Time(0)
@@ -102,8 +102,9 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            #self.logOrientation(self.localization.landmarks_relative)
-            self.logPosition(self.localization.tags)
+            self.logOrientation(self.localization.landmarks_relative)
+            self.logOrientation(self.localization.landmarks_odom)
+            #self.logPosition(self.localization.landmarks_relative)
             
         def logPosition(self, incoming_landmarks):
             """ Print the position of landmarks in meters. """
