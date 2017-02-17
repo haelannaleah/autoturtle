@@ -67,20 +67,21 @@ class Localization():
             # set the time to show that we only care about the most recent available transform
             self.tags[id].header.stamp = rospy.Time(0)
             
-            # incoming position data is relative to the rgb camera frame (which is also the listed frame on incoming
-            #   data), so we just create a PointStamped with the current header and tag position
-            try:
-                position = self._tf_listener.transformPoint(target_frame, PointStamped(header, self.tags[id].pose.position))
-            except Exception as e:
-                # something went wrong with the coordinate transform, so we should move along
-                self._logger.error(e)
-                continue
-            
-            # however, orientation data starts in the ar_marker_<id> frame; we need to switch the header frame for
+            # orientation data starts in the ar_marker_<id> frame; we need to switch the header frame for
             #   the next transformation to reflect this
             header.frame_id = '/ar_marker_' + str(id)
             try:
                 orientation = self._tf_listener.transformQuaternion(target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
+            except Exception as e:
+                # something went wrong with the coordinate transform, so we should move along
+                self._logger.error(e)
+                continue
+                
+            # incoming position data is relative to the rgb camera frame, so we just create a PointStamped with the
+            #   correct header and tag position
+            header.frame_id = '/camera_rgb_optical_frame'
+            try:
+                position = self._tf_listener.transformPoint(target_frame, PointStamped(header, self.tags[id].pose.position))
             except Exception as e:
                 # something went wrong with the coordinate transform, so we should move along
                 self._logger.error(e)
