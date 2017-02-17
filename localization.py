@@ -61,7 +61,7 @@ class Localization():
         """
         transformed = {}
         for id in self.tags:
-            # copy the header from the current tag
+            # get the header from the current tag
             header = self.tags[id].header
             
             # set the time to show that we only care about the most recent available transform
@@ -77,8 +77,8 @@ class Localization():
                 self._logger.error(e)
                 continue
                 
-            # incoming position data is relative to the rgb camera frame, so we just create a PointStamped with the
-            #   correct header and tag position
+            # incoming position data is relative to the rgb camera frame, so we reset the header to the optical
+            #   frame to get the correct position
             header.frame_id = '/camera_rgb_optical_frame'
             try:
                 position = self._tf_listener.transformPoint(target_frame, PointStamped(header, self.tags[id].pose.position))
