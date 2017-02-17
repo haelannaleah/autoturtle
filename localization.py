@@ -79,7 +79,8 @@ class Localization():
             
             except Exception as e:
                 # something went wrong with the coordinate transform, so we should move along
-                self._logger.error(e)
+                #self._logger.error(e)
+                raise(e)
                 continue
                 
             # incoming position data is relative to the rgb camera frame, so we reset the header to the optical
