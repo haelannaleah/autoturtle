@@ -54,12 +54,17 @@ class Sensors():
     def _bumperCallback(self, data):
         """ Handle bump events. """
         self.bump = bool(data.state == BumperEvent.PRESSED)
+        
+        # -1 if left bumper, 0 if middle bumper, 1 if right bumper.
         self.bumper = data.bumper - 1
+        
         self._logKobuki("Bumper", data.state, ("RELEASED", "PRESSED"), data.bumper)
 
     def _cliffCallback(self, data):
         """ Handle cliffs. """
         self.cliff = bool(data.state == CliffEvent.CLIFF)
+        
+        # -1 if left sensor, 0 if middle sensor, 1 if right sensor.
         self.cliff_sensor = data.sensor - 1
         
         # only log cliff data if it's independent of a wheel drop
@@ -80,7 +85,7 @@ class Sensors():
     
         # update the class variables
         self.obstacle = self._obstacleDetector.obstacle
-        self.obstacle_dir = self._obstacleDetector.obstacle
+        self.obstacle_dir = self._obstacleDetector.obstacle_dir
 
     def _wheelDropCallback(self, data):
         """ Handle wheel drops. """

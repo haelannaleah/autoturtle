@@ -137,7 +137,7 @@ class Motion():
         """
         self.walking = True
         self.stopping = False
-        target_speed = self._LIN_SPEED * min(speed, 1)
+        target_speed = self._LIN_SPEED * min(abs(speed), 1)
         
         if self._move_cmd.linear.x < target_speed:
             self._move_cmd.linear.x += self._accelerate(self._LIN_ACCEL)
