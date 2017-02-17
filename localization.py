@@ -87,7 +87,7 @@ class Localization():
                 continue
             
             # if we made it this far, then we can add our pose data to our dictionary!
-            transformed[id] = PoseStamped(position.header, Pose(position, orientation))
+            transformed[id] = PoseStamped(position.header, Pose(position.position, orientation.orientation))
             
         return transformed
 
