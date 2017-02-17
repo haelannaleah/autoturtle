@@ -37,7 +37,7 @@ class Localization():
         """ Attempt a coordinate frame transformation.
         
         Args:
-            transform_func (tf function): A transformation function from the tf module.
+            transform_func (tf.TransformListener() function): A transformation function from the tf module.
             target_frame (string): The desired final coordinate frame.
             object (PoseStamped, PointStamped, QuaternionStamped): A stamped object to be transformed.
             
@@ -137,6 +137,9 @@ if __name__ == "__main__":
             
             # set up localization
             self.localization = Localization()
+        
+            # slow down refreshing just because logging is easier to parse
+            self.rate=rospy.rate(10)
 
         def main(self):
             """ Run main tests. """
