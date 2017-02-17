@@ -139,7 +139,7 @@ if __name__ == "__main__":
             self.localization = Localization()
         
             # slow down refreshing just because logging is easier to parse
-            self.rate=rospy.rate(10)
+            self.rate = rospy.Rate(10)
 
         def main(self):
             """ Run main tests. """
