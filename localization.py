@@ -80,7 +80,7 @@ class Localization():
             #   the next transformation to reflect this
             header.frame_id = '/ar_marker_' + str(marker.id)
             try:
-                orientation = self._tf_listener.transformPoint(target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
+                orientation = self._tf_listener.transformQuaternion(target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
             except Exception as e:
                 # something went wrong with the coordinate transform, so we should move along
                 self._logger.error(e)
