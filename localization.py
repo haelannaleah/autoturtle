@@ -78,7 +78,7 @@ class Localization():
             
             # however, orientation data starts in the ar_marker_<id> frame; we need to switch the header frame for
             #   the next transformation to reflect this
-            header.frame_id = '/ar_marker_' + str(marker.id)
+            header.frame_id = '/ar_marker_' + str(id)
             try:
                 orientation = self._tf_listener.transformQuaternion(target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
             except Exception as e:
