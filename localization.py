@@ -115,7 +115,7 @@ class Localization():
             #   frame to get the correct position
             header.frame_id = '/camera_rgb_optical_frame'
             position = self._attemptLookup(self._tf_listener.transformPoint, \
-                         target_frame, PoseStamped(header, self.tags[id].pose.position))
+                         target_frame, PointStamped(header, self.tags[id].pose.position))
                          
             # make sure the look-up succeeded
             if position is None:
