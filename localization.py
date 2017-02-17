@@ -34,16 +34,16 @@ class Localization():
         self._tf_listener = tf.TransformListener()
     
     def _attemptLookup(self, transform_func, target_frame, object):
-    """ Attempt a coordinate frame transformation.
-    
-    Args:
-        transform_func (tf function): A transformation function from the tf module.
-        target_frame (string): The desired final coordinate frame.
-        object (PoseStamped, PointStamped, QuaternionStamped): A stamped object to be transformed.
+        """ Attempt a coordinate frame transformation.
         
-    Returns:
-        An object transformed into the correct frame if successful, None otherwise.
-    """
+        Args:
+            transform_func (tf function): A transformation function from the tf module.
+            target_frame (string): The desired final coordinate frame.
+            object (PoseStamped, PointStamped, QuaternionStamped): A stamped object to be transformed.
+            
+        Returns:
+            An object transformed into the correct frame if successful, None otherwise.
+        """
         try:
             # attempt transformation
             return transform_func(target_frame, object)
