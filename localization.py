@@ -15,7 +15,8 @@ class Localization():
     """ Handle landmark detection and global localization.
     
     Attributes:
-        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in their raw form.
+        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
+            their raw form.
         landmarks_relative (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base
             frame.
         landmarks_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
@@ -58,6 +59,7 @@ class Localization():
         Note: 
             Raw tag orientation data comes in the /ar_marker_<id> frame, and its position data come in the
                 /camera_rgb_optical_frame, so our transformations must reflect this.
+            Also note that this is the scary function...
         """
         transformed = {}
         for id in self.tags:
@@ -67,11 +69,14 @@ class Localization():
             # set the time to show that we only care about the most recent available transform
             self.tags[id].header.stamp = rospy.Time(0)
             
-            # orientation data starts in the ar_marker_<id> frame; we need to switch the header frame for
-            #   the next transformation to reflect this
+            # orientation data is in the ar_marker_<id> frame, so we need to update the starting frame
+            #   (if we just transform from the optical frame, then turning the AR tag upside down affects the
+            #   reported orientation)
             header.frame_id = '/ar_marker_' + str(id)
             try:
+                # attempt transformation
                 orientation = self._tf_listener.transformQuaternion(target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
+            
             except Exception as e:
                 # something went wrong with the coordinate transform, so we should move along
                 self._logger.error(e)
@@ -82,6 +87,7 @@ class Localization():
             header.frame_id = '/camera_rgb_optical_frame'
             try:
                 position = self._tf_listener.transformPoint(target_frame, PointStamped(header, self.tags[id].pose.position))
+            
             except Exception as e:
                 # something went wrong with the coordinate transform, so we should move along
                 self._logger.error(e)
