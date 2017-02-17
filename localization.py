@@ -7,7 +7,7 @@ import rospy
 import tf
 
 from ar_track_alvar_msgs.msg import AlvarMarkers
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped
 
 from logger import Logger
 
@@ -15,8 +15,7 @@ class Localization():
     """ Handle landmark detection and global localization.
     
     Attributes:
-        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view.
-            Note: in the /ar_marker_<id> frame.
+        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in their raw form.
         landmarks_relative (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base
             frame.
         landmarks_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
@@ -34,21 +33,11 @@ class Localization():
         self._tf_listener = tf.TransformListener()
 
     def _tagCallback(self, data):
-        """ Extract raw tag data from the ar_pose_marker topic.
-        
-        Note: Raw tag data comes in the /ar_marker_<id> frame frame, not the map frame.
-        """
+        """ Extract and process tag data from the ar_pose_marker topic. """
         if data.markers:
-            # convert marker data into PoseStamped
-            for marker in data.markers:
-                self.tags[marker.id] = PoseStamped(marker.header, marker.pose.pose)
-                
-                # set the frame of the data
-                self.tags[marker.id].header.frame_id = '/ar_marker_' + str(marker.id)
-                
-                # set the time to show that we only care about the most recent available transform
-                self.tags[marker.id].header.stamp = rospy.Time(0)
-            
+            # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
+            #   I promise, its less scary than it looks...
+            self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
             self.landmarks_relative = self._transformTags('/base_footprint')
             self.landmarks_odom = self._transformTags('/odom')
         else:
@@ -64,28 +53,43 @@ class Localization():
             
         Returns:
             A geometry_msgs.msg.PoseStamped dictionary containing the positions in the target frame
-                of the visible AprilTags (contingent on successful transformation).
+                of the visible AprilTags that were successfully transformed.
+                
+        Note: 
+            Raw tag orientation data comes in the /ar_marker_<id> frame, and its position data come in the
+                /camera_rgb_optical_frame, so our transformations must reflect this.
         """
-        transformed = {id : self._transformPose(target_frame, self.tags[id]) for id in self.tags}
-        return {id : transformed[id] for id in transformed if transformed[id] is not None}
-
-    def _transformPose(self, target_frame, marker):
-        """ Attempt a frame transformation. 
-        
-        Args:
-            target_frame (string): The desired final coordinate frame.
-            marker (geometry_msgs.msg.PoseStamped): The pose we wish to transform.
-        
-        Returns:
-            A transformed geometry_msgs.msg.PoseStamped object if the transformation was successful,    
-                None otherwise.
-        """
-        try:
-            return self._tf_listener.transformPose(target_frame,  marker)
-        except Exception as e:
-            self._logger.error(e)
-        
-        return None
+        transformed = {}
+        for id in self.tags:
+            # copy the header from the current tag
+            header = self.tags[id].header
+            
+            # set the time to show that we only care about the most recent available transform
+            self.tags[marker.id].header.stamp = rospy.Time(0)
+            
+            # incoming position data is relative to the rgb camera frame (which is also the listed frame on incoming
+            #   data), so we just create a PointStamped with the current header and tag position
+            try:
+                position = self._tf_listener.transformPoint(target_frame, PointStamped(header, self.tags[id].pose.position))
+            except Exception as e:
+                # something went wrong with the coordinate transform, so we should move along
+                self._logger.error(e)
+                continue
+            
+            # however, orientation data starts in the ar_marker_<id> frame; we need to switch the header frame for
+            #   the next transformation to reflect this
+            header.frame_id = '/ar_marker_' + str(marker.id)
+            try:
+                orientation = self._tf_listener.transformPoint(target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
+            except Exception as e:
+                # something went wrong with the coordinate transform, so we should move along
+                self._logger.error(e)
+                continue
+            
+            # if we made it this far, then we can add our pose data to our dictionary!
+            transformed[id] = PoseStamped(position.header, Pose(position, orientation))
+            
+        return transformed
 
 if __name__ == "__main__":
     from tester import Tester
