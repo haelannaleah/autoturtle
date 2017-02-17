@@ -44,7 +44,7 @@ class Localization():
                 self.tags[marker.id] = PoseStamped(marker.header, marker.pose.pose)
                 
                 # set the frame of the data
-                self.tags[marker.id].header.frame_id = '/ar_marker_' + str(marker.id)
+                #self.tags[marker.id].header.frame_id = '/ar_marker_' + str(marker.id)
                 
                 # set the time to show that we only care about the most recent available transform
                 self.tags[marker.id].header.stamp = rospy.Time(0)
