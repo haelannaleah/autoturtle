@@ -54,8 +54,7 @@ class Localization():
             
         except tf.LookupException as e:
             # the transformations aren't being published
-            self._logger.error(e)
-            self._logger.error("Is the mobile base powered on? Has the Turtlebot been brought online?")
+            self._logger.error(str(e) + " Is the mobile base powered on? Has the Turtlebot been brought online?")
         
         except Exception as e:
             # something else went wrong
