@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            self.logOrientation(self.localization.landmarks_odom)
+            self.logOrientation(self.localization.landmarks_relative)
             #self.logPosition(self.localization.landmarks_odom)
             
         def logPosition(self, incoming_landmarks):
