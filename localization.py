@@ -65,7 +65,7 @@ class Localization():
             header = self.tags[id].header
             
             # set the time to show that we only care about the most recent available transform
-            self.tags[marker.id].header.stamp = rospy.Time(0)
+            self.tags[id].header.stamp = rospy.Time(0)
             
             # incoming position data is relative to the rgb camera frame (which is also the listed frame on incoming
             #   data), so we just create a PointStamped with the current header and tag position
