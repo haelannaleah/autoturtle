@@ -7,7 +7,7 @@ import rospy
 import tf
 
 from ar_track_alvar_msgs.msg import AlvarMarkers
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped
 
 from logger import Logger
 
@@ -15,8 +15,8 @@ class Localization():
     """ Handle landmark detection and global localization.
     
     Attributes:
-        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view.
-            Note: in the /ar_marker_<id> frame.
+        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
+            their raw form.
         landmarks_relative (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base
             frame.
         landmarks_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
@@ -32,23 +32,43 @@ class Localization():
     
         # listen for frame transformations
         self._tf_listener = tf.TransformListener()
+    
+    def _attemptLookup(self, transform_func, target_frame, object):
+        """ Attempt a coordinate frame transformation.
+        
+        Args:
+            transform_func (tf.TransformListener() function): A transformation function from the tf module.
+            target_frame (string): The desired final coordinate frame.
+            object (PoseStamped, PointStamped, QuaternionStamped): A stamped object to be transformed.
+            
+        Returns:
+            An object transformed into the correct frame if successful, None otherwise.
+        """
+        try:
+            # attempt transformation
+            return transform_func(target_frame, object)
+        
+        except tf.ExtrapolationException as e:
+            # we're trying to get a transformation that's not current
+            self._logger.warn(e)
+            
+        except tf.LookupException as e:
+            # the transformations aren't being published
+            self._logger.error(str(e) + "Is the mobile base powered on? Has the Turtlebot been brought online?")
+        
+        except Exception as e:
+            # something else went wrong
+            self._logger.error(e)
+        
+        # the transformation failed
+        return None
 
     def _tagCallback(self, data):
-        """ Extract raw tag data from the ar_pose_marker topic.
-        
-        Note: Raw tag data comes in the camera frame, not the map frame.
-        """
+        """ Extract and process tag data from the ar_pose_marker topic. """
         if data.markers:
-            # convert marker data into PoseStamped
-            for marker in data.markers:
-                self.tags[marker.id] = PoseStamped(marker.header, marker.pose.pose)
-                
-                # set the frame of the data
-                self.tags[marker.id].header.frame_id = '/ar_marker_' + str(marker.id)
-                
-                # set the time to show that we only care about the most recent available transform
-                self.tags[marker.id].header.stamp = rospy.Time(0)
-            
+            # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
+            #   I promise, its less scary than it looks...
+            self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
             self.landmarks_relative = self._transformTags('/base_footprint')
             self.landmarks_odom = self._transformTags('/odom')
         else:
@@ -64,28 +84,46 @@ class Localization():
             
         Returns:
             A geometry_msgs.msg.PoseStamped dictionary containing the positions in the target frame
-                of the visible AprilTags (contingent on successful transformation).
+                of the visible AprilTags that were successfully transformed.
+                
+        Note: 
+            Raw tag orientation data comes in the /ar_marker_<id> frame, and its position data come in the
+                /camera_rgb_optical_frame, so our transformations must reflect this.
+            Also note that this is the scary function...
         """
-        transformed = {id : self._transformPose(target_frame, self.tags[id]) for id in self.tags}
-        return {id : transformed[id] for id in transformed if transformed[id] is not None}
-
-    def _transformPose(self, target_frame, marker):
-        """ Attempt a frame transformation. 
-        
-        Args:
-            target_frame (string): The desired final coordinate frame.
-            marker (geometry_msgs.msg.PoseStamped): The pose we wish to transform.
-        
-        Returns:
-            A transformed geometry_msgs.msg.PoseStamped object if the transformation was successful,    
-                None otherwise.
-        """
-        try:
-            return self._tf_listener.transformPose(target_frame,  marker)
-        except Exception as e:
-            self._logger.error(e)
-        
-        return None
+        transformed = {}
+        for id in self.tags:
+            # get the header from the current tag
+            header = self.tags[id].header
+            
+            # set the time to show that we only care about the most recent available transform
+            self.tags[id].header.stamp = rospy.Time(0)
+            
+            # orientation data is in the ar_marker_<id> frame, so we need to update the starting frame
+            #   (if we just transform from the optical frame, then turning the AR tag upside down affects the
+            #   reported orientation)
+            header.frame_id = '/ar_marker_' + str(id)
+            orientation = self._attemptLookup(self._tf_listener.transformQuaternion, \
+                            target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
+            
+            # make sure the look-up succeeded
+            if orientation is None:
+                continue
+                
+            # incoming position data is relative to the rgb camera frame, so we reset the header to the optical
+            #   frame to get the correct position
+            header.frame_id = '/camera_rgb_optical_frame'
+            position = self._attemptLookup(self._tf_listener.transformPoint, \
+                         target_frame, PointStamped(header, self.tags[id].pose.position))
+                         
+            # make sure the look-up succeeded
+            if position is None:
+                continue
+            
+            # if we made it this far, then we can add our pose data to our dictionary!
+            transformed[id] = PoseStamped(position.header, Pose(position.point, orientation.quaternion))
+            
+        return transformed
 
 if __name__ == "__main__":
     from tester import Tester
@@ -99,10 +137,17 @@ if __name__ == "__main__":
             
             # set up localization
             self.localization = Localization()
+        
+            # slow down refreshing just because logging is easier to parse
+            self.rate = rospy.Rate(10)
 
         def main(self):
             """ Run main tests. """
-            #self.logOrientation(self.localization.landmarks_relative)
+            self.logger.info("orientation")
+            self.logOrientation(self.localization.landmarks_relative)
+            self.logPosition(self.localization.landmarks_relative)
+            self.logger.info("odom")
+            self.logOrientation(self.localization.landmarks_odom)
             self.logPosition(self.localization.landmarks_odom)
             
         def logPosition(self, incoming_landmarks):
