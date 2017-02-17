@@ -22,11 +22,11 @@ class Motion():
     # Define Turtlebot constants
     _ROT_SPEED = radians(60)
     _LIN_SPEED = 0.2
-    _ACCEL_TIME = 0.1
-    _ROT_ACCEL = .35
-    _ROT_DECCEL = -.4
-    _LIN_ACCEL = .02
-    _LIN_DECCEL = -.025
+    _ACCEL_TIME = 0.2
+    _ROT_ACCEL = 1.5
+    _ROT_DECCEL = -4
+    _LIN_ACCEL = .2
+    _LIN_DECCEL = -.25
     _TURN_LEFT = 1
     _TURN_RIGHT = -1
     
@@ -36,32 +36,32 @@ class Motion():
         self.turning = False
         self.walking = False
         self.stopping = False
-        self._accel_time = False
+        self._accel_time = 0
+        self._prev_accel_time = 0
         
         # set up publisher/subscriber
         self._move_publisher = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
         self._move_cmd = Twist()
     
-    def _accelerate(self, delta):
+    def _accelerate(self, accel):
         """ Smooth out starts and stops. 
             
         Args:
-            delta (float): The change in robot speed at each time step. Positive to accelerate,
-                negative to accelerate.
+            accel (float): The change in robot speed in meters per second or radians per second.
+                Positive to accelerate, negative to accelerate.
         
         Returns:
-            Delta if it is time to increment, 0 otherwise.
+            The delta necessary to accelerate at accel.
         """
-        # initialize the acceleration time
-        if self._accel_time is False:
-            self._accel_time = time()
+        self._prev_accel_time = self._accel_time
+        self._accel_time = time()
+        delta_time = self._accel_time - self._prev_accel_time
         
-        # otherwise, if it's time to increment speed...
-        elif time() - self._accel_time > self._ACCEL_TIME:
-            self._accel_time = False
-            return delta
-
-        return 0
+        # we've just begun accelerating since it's been too long since the last step
+        if delta_time > self._ACCEL_TIME:
+            return 0
+        
+        return delta_time * float(accel)
     
     def _linear_stop(self, now):
         """ Gently stop forward motion of robot. """
@@ -137,7 +137,7 @@ class Motion():
         """
         self.walking = True
         self.stopping = False
-        target_speed = self._LIN_SPEED * min(speed, 1)
+        target_speed = self._LIN_SPEED * min(abs(speed), 1)
         
         if self._move_cmd.linear.x < target_speed:
             self._move_cmd.linear.x += self._accelerate(self._LIN_ACCEL)
