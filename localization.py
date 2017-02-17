@@ -36,7 +36,7 @@ class Localization():
     def _tagCallback(self, data):
         """ Extract raw tag data from the ar_pose_marker topic.
         
-        Note: Raw tag data comes in the camera frame, not the map frame.
+        Note: Raw tag data comes in the /ar_marker_<id> frame frame, not the map frame.
         """
         if data.markers:
             # convert marker data into PoseStamped
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         def main(self):
             """ Run main tests. """
             #self.logOrientation(self.localization.landmarks_relative)
-            self.logPosition(self.localization.landmarks_odom)
+            self.logPosition(self.localization.landmarks_relative)
             
         def logPosition(self, incoming_landmarks):
             """ Print the position of landmarks in meters. """
