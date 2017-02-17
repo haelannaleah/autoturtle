@@ -32,6 +32,37 @@ class Localization():
     
         # listen for frame transformations
         self._tf_listener = tf.TransformListener()
+    
+    def _attemptLookup(self, transform_func, target_frame, object):
+    """ Attempt a coordinate frame transformation.
+    
+    Args:
+        transform_func (tf function): A transformation function from the tf module.
+        target_frame (string): The desired final coordinate frame.
+        object (PoseStamped, PointStamped, QuaternionStamped): A stamped object to be transformed.
+        
+    Returns:
+        An object transformed into the correct frame if successful, None otherwise.
+    """
+        try:
+            # attempt transformation
+            return transform_func(target_frame, object)
+        
+        except tf.ExtrapolationException as e:
+            # we're trying to get a transformation that's not current
+            self._logger.warn(e)
+            
+        except tf.LookupException as e:
+            # the transformations aren't being published
+            self._logger.error(e)
+            self._logger.error("Is the mobile base powered on? Has the Turtlebot been brought online?")
+        
+        except Exception as e:
+            # something else went wrong
+            self._logger.error(e)
+        
+        # the transformation failed
+        return None
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
@@ -73,25 +104,21 @@ class Localization():
             #   (if we just transform from the optical frame, then turning the AR tag upside down affects the
             #   reported orientation)
             header.frame_id = '/ar_marker_' + str(id)
-            try:
-                # attempt transformation
-                orientation = self._tf_listener.transformQuaternion(target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
+            orientation = self._attemptLookup(self._tf_listener.transformQuaternion, \
+                            target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
             
-            except Exception as e:
-                # something went wrong with the coordinate transform, so we should move along
-                #self._logger.error(e)
-                raise(e)
+            # make sure the look-up succeeded
+            if orientation is None:
                 continue
                 
             # incoming position data is relative to the rgb camera frame, so we reset the header to the optical
             #   frame to get the correct position
             header.frame_id = '/camera_rgb_optical_frame'
-            try:
-                position = self._tf_listener.transformPoint(target_frame, PointStamped(header, self.tags[id].pose.position))
-            
-            except Exception as e:
-                # something went wrong with the coordinate transform, so we should move along
-                self._logger.error(e)
+            position = self._attemptLookup(self._tf_listener.transformPoint, \
+                         target_frame, QuaternionStamped(header, self.tags[id].pose.position))
+                         
+            # make sure the look-up succeeded
+            if position is None:
                 continue
             
             # if we made it this far, then we can add our pose data to our dictionary!
