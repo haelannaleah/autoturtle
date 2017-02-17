@@ -159,6 +159,7 @@ if __name__ == "__main__":
             
             # we need to turn to reach our goal
             else:
+                # large turn, stop, otherwise turn while walking
                 if self.motion.walking and abs(nav_val) > pi / 2:
                     self.motion.stop(now = self.jerky)
                 else:

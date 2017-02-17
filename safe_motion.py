@@ -75,10 +75,6 @@ class SafeMotion(Motion):
         elif self.sensors.obstacle:
             Motion.stop_linear(self)
         
-        # if we see an obstacle
-        elif self.sensors.bump:
-            Motion.stop_linear(self)
-        
         # otherwise, we keep going
         else:
             func(self, *args, **kwargs)
