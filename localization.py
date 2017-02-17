@@ -103,7 +103,7 @@ if __name__ == "__main__":
         def main(self):
             """ Run main tests. """
             #self.logOrientation(self.localization.landmarks_relative)
-            self.logPosition(self.localization.landmarks_relative)
+            self.logPosition(self.localization.tags)
             
         def logPosition(self, incoming_landmarks):
             """ Print the position of landmarks in meters. """
