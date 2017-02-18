@@ -111,10 +111,10 @@ class Sensors():
         """ Log useful Kobuki information. 
         
         Args:
-            sensor (string): The name of the reporting sensor.
+            sensor (str): The name of the reporting sensor.
             state (int): The current state of the sensor.
             states (list): The possible states for that sensor.
-            sensor_location (int, optional): Optionally, which sensor got triggered (0, 1, 2)
+            sensor_location (int, optional): Which sensor got triggered (0, 1, 2; Left, Center, Right).
         """
         # if we have location data, change the sensor name to reflect the which sensor was triggered
         if sensor_location is not None:
