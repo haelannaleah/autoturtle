@@ -72,6 +72,7 @@ class Localization():
             self.landmarks_relative = self._transformTags('/base_footprint')
             self.landmarks_odom = self._transformTags('/odom')
         else:
+            # we don't see any tags, so empty things out
             self.tags = {}
             self.landmarks_relative = {}
             self.landmarks_odom = {}
