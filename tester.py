@@ -1,16 +1,15 @@
-""" Unit testing base class.
+""" Behavioral testing base class.
     
 Author:
     Annaleah Ernst
 """
-
 import rospy
 
 from logger import Logger
 
 class Tester():
     """
-    A module designed as the base class for unit tests using ROS.
+    A module designed as the base class for behavioral tests using ROS.
     
     Args:
         name (str): The name of the module under test.
@@ -26,13 +25,13 @@ class Tester():
         # set module name
         self.__name__ = str(name) + "Tester"
         
-        # initialize test node
+        # initialize ROS node
         rospy.init_node(self.__name__, anonymous = False)
         
         # set up ctrl-C shutdown behavior
         rospy.on_shutdown(self.shutdown)
         
-        # set global test refresh rate (100 Hz)
+        # set global test refresh rate (100 Hz) to allow quick reaction
         self.rate = rospy.Rate(100)
     
         # set up test node logger
@@ -40,18 +39,18 @@ class Tester():
         self.logger.info("hello world")
 
     def main(self):
-        """ The main control loop.
+        """ The contents of the main loop.
         
-        Note: This function must be overriden in the subclasses.
+        Note: Looping happens in run(). The main function MUST be overriden in the subclasses.
         """
         self.signal_shutdown("The main function in the Tester class must be overriden!")
     
     def run(self):
-        """ Actually run the robot tests, etc.
+        """ Actually run the code written in main.
         
         Note: This function should not be overridden!
         """
-        # run the main control loop
+        # start the main control loop
         while not rospy.is_shutdown():
             self.main()
             self.rate.sleep()
@@ -59,17 +58,17 @@ class Tester():
     def shutdown(self):
         """ Stop all robot operations. 
         
-        Note: This function may be overridden in the subclasses.
+        Note: This function may be overridden in inheriting classes.
         """
         self.logger.info("goodbye world")
 
     def signal_shutdown(self, reason):
-        """ Interrupt robot control loop.
-        
-        Note: This should not be overriden without good reason.
+        """ Interrupt robot control loop and stop the node.
         
         Args:
             reason (str): A human readable explanation for why the test has ended.
+        
+        Note: This should not be overriden without good reason.
         """
         self.logger.warn("Signalling shutdown: " + reason)
         rospy.signal_shutdown(reason)

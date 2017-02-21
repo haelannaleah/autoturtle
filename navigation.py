@@ -18,12 +18,14 @@ class Navigation():
     """ Local navigation.
     
     Attributes:
-        p (geometry_msgs.msg.Point): The position of the robot in the odometry frame according to
+        p (geometry_msgs.msg.Point): The position of the robot in the ekf odometry frame according to
             the robot_pose_ekf package.
-        q (geometry_msgs.msg.Quaternion): The orientation of the robot in the odometry frame
+        q (geometry_msgs.msg.Quaternion): The orientation of the robot in the ekf odometry frame
             according the the robot_pose_ekf package.
-        angle (float): The angle (in radians) that the robot is from 0. Between -pi and pi
+        angle (float): The angle (in radians) that the robot is from 0 in the ekf odometry frame. 
+            Between -pi and pi
     """
+    # avoid recomputing constants
     _HALF_PI = pi / 2.0
     _TWO_PI = 2.0 * pi
     
@@ -39,19 +41,20 @@ class Navigation():
         # set up the odometry reset publisher (publishing Empty messages here will reset odom)
         self.reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=1)
         
-        # reset odometry (these messages take a few iterations to get through)
+        # reset odometry (these messages take about a second to get through)
         timer = time()
         while time() - timer < 1 or self.p is None:
             self.reset_odom.publish(Empty())
 
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
+        
         # get the direct data
         self.p = data.pose.pose.position
         self.q = data.pose.pose.orientation
         
         # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
-        # extract the only non zero euler angle as the angle of rotation in the floor plane
+        #   extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w])[-1]
 
     def goToPosition(self, destination):
@@ -61,22 +64,26 @@ class Navigation():
             destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
         
         Returns:
-            True if we are close to the desired location, 0 if the goal is straight ahead, and the difference 
-                between the current angle and the desired angle if we are not on course.
+            True if we are close to the desired location 
+            0 if the goal is straight ahead
+            The difference between the current angle and the desired angle if we are not on course.
+                A negative value indicates that the desired angle is that many radians to the left of 
+                the current orientation, positive indicates the desired angle is to the right.
         """
-        # take the angle between our position and destination in the odom frame
+        # take the angle between our position and destination in the ekf odom_combined frame
         turn = atan2(destination.y - self.p.y, destination.x - self.p.x)
         
-        # Set the turn angle to behave as the angle that is the minimum distance from our current pose.
-        # The closest equivalent angle may be slightly greater than pi or slightly less than -pi, and since
-        # our math is always bounded by pi and -pi, we may need to adjust to be the most efficient.
+        # set the turn angle to behave as the angle that is the minimum distance from our current pose
+        #   the closest equivalent angle may be slightly greater than pi or slightly less than -pi; we want
+        #   angles at pi and -pi to behave as if they are right next to each other, so we may need to wrap
+        #   around by adding or subtractive two pi
         turn_angle = min([turn, turn + self._TWO_PI, turn - self._TWO_PI], key = lambda t: abs(t - self.angle))
 
-        # we're near our final location
+        # we're (pretty) near our final location
         if np.isclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.05).all():
             return True
         
-        # our orientation has gotten off
+        # our orientation has gotten off and we need to adjust
         elif not np.isclose(self.angle, turn_angle, atol=0.05):
             return self.angle - turn_angle
 
