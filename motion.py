@@ -18,30 +18,32 @@ class Motion():
         walking (bool): True if robot is moving linearly, False otherwise.
         stopping (bool): True if the robot is in the process of stopping, False otherwise.
     """
-    
     # Define Turtlebot constants
-    _ROT_SPEED = radians(60)
-    _LIN_SPEED = 0.2
-    _ACCEL_TIME = 0.2
-    _ROT_ACCEL = 1.5
-    _ROT_DECCEL = -4
-    _LIN_ACCEL = .2
-    _LIN_DECCEL = -.25
-    _TURN_LEFT = 1
-    _TURN_RIGHT = -1
+    _ROT_SPEED = radians(60)    # maximum rotational speed
+    _LIN_SPEED = 0.2            # maximum linear speed
+    _ACCEL_TIME = 0.2           # maximum time delta (s) between acceleration steps
+    _ROT_ACCEL = 1.5            # rotational acceleration (m/s^2)
+    _ROT_DECCEL = -4            # rotational acceleration (m/s^2)
+    _LIN_ACCEL = .2             # linear acceleration (m/s^2)
+    _LIN_DECCEL = -.25          # linear deceleration (m/s^2)
+    _TURN_LEFT = 1              # positive turn values cause the robot to turn left
+    _TURN_RIGHT = -1            # negative turn values cause the robot to turn right
     
     def __init__(self):
 
+        # initialize class attributes
         self.turn_dir = 0
         self.turning = False
         self.walking = False
         self.stopping = False
+        
+        # set up private acceleration trackers
         self._accel_time = 0
         self._prev_accel_time = 0
         
-        # set up publisher/subscriber
-        self._move_publisher = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
+        # set up communication with the robot
         self._move_cmd = Twist()
+        self._move_publisher = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10)
     
     def _accelerate(self, accel):
         """ Smooth out starts and stops. 
@@ -53,6 +55,7 @@ class Motion():
         Returns:
             The delta necessary to accelerate at accel.
         """
+        # save the previous acceleration time, update the current time, compute the delta
         self._prev_accel_time = self._accel_time
         self._accel_time = time()
         delta_time = self._accel_time - self._prev_accel_time
@@ -61,29 +64,40 @@ class Motion():
         if delta_time > self._ACCEL_TIME:
             return 0
         
+        # multiply the delta by the desired acceleration to gently and return
+        #   this computed delta is used to gently change robot velocity
         return delta_time * float(accel)
     
     def _linear_stop(self, now):
         """ Gently stop forward motion of robot. """
+        
+        # if we've slowed to or past 0, or the user wants to stop now, zero the linear command and reset states
         if self._move_cmd.linear.x <= 0 or now:
             self._move_cmd.linear.x = 0
             self.walking = False
             self.stopping = False
+        
+        # otherwise, decelerate
         else:
             self.stopping = True
             self._move_cmd.linear.x += self._accelerate(self._LIN_DECCEL)
 
     def _rotational_stop(self, now):
         """ Stop the robot and handle associated housekeeping. """
+        
+        # if we've slowed to or past 0, or the user wants to stop now, zero the rotational command and reset states
         if self.turn_dir * self._move_cmd.angular.z <= 0 or now:
             self.turning = False
             self.turn_dir = 0
             self._move_cmd.angular.z = 0
+        
+        # otherwise, decelerate
         else:
             self._move_cmd.angular.z += self._accelerate(self.turn_dir * self._ROT_DECCEL)
     
     def _publish(self):
         """ Output commands to the Turtlebot. """
+        
         self._move_publisher.publish(self._move_cmd)
 
     def stop(self, now=False): 
@@ -98,12 +112,20 @@ class Motion():
         self._publish()
 
     def stop_linear(self, now=False):
-        """ Stop robot's linear motion, immediately if necessary. """
+        """ Stop robot's linear motion, immediately if necessary. 
+        
+        Args:
+            now (bool): Robot's forward motion stops immediately if true, else decelerates.
+        """
         self._linear_stop(now)
         self._publish()
 
     def stop_rotation(self, now=False):
-        """ Stop the robot rotation, immediately if necessary. """
+        """ Stop the robot rotation, immediately if necessary. 
+        
+        Args:
+            now (bool): Robot's rotational motion stops immediately if true, else decelerates.
+        """
         self._rotational_stop(now)
         self._publish()
 
@@ -112,17 +134,24 @@ class Motion():
             
         Args:
             direction (bool): Turn direction is left if True, right if False
-            speed (float, optional): The percentage of the the maximum turn speed
-                the robot will turn at.
+            speed (float, optional): Percentage of maximum speed, magnitude between 0 and 1.
+                Values with magnitude greater than 1 will be ignored.
         """
-        # set turn direction
+        # set turning state
         self.turning = True
+        
+        # set turn direction if it is unset
         if self.turn_dir is 0:
             self.turn_dir = self._TURN_LEFT if direction else self._TURN_RIGHT
 
-        target_speed = self._ROT_SPEED * min(speed, 1)
+        # compute the target speed based on user input (don't let them exceed 1)
+        target_speed = self._ROT_SPEED * min(abs(speed), 1)
+        
+        # if we're less than the target rotational speed, accelerate rotations
         if abs(self._move_cmd.angular.z) < target_speed:
             self._move_cmd.angular.z += self._accelerate(self.turn_dir * self._ROT_ACCEL)
+        
+        # otherwise, set the rotation speed to the target
         else:
             self._move_cmd.angular.z = self.turn_dir * target_speed
         
@@ -132,15 +161,21 @@ class Motion():
         """ Move straight forward. 
         
         Args:
-            speed (float, optiona): The percentage of the the maximum linear speed
-                the robot will move at.
+            speed (float, optional): Percentage of maximum speed, magnitude between 0 and 1.
+                Values with magnitude greater than 1 will be ignored.
         """
+        # set walking and stopping states
         self.walking = True
         self.stopping = False
+        
+        # compute target speed based on user input ()
         target_speed = self._LIN_SPEED * min(abs(speed), 1)
         
+        # if we're under our target speed, accelerate
         if self._move_cmd.linear.x < target_speed:
             self._move_cmd.linear.x += self._accelerate(self._LIN_ACCEL)
+        
+        # otherwise, set move command to target speed
         else:
             self._move_cmd.linear.x = target_speed
     
@@ -152,6 +187,7 @@ class Motion():
         Args:
             rate (rospy.Rate): The refresh rate of the enclosing module.
         """
+        # if the robot is walking or turning, bring it to a gentle stop
         while self.walking or self.turning:
             self.stop()
             rate.sleep()
