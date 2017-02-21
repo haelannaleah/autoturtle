@@ -103,7 +103,7 @@ class SafeMotion(Motion):
         Args:
             now (bool): Robot's forward motion stops immediately if true, else decelerates.
         """
-        self._safetyStop(Motion.linear_stop, now)
+        self._safetyStop(Motion.stop_linear, now)
 
     def stop_rotation(self, now=False):
         """ Stop the robot rotation, immediately if necessary. 
@@ -111,7 +111,7 @@ class SafeMotion(Motion):
         Args:
             now (bool): Robot's rotational motion stops immediately if true, else decelerates.
         """
-        self._safetyStop(Motion.rotational_stop, now)
+        self._safetyStop(Motion.stop_rotation, now)
     
     def stop(self, now=False):
         """ Stop the robot, immediately if necessary.
