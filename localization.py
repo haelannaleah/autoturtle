@@ -145,13 +145,13 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            if not similar(self.prev_relative, self.localization.landmarks_relative):
+            if not self.similar(self.prev_relative, self.localization.landmarks_relative):
                 self.logger.info("relative")
                 self.logOrientation(self.localization.landmarks_relative)
                 self.logPosition(self.localization.landmarks_relative)
                 self.prev_localization = self.localization.landmarks_relative.pose
             
-            if not similar(self.prev_odom, self.localization.landmarks_odom):
+            if not self.similar(self.prev_odom, self.localization.landmarks_odom):
                 self.logger.info("odom")
                 self.logOrientation(self.localization.landmarks_odom)
                 self.logPosition(self.localization.landmarks_odom)
