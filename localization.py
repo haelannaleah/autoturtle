@@ -140,24 +140,24 @@ if __name__ == "__main__":
             # set up localization
             self.localization = Localization()
         
-            self.prev_relative = {0:Pose()}
-            self.prev_odom = {0:Pose()}
+            self.prev_relative = {}
+            self.prev_odom = {}
 
         def main(self):
             """ Run main tests. """
             for id in self.localization.landmarks_relative:
-                if not self.similar(self.prev_relative[id], self.localization.landmarks_relative[id]):
+                if id not in self.prev_relative or not self.similar(self.prev_relative[id], self.localization.landmarks_relative[id]):
                     self.logger.info("relative")
                     self.logOrientation(self.localization.landmarks_relative[id])
                     self.logPosition(self.localization.landmarks_relative[id])
-                    self.prev_localization = self.localization.landmarks_relative.pose
+                    self.prev_localization[id] = self.localization.landmarks_relative[id].pose
         
             for id in self.localization.landmarks_odom:
-                if not self.similar(self.prev_odom[id], self.localization.landmarks_odom[id]):
+                if id not in self.prev_odom or not self.similar(self.prev_odom[id], self.localization.landmarks_odom[id]):
                     self.logger.info("odom")
                     self.logOrientation(self.localization.landmarks_odom[id])
                     self.logPosition(self.localization.landmarks_odom[id])
-                    self.prev_odom = self.localization.landmarks_odom.pose
+                    self.prev_odom[id] = self.localization.landmarks_odom[id].pose
     
         def similar(self, prev, landmarks):
             """ Check to see if there have been significant changes in positions. """
