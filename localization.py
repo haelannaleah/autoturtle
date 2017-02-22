@@ -151,7 +151,7 @@ if __name__ == "__main__":
         def slowLogging(self, prevs, landmarks):
             """ Only log things on updates! """
             for id in landmarks:
-                if id not in prevs not self.similar(prevs[id], landmarks[id]):
+                if id not in prevs or not self.similar(prevs[id], landmarks[id]):
                     self.logger.info("Frame: " + str(landmarks[id].header.frame_id))
                     self.logOrientation(landmarks[id])
                     self.logPosition(landmarks[id])
