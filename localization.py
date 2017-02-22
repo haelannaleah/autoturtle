@@ -127,6 +127,7 @@ class Localization():
         return transformed
 
 if __name__ == "__main__":
+    import numpy as np
     from tester import Tester
     from math import degrees
     from copy import deepcopy
