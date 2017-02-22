@@ -127,7 +127,6 @@ class Localization():
         return transformed
 
 if __name__ == "__main__":
-    import numpy as np
     from tester import Tester
     from math import degrees
     from copy import deepcopy
@@ -145,13 +144,13 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            if not np.isclose(self.prev_relative, self.localization.landmarks_relative):
+            if not self.prev_relative == self.localization.landmarks_relative:
                 self.logger.info("relative")
                 self.logOrientation(self.localization.landmarks_relative)
                 self.logPosition(self.localization.landmarks_relative)
                 self.prev_localization = self.localization.landmarks_relative
             
-            if not np.isclose(self.prev_odom, self.localization.landmarks_odom):
+            if not self.prev_odom == self.localization.landmarks_odom:
                 self.logger.info("odom")
                 self.logOrientation(self.localization.landmarks_odom)
                 self.logPosition(self.localization.landmarks_odom)
