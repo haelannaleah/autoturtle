@@ -145,33 +145,31 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            for id in self.localization.landmarks_relative:
-                if id not in self.prev_relative or not self.similar(self.prev_relative[id], self.localization.landmarks_relative[id]):
-                    self.logger.info("relative")
-                    self.logOrientation(self.localization.landmarks_relative[id])
-                    self.logPosition(self.localization.landmarks_relative[id])
-                    self.prev_relative[id] = self.localization.landmarks_relative[id].pose
-        
-            for id in self.localization.landmarks_odom:
-                if id not in self.prev_odom or not self.similar(self.prev_odom[id], self.localization.landmarks_odom[id]):
-                    self.logger.info("odom")
-                    self.logOrientation(self.localization.landmarks_odom[id])
-                    self.logPosition(self.localization.landmarks_odom[id])
-                    self.prev_odom[id] = self.localization.landmarks_odom[id].pose
+            self.slowLogging(self.prev_relative, self.localization.landmarks_relative)
+            self.slowLogging(self.prev_odom, self.localization.landmarks_odom)
     
-        def similar(self, prev, landmarks):
+        def slowLogging(self, prevs, landmarks):
+            """ Only log things on updates! """
+            for id in landmarks:
+                if id not in prevs not self.similar(prevs[id], landmarks[id]):
+                    self.logger.info("Frame: " + str(landmarks[id].header.frame_id))
+                    self.logOrientation(landmarks[id])
+                    self.logPosition(landmarks[id])
+                    prevs[id] = landmarks[id].pose
+    
+        def similar(self, prev, landmark):
             """ Check to see if there have been significant changes in positions. """
             # store these in shorted named variables for notational reasons
-            p_cur = landmarks.pose.position
-            q_cur = landmarks.pose.orientation
+            p_cur = landmark.pose.position
+            q_cur = landmark.pose.orientation
         
             # check that the positions are close
-            close_positions = np.isclose([p_cur.x, p_cur.y, p_cur.z], [prev.position.x, prev.position.y, prev.position.z], atol=.05).all()
+            close_position = np.isclose([p_cur.x, p_cur.y, p_cur.z], [prev.position.x, prev.position.y, prev.position.z], atol=.05).all()
             
             # check that the orientation is close
             close_orient = np.isclose([q_cur.x, q_cur.y, q_cur.z, q_cur.w], [prev.orientation.x, prev.orientation.y, prev.orientation.z, prev.orientation.w], atol=.05).all()
         
-            return close_orient and close_positions
+            return close_orient and close_position
             
             
         def logPosition(self, incoming_landmark):
@@ -179,7 +177,7 @@ if __name__ == "__main__":
             landmark = deepcopy(incoming_landmark)
             self.logger.debug("\n" + str(landmark.pose.position), var_name = id)
         
-        def logOrientation(self, incoming_landmark):
+        def logOrientation(self, incoming_landmark, id):
             """ Print the orientation of landmarks as a Euler Angle in degrees. """
             landmark = deepcopy(incoming_landmark)
             q = landmark.pose.orientation
