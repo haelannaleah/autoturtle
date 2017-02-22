@@ -150,7 +150,7 @@ if __name__ == "__main__":
                     self.logger.info("relative")
                     self.logOrientation(self.localization.landmarks_relative[id])
                     self.logPosition(self.localization.landmarks_relative[id])
-                    self.prev_localization[id] = self.localization.landmarks_relative[id].pose
+                    self.prev_relative[id] = self.localization.landmarks_relative[id].pose
         
             for id in self.localization.landmarks_odom:
                 if id not in self.prev_odom or not self.similar(self.prev_odom[id], self.localization.landmarks_odom[id]):
