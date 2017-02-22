@@ -148,11 +148,13 @@ if __name__ == "__main__":
                 self.logger.info("relative")
                 self.logOrientation(self.localization.landmarks_relative)
                 self.logPosition(self.localization.landmarks_relative)
+                self.prev_localization = self.localization.landmarks_relative
             
             if self.prev_odom is not None and not np.isclose(self.prev_odom, self.localization.landmarks_odom):
                 self.logger.info("odom")
                 self.logOrientation(self.localization.landmarks_odom)
                 self.logPosition(self.localization.landmarks_odom)
+                self.prev_odom = self.localization.landmarks_odom
             
         def logPosition(self, incoming_landmarks):
             """ Print the position of landmarks in meters. """
