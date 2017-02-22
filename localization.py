@@ -181,6 +181,7 @@ if __name__ == "__main__":
             """ Print the orientation of landmarks as a Euler Angle in degrees. """
             landmark = deepcopy(incoming_landmark)
             q = landmark.pose.orientation
+            self.logger.debug("\n" + str(q), var_name = "quaternion" + str(id))
             self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name = "orientation" + str(id))
 
     LocalizationTest().run()
