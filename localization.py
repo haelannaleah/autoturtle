@@ -140,22 +140,24 @@ if __name__ == "__main__":
             # set up localization
             self.localization = Localization()
         
-            self.prev_relative = Pose()
-            self.prev_odom = Pose()
+            self.prev_relative = {0:Pose()}
+            self.prev_odom = {0:Pose()}
 
         def main(self):
             """ Run main tests. """
-            if not self.similar(self.prev_relative, self.localization.landmarks_relative):
-                self.logger.info("relative")
-                self.logOrientation(self.localization.landmarks_relative)
-                self.logPosition(self.localization.landmarks_relative)
-                self.prev_localization = self.localization.landmarks_relative.pose
-            
-            if not self.similar(self.prev_odom, self.localization.landmarks_odom):
-                self.logger.info("odom")
-                self.logOrientation(self.localization.landmarks_odom)
-                self.logPosition(self.localization.landmarks_odom)
-                self.prev_odom = self.localization.landmarks_odom.pose
+            for id in self.localization.landmarks_relative:
+                if not self.similar(self.prev_relative[id], self.localization.landmarks_relative[id]):
+                    self.logger.info("relative")
+                    self.logOrientation(self.localization.landmarks_relative[id])
+                    self.logPosition(self.localization.landmarks_relative[id])
+                    self.prev_localization = self.localization.landmarks_relative.pose
+        
+            for id in self.localization.landmarks_odom:
+                if not self.similar(self.prev_odom[id], self.localization.landmarks_odom[id]):
+                    self.logger.info("odom")
+                    self.logOrientation(self.localization.landmarks_odom[id])
+                    self.logPosition(self.localization.landmarks_odom[id])
+                    self.prev_odom = self.localization.landmarks_odom.pose
     
         def similar(self, prev, landmarks):
             """ Check to see if there have been significant changes in positions. """
@@ -172,17 +174,15 @@ if __name__ == "__main__":
             return close_orient and close_positions
             
             
-        def logPosition(self, incoming_landmarks):
+        def logPosition(self, incoming_landmark):
             """ Print the position of landmarks in meters. """
-            landmarks = deepcopy(incoming_landmarks)
-            for id in landmarks:
-                self.logger.debug("\n" + str(landmarks[id].pose.position), var_name = id)
+            landmark = deepcopy(incoming_landmark)
+            self.logger.debug("\n" + str(landmark.pose.position), var_name = id)
         
-        def logOrientation(self, incoming_landmarks):
+        def logOrientation(self, incoming_landmark):
             """ Print the orientation of landmarks as a Euler Angle in degrees. """
-            landmarks = deepcopy(incoming_landmarks)
-            for id in landmarks:
-                q = landmarks[id].pose.orientation
-                self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name = id)
+            landmark = deepcopy(incoming_landmark)
+            q = landmark.pose.orientation
+            self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name = id)
 
     LocalizationTest().run()
