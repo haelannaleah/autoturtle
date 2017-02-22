@@ -153,8 +153,8 @@ if __name__ == "__main__":
             for id in landmarks:
                 if id not in prevs or not self.similar(prevs[id], landmarks[id]):
                     self.logger.info("Frame: " + str(landmarks[id].header.frame_id))
-                    self.logOrientation(landmarks[id])
-                    self.logPosition(landmarks[id])
+                    self.logOrientation(landmarks[id], id)
+                    self.logPosition(landmarks[id], id)
                     prevs[id] = landmarks[id].pose
     
         def similar(self, prev, landmark):
