@@ -127,6 +127,7 @@ class Localization():
         return transformed
 
 if __name__ == "__main__":
+    import numpy as np
     from tester import Tester
     from math import degrees
     from copy import deepcopy
@@ -139,22 +140,37 @@ if __name__ == "__main__":
             # set up localization
             self.localization = Localization()
         
-            self.prev_relative = PoseStamped()
-            self.prev_odom = PoseStamped()
+            self.prev_relative = Pose()
+            self.prev_odom = Pose()
 
         def main(self):
             """ Run main tests. """
-            if not self.prev_relative == self.localization.landmarks_relative:
+            if not similar(self.prev_relative, self.localization.landmarks_relative):
                 self.logger.info("relative")
                 self.logOrientation(self.localization.landmarks_relative)
                 self.logPosition(self.localization.landmarks_relative)
-                self.prev_localization = self.localization.landmarks_relative
+                self.prev_localization = self.localization.landmarks_relative.pose
             
-            if not self.prev_odom == self.localization.landmarks_odom:
+            if not similar(self.prev_odom, self.localization.landmarks_odom):
                 self.logger.info("odom")
                 self.logOrientation(self.localization.landmarks_odom)
                 self.logPosition(self.localization.landmarks_odom)
-                self.prev_odom = self.localization.landmarks_odom
+                self.prev_odom = self.localization.landmarks_odom.pose
+    
+        def similar(self, prev, landmarks)
+            """ Check to see if there have been significant changes in positions. """
+            # store these in shorted named variables for notational reasons
+            p_cur = landmarks.pose.position
+            q_cur = landmarks.pose.orientation
+        
+            # check that the positions are close
+            close_positions = np.isclose([p_cur.x, p_cur.y, p_cur.z], [prev.position.x, prev.position.y, prev.position.z], atol=.05).all()
+            
+            # check that the orientation is close
+            close_orient = np.isclose([q_cur.x, q_cur.y, q_cur.z, q_cur.w], [prev.orientation.x, prev.orientation.y, prev.orientation.z, prev.orientation.w], atol=.05).all()
+        
+            return close_orient and close_positions
+            
             
         def logPosition(self, incoming_landmarks):
             """ Print the position of landmarks in meters. """
