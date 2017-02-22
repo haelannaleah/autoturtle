@@ -157,7 +157,7 @@ if __name__ == "__main__":
                 self.logPosition(self.localization.landmarks_odom)
                 self.prev_odom = self.localization.landmarks_odom.pose
     
-        def similar(self, prev, landmarks)
+        def similar(self, prev, landmarks):
             """ Check to see if there have been significant changes in positions. """
             # store these in shorted named variables for notational reasons
             p_cur = landmarks.pose.position
