@@ -139,17 +139,20 @@ if __name__ == "__main__":
             # set up localization
             self.localization = Localization()
         
-            # slow down refreshing just because logging is easier to parse
-            self.rate = rospy.Rate(10)
+            self.prev_relative = None
+            self.prev_odom = None
 
         def main(self):
             """ Run main tests. """
-            self.logger.info("orientation")
-            self.logOrientation(self.localization.landmarks_relative)
-            self.logPosition(self.localization.landmarks_relative)
-            self.logger.info("odom")
-            self.logOrientation(self.localization.landmarks_odom)
-            self.logPosition(self.localization.landmarks_odom)
+            if self.prev_relative is not None and not np.isclose(self.prev_relative, self.localization.landmarks_relative):
+                self.logger.info("relative")
+                self.logOrientation(self.localization.landmarks_relative)
+                self.logPosition(self.localization.landmarks_relative)
+            
+            if self.prev_odom is not None and not np.isclose(self.prev_odom, self.localization.landmarks_odom):
+                self.logger.info("odom")
+                self.logOrientation(self.localization.landmarks_odom)
+                self.logPosition(self.localization.landmarks_odom)
             
         def logPosition(self, incoming_landmarks):
             """ Print the position of landmarks in meters. """
