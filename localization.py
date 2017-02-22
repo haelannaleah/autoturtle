@@ -172,7 +172,7 @@ if __name__ == "__main__":
             return close_orient and close_position
             
             
-        def logPosition(self, incoming_landmark):
+        def logPosition(self, incoming_landmark, id):
             """ Print the position of landmarks in meters. """
             landmark = deepcopy(incoming_landmark)
             self.logger.debug("\n" + str(landmark.pose.position), var_name = id)
