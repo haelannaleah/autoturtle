@@ -127,6 +127,7 @@ class Localization():
         return transformed
 
 if __name__ == "__main__":
+    import numpy as np
     from tester import Tester
     from math import degrees
     from copy import deepcopy
@@ -139,29 +140,48 @@ if __name__ == "__main__":
             # set up localization
             self.localization = Localization()
         
-            # slow down refreshing just because logging is easier to parse
-            self.rate = rospy.Rate(10)
+            self.prev_relative = {}
+            self.prev_odom = {}
 
         def main(self):
             """ Run main tests. """
-            self.logger.info("orientation")
-            self.logOrientation(self.localization.landmarks_relative)
-            self.logPosition(self.localization.landmarks_relative)
-            self.logger.info("odom")
-            self.logOrientation(self.localization.landmarks_odom)
-            self.logPosition(self.localization.landmarks_odom)
-            
-        def logPosition(self, incoming_landmarks):
-            """ Print the position of landmarks in meters. """
-            landmarks = deepcopy(incoming_landmarks)
+            self.slowLogging(self.prev_relative, self.localization.landmarks_relative)
+            self.slowLogging(self.prev_odom, self.localization.landmarks_odom)
+    
+        def slowLogging(self, prevs, landmarks):
+            """ Only log things on updates! """
             for id in landmarks:
-                self.logger.debug("\n" + str(landmarks[id].pose.position), var_name = id)
+                if id not in prevs or not self.similar(prevs[id], landmarks[id]):
+                    self.logger.info("Frame: " + str(landmarks[id].header.frame_id))
+                    self.logOrientation(landmarks[id], id)
+                    self.logPosition(landmarks[id], id)
+                    prevs[id] = landmarks[id].pose
+    
+        def similar(self, prev, landmark):
+            """ Check to see if there have been significant changes in positions. """
+            # store these in shorted named variables for notational reasons
+            p_cur = landmark.pose.position
+            q_cur = landmark.pose.orientation
         
-        def logOrientation(self, incoming_landmarks):
+            # check that the positions are close
+            close_position = np.isclose([p_cur.x, p_cur.y, p_cur.z], [prev.position.x, prev.position.y, prev.position.z], atol=.05).all()
+            
+            # check that the orientation is close
+            close_orient = np.isclose([q_cur.x, q_cur.y, q_cur.z, q_cur.w], [prev.orientation.x, prev.orientation.y, prev.orientation.z, prev.orientation.w], atol=.05).all()
+        
+            return close_orient and close_position
+            
+            
+        def logPosition(self, incoming_landmark, id):
+            """ Print the position of landmarks in meters. """
+            landmark = deepcopy(incoming_landmark)
+            self.logger.debug("\n" + str(landmark.pose.position), var_name = "position" + str(id))
+        
+        def logOrientation(self, incoming_landmark, id):
             """ Print the orientation of landmarks as a Euler Angle in degrees. """
-            landmarks = deepcopy(incoming_landmarks)
-            for id in landmarks:
-                q = landmarks[id].pose.orientation
-                self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name = id)
+            landmark = deepcopy(incoming_landmark)
+            q = landmark.pose.orientation
+            self.logger.debug("\n" + str(q), var_name = "quaternion" + str(id))
+            self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name = "orientation" + str(id))
 
     LocalizationTest().run()

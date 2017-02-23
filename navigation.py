@@ -127,12 +127,15 @@ if __name__ == "__main__":
             self.cc_square = [(0,0), (1,0), (1,1), (0,1)]
             self.c_square = [(0,0), (0,1), (1,1), (1,0)]
             self.corner_counter = 0
+        
+            # set up the logger output file
+            self.filename = None
 
         def main(self):
             """ The test currently being run. """
-            self.testCCsquare(.5)
+            #self.testCCsquare(.5)
             #self.testCsquare(.5)
-            #self.testLine(1)
+            self.testLine(1)
             
         def gotToPos(self, name, x, y):
             """ Default behavior for testing goToPosition. 
@@ -154,6 +157,7 @@ if __name__ == "__main__":
                 else:
                     self.logger.info("Reached " + str(name) + " at " + str((x,y)))
                     self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
+                    self.logger.csv(self.filename, [x, y, self.navigation.p.x, self.navigation.p.y])
                     self.reached_goal = False
                     return True
             
@@ -174,23 +178,46 @@ if __name__ == "__main__":
             
             return False
         
+        def initFile(self, filename):
+            """ Write the first line of our outgoing file (variable names). """
+            self.filename =filename + ("jerky" if self.jerky else "smooth")
+            self.logger.csv(self.filename, ["map_x", "map_y", "actual_x", "actual_y"], folder = "tests")
+        
         def testLine(self, length):
             """ Test behavior with a simple line. 
             
             Args:
                 length (float): Length of the desired line (in meters).
             """
+            if self.filename is None:
+                self.initFile("line")
+            
             if not self.reached_corner[0]:
                 self.reached_corner[0] = self.gotToPos("end point", length, 0)
-            else:
-                self.reached_corner[0] = self.gotToPos("home", 0, 0)
+        
+            elif self.gotToPos("home", 0, 0):
+                self.reached_corner[0] = False
     
         def testCCsquare(self, length):
-            """ Test a counter clockwise square. """
+            """ Test a counter clockwise square. 
+            
+            Args:
+                length (float): Length of the desired line (in meters).
+            """
+            if self.filename is None:
+                self.initFile("counterclockwise")
+            
             self.testSquare(length, self.cc_square)
         
         def testCsquare(self, length):
-            """ Test a clockwise square. """
+            """ Test a clockwise square. 
+            
+            Args:
+                length (float): Length of the desired line (in meters).
+            """
+            if self.filename is None:
+                self.initFile("clockwise")
+            
             self.testSquare(length, self.c_square)
     
         def testSquare(self, length, corners):
@@ -209,6 +236,7 @@ if __name__ == "__main__":
                 self.corner_counter = (self.corner_counter + 1) % len(self.reached_corner)
     
         def shutdown(self):
+            """ Kill all behavioral test processes. """
             self.motion.shutdown(self.rate)
             Tester.shutdown(self)
         
