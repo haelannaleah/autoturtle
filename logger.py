@@ -124,7 +124,7 @@ if __name__ == "__main__":
             
             self.logger.csv("test", ["hello", "world"])
             self.logger.csv("test", [1, 3])
-            self.logger.csv("anothertest", ["hi", "again"])
+            self.logger.csv("test2", ["hi", "again"])
 
             self.signal_shutdown("Logger test complete.")
 
