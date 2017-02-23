@@ -3,8 +3,10 @@
 Author:
     Annaleah Ernst
 """
-
+import csv
 import rospy
+
+from datetime import datetime
 
 class Logger:
     """ Create ROS style log messages.
@@ -14,6 +16,7 @@ class Logger:
     """
     def __init__(self, name):
         self.__name__ = "[" + str(name) + "]: "
+        self._open_files = {}
     
     def _print(self, printer, msg):
         printer(self.__name__ + str(msg))
@@ -71,6 +74,25 @@ class Logger:
             msg = "Warning in method '" + method + "': " + str(msg)
         
         self._print(rospy.logwarn, msg)
+
+    def csv(self, msg, filename):
+        """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
+        
+        Args:
+            msg (list): The line to be added to the CSV file.
+            filename (str): The name of the file we want to add data to.
+        """
+        # if we haven't been writing to this already, open it up
+        if filename not in self._open_files:
+            self._open_files[filename].file = open(filename + datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv", "w+")
+            self._open_files[filename].writer = csv.writer(self._open_files[filename].file)
+
+        self._open_files[filename].writer.writerow(msg)
+
+    def shutdown(self):
+        """ Close any open logging files. """
+        for filename in self._open_files:
+            self.open_file[filename].file.close()
 
 if __name__ == "__main__":
     from tester import Tester
