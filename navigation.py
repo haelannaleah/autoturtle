@@ -102,7 +102,7 @@ if __name__ == "__main__":
             Tester.__init__(self, "Navigation")
             
             self.navigation = Navigation()
-            self.motion = SafeMotion(0)
+            self.motion = Motion() #SafeMotion(0)
 
             # tests to run:
             #   square with Motion module, minimal.launch
@@ -113,7 +113,7 @@ if __name__ == "__main__":
             #self.motion = Motion()
             
             # flag for a jerky stop
-            self.jerky = True
+            self.jerky = False
             
             # I'm a bit concerned about robot safety if we don't slow things down,
             # but I'm also worried it won't be an accurate test if we change the speed
