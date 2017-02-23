@@ -75,7 +75,7 @@ class Logger:
         
         self._print(rospy.logwarn, msg)
 
-    def csv(self, msg, filename):
+    def csv(self, filename, msg):
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
@@ -119,6 +119,10 @@ if __name__ == "__main__":
             self.logger.debug("Debug!", var_name = "myvar", method = "main", line = 93)
             self.logger.warn("Warn!")
             self.logger.warn("Method warn!", method="main")
+            
+            self.logger.csv("test", ["hello", "world"])
+            self.logger.csv("test", [1, 3])
+            self.logger.csv("anothertest", ["hi", "again"])
 
             self.signal_shutdown("Logger test complete.")
 
