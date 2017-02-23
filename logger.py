@@ -77,11 +77,12 @@ class Logger:
         
         self._print(rospy.logwarn, msg)
 
-    def csv(self, fname, row, folder=None):
+    def csv(self, tname, row, folder=None):
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
-            fname (str): The name of the test (note: this is not the same as the path to the file)
+            tname (str): The name of the test, Note that this is not the same as the path to the file -
+                rather, this should be descriptive of the test
             row (list): The line to be added to the CSV file.
             folder (str, optional): The name of the local file we want to store the file in.
         
@@ -90,29 +91,29 @@ class Logger:
                 variable names for the following rows.
         """
         # if we haven't been writing to this already, open it up
-        if fname not in self._open_files:
+        if tname not in self._open_files:
         
             # set filename to include current datetime and (optional) folder
-            filename = self.__name__ + "_" + fname + datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv"
+            filename = self.__name__ + "_" + tname + datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv"
             if folder is not None:
                 filename = folder + "/" + filename
             
             # open the file and set up the csv writer
-            self._open_files[fname] = {}
-            self._open_files[fname]["file"] = open(filename, "w+")
-            self._open_files[fname]["writer"] = csv.writer(self._open_files[fname]["file"])
+            self._open_files[tname] = {}
+            self._open_files[tname]["file"] = open(filename, "w+")
+            self._open_files[tname]["writer"] = csv.writer(self._open_files[tname]["file"])
             
             # assume that the first message will be variable names
-            self._open_files[fname]["writer"].writerow(["time"] + row)
+            self._open_files[tname]["writer"].writerow(["time"] + row)
     
         else:
             # preappend the current time and write current line to file
-            self._open_files[fname]["writer"].writerow([time() - self._start_time] + row)
+            self._open_files[tname]["writer"].writerow([time() - self._start_time] + row)
 
     def shutdown(self):
         """ Close any open logging files. """
-        for fname in self._open_files:
-            self._open_files[fname]["file"].close()
+        for tname in self._open_files:
+            self._open_files[tname]["file"].close()
 
 if __name__ == "__main__":
     from tester import Tester
