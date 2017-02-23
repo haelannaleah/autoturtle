@@ -84,6 +84,7 @@ class Logger:
         """
         # if we haven't been writing to this already, open it up
         if filename not in self._open_files:
+            self._open_files[filename] = {}
             self._open_files[filename].file = open(filename + datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv", "w+")
             self._open_files[filename].writer = csv.writer(self._open_files[filename].file)
 
