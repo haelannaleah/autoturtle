@@ -80,11 +80,11 @@ class Navigation():
         turn_angle = min([turn, turn + self._TWO_PI, turn - self._TWO_PI], key = lambda t: abs(t - self.angle))
 
         # we're (pretty) near our final location
-        if np.isclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.01).all():
+        if np.isclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.05).all():
             return True
         
         # our orientation has gotten off and we need to adjust
-        elif not np.isclose(self.angle, turn_angle, atol=0.01):
+        elif not np.isclose(self.angle, turn_angle, atol=0.05):
             return self.angle - turn_angle
 
         # otherwise, move toward our goal
