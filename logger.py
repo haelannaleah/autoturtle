@@ -7,6 +7,7 @@ import csv
 import rospy
 
 from datetime import datetime
+from time import time
 
 class Logger:
     """ Create ROS style log messages.
@@ -17,6 +18,8 @@ class Logger:
     def __init__(self, name):
         self.__name__ = str(name)
         self._open_files = {}
+        self._start_time = time()
+        self._time = ["time"]
     
     def _print(self, printer, msg):
         printer("[" + self.__name__ + "]: " + str(msg))
@@ -93,7 +96,8 @@ class Logger:
             self._open_files[fname]["writer"] = csv.writer(self._open_files[fname]["file"])
 
         # write the current row to the csv file
-        self._open_files[fname]["writer"].writerow(row)
+        self._open_files[fname]["writer"].writerow(self._time + row)
+        self._time = [time() - self._start_time]
 
     def shutdown(self):
         """ Close any open logging files. """
