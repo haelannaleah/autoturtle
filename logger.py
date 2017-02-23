@@ -75,20 +75,21 @@ class Logger:
         
         self._print(rospy.logwarn, msg)
 
-    def csv(self, fname, msg):
+    def csv(self, fname, row):
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
             fname (str): The name of the file we want to add data to.
-            msg (list): The line to be added to the CSV file.
+            row (list): The line to be added to the CSV file.
         """
         # if we haven't been writing to this already, open it up
-        if filename not in self._open_files:
+        if fname not in self._open_files:
             self._open_files[fname] = {}
             self._open_files[fname]["file"] = open(fname + datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv", "w+")
             self._open_files[fname]["writer"] = csv.writer(self._open_files[fname]["file"])
 
-        self._open_files[fname]["writer"].writerow(msg)
+        # write the current row to the csv file
+        self._open_files[fname]["writer"].writerow(row)
 
     def shutdown(self):
         """ Close any open logging files. """
