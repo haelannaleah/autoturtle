@@ -61,6 +61,7 @@ class Tester():
         Note: This function may be overridden in inheriting classes.
         """
         self.logger.info("goodbye world")
+        self.logger.shutdown()
 
     def signal_shutdown(self, reason):
         """ Interrupt robot control loop and stop the node.

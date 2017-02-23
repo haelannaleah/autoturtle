@@ -3,8 +3,10 @@
 Author:
     Annaleah Ernst
 """
-
+import csv
 import rospy
+
+from datetime import datetime
 
 class Logger:
     """ Create ROS style log messages.
@@ -13,10 +15,11 @@ class Logger:
         name: The name of the module that owns the logger.
     """
     def __init__(self, name):
-        self.__name__ = "[" + str(name) + "]: "
+        self.__name__ = str(name)
+        self._open_files = {}
     
     def _print(self, printer, msg):
-        printer(self.__name__ + str(msg))
+        printer("[" + self.__name__ + "]: " + str(msg))
     
     def debug(self, msg, var_name = None, method = None, line = None):
         """ Log debugging messages.
@@ -72,6 +75,28 @@ class Logger:
         
         self._print(rospy.logwarn, msg)
 
+    def csv(self, fname, row):
+        """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
+        
+        Args:
+            fname (str): The name of the file we want to add data to.
+            row (list): The line to be added to the CSV file.
+        """
+        # if we haven't been writing to this already, open it up
+        if fname not in self._open_files:
+            filename = self.__name__ + "_" + fname + datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv"
+            self._open_files[fname] = {}
+            self._open_files[fname]["file"] = open(filename, "w+")
+            self._open_files[fname]["writer"] = csv.writer(self._open_files[fname]["file"])
+
+        # write the current row to the csv file
+        self._open_files[fname]["writer"].writerow(row)
+
+    def shutdown(self):
+        """ Close any open logging files. """
+        for fname in self._open_files:
+            self._open_files[fname]["file"].close()
+
 if __name__ == "__main__":
     from tester import Tester
     
@@ -97,6 +122,10 @@ if __name__ == "__main__":
             self.logger.debug("Debug!", var_name = "myvar", method = "main", line = 93)
             self.logger.warn("Warn!")
             self.logger.warn("Method warn!", method="main")
+            
+            self.logger.csv("test", ["hello", "world"])
+            self.logger.csv("test", [1, 3])
+            self.logger.csv("test2", ["hi", "again"])
 
             self.signal_shutdown("Logger test complete.")
 
