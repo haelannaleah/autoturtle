@@ -180,7 +180,7 @@ if __name__ == "__main__":
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
-            self.filename = filename + "jerky" if self.jerky else "smooth"
+            self.filename = filename + ("jerky" if self.jerky else "smooth")
             self.logger.csv(self.filename, ["map_x", "map_y", "actual_x", "actual_y"])
         
         def testLine(self, length):
@@ -194,8 +194,9 @@ if __name__ == "__main__":
             
             if not self.reached_corner[0]:
                 self.reached_corner[0] = self.gotToPos("end point", length, 0)
-            else:
-                self.reached_corner[0] = self.gotToPos("home", 0, 0)
+        
+            elif self.gotToPos("home", 0, 0):
+                self.reached_corner[0] = False
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. 
