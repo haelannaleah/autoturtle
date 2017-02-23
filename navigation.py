@@ -181,7 +181,7 @@ if __name__ == "__main__":
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
             self.filename =filename + ("jerky" if self.jerky else "smooth")
-            self.logger.csv(self.filename, ["map_x", "map_y", "actual_x", "actual_y"], folder = "tests")
+            self.logger.csv(self.filename, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
