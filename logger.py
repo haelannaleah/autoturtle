@@ -81,8 +81,8 @@ class Logger:
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
-            tname (str): The name of the test. Note that this is not the same as the path to the file -
-                rather, this should be descriptive of the test
+            tname (str): The name of the test. Note that this is not the same as the path to the file;
+                rather, this should be descriptive of the test we are logging CSV data for.
             row (list): The line to be added to the CSV file.
             folder (str, optional): The name of the local file we want to store the file in.
         
