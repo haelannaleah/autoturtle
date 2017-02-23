@@ -180,7 +180,7 @@ if __name__ == "__main__":
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
-            self.filename = filename + ("jerky" if self.jerky else "smooth")
+            self.filename = "tests/" + filename + ("jerky" if self.jerky else "smooth")
             self.logger.csv(self.filename, ["map_x", "map_y", "actual_x", "actual_y"])
         
         def testLine(self, length):
