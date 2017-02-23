@@ -15,11 +15,11 @@ class Logger:
         name: The name of the module that owns the logger.
     """
     def __init__(self, name):
-        self.__name__ = "[" + str(name) + "]: "
+        self.__name__ = str(name)
         self._open_files = {}
     
     def _print(self, printer, msg):
-        printer(self.__name__ + str(msg))
+        printer("[" + self.__name__ + "]: " + str(msg))
     
     def debug(self, msg, var_name = None, method = None, line = None):
         """ Log debugging messages.
@@ -84,8 +84,9 @@ class Logger:
         """
         # if we haven't been writing to this already, open it up
         if fname not in self._open_files:
+            filename = self.__name__ + "_" + fname + datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv"
             self._open_files[fname] = {}
-            self._open_files[fname]["file"] = open(fname + datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv", "w+")
+            self._open_files[fname]["file"] = open(filename, "w+")
             self._open_files[fname]["writer"] = csv.writer(self._open_files[fname]["file"])
 
         # write the current row to the csv file
