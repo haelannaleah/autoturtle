@@ -176,10 +176,10 @@ if __name__ == "__main__":
                         
                         # if we've never encountered this marker before, open a new csv file
                         if not self.logger.isLogging(test_name):
-                            self.logger.csv(test_name, self.csvfields)
+                            self.logger.csv(test_name, self.csvfields, folder = "tests")
                     
                         # write data to the csv file
-                        self.logger.csv(test_name, logdata)
+                        self.logger.csv(test_name, logdata, folder = "tests")
 
                         # log data to the screen as well
                         self.screenLog(self.tags[id])
