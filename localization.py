@@ -146,9 +146,9 @@ if __name__ == "__main__":
             fields = ["px", "py", "pz", "qx", "qy", "qz", "qw", "r", "p", "y"]
             
             self.csvfields = []
-            self.csvfields.append(["raw_" + field for field in fields])
-            self.csvfields.append(["odom_" + field for field in fields])
-            self.csvfields.append(["relative_" + field for field in fields])
+            self.csvfields.append("raw_" + field for field in fields)
+            self.csvfields.append("odom_" + field for field in fields)
+            self.csvfields.append("relative_" + field for field in fields)
             self.csvtestname = "stationary"
 
         def main(self):
@@ -171,9 +171,9 @@ if __name__ == "__main__":
                 
                     # convert landmark into csv data
                     csvdata = []
-                    csvdata.append(self.csvPose(tags[id]))
-                    csvdata.append(self.csvPose(landmarks_odom[id]))
-                    csvdata.append(self.csvPose(landmarks_relative[id]))
+                    csvdata.extend(self.csvPose(tags[id]))
+                    csvdata.extend(self.csvPose(landmarks_odom[id]))
+                    csvdata.extend(self.csvPose(landmarks_relative[id]))
     
                     # if we've never encountered this marker before, or it's values have changed
                     if id not in self.prev or not np.isclose(csvdata, self.prev):
