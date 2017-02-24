@@ -173,7 +173,7 @@ if __name__ == "__main__":
                     logdata = []
                     logdata.append(self.convertPose(tags[id]))
                     logdata.append(self.convertPose(landmarks_odom[id]))
-                    logdata.append(self.convertPose(landmarks_relative[id]))
+                    logdata.append(self.convertPose(landmarks_relative[id])
     
                     # if we've never encountered this marker before, or it's values have changed
                     if id not in self.prev or not np.isclose(logdata, self.prevs):
@@ -199,10 +199,11 @@ if __name__ == "__main__":
             self.logPosition(landmark, id)
     
         def convertPose(self, landmark):
+            """ Convert pose object into csv data. """
             p = landmark.pose.position
             q = landmark.pose.orientation
-            r, p, y = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
-            return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, r, p, y]
+            roll, pitch, yaw = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
+            return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, roll, pitch, yaw]
             
         def logPosition(self, incoming_landmark, id):
             """ Print the position of landmarks in meters. """
