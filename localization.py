@@ -176,7 +176,7 @@ if __name__ == "__main__":
                     logdata.append(landmarks_relative[id])
     
                     # if we've never encountered this marker before, or it's values have changed
-                    if id not in prevs or not np.isclose(logdata, self.prevs):
+                    if id not in self.prevs or not np.isclose(logdata, self.prevs):
                         self.prevs = logdata
                         test_name = self.csvtestname + "_marker" + str(id)
                         
