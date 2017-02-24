@@ -164,7 +164,7 @@ if __name__ == "__main__":
             landmarks_relative = deepcopy(self.localization.landmarks_relative)
             
             # separately log all tag data
-            for id in localization.tags:
+            for id in tags:
             
                 # make sure that the landmark data is in
                 if id in landmarks_odom and id in landmarks_relative:
