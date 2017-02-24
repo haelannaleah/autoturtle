@@ -19,6 +19,7 @@ class Logger:
         self.__name__ = str(name)
         self._open_files = {}
         self._start_time = time()
+        self._timestamp = datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv"
     
     def _print(self, printer, msg):
         printer("[" + self.__name__ + "]: " + str(msg))
@@ -98,7 +99,7 @@ class Logger:
         if tname not in self._open_files:
         
             # set filename to include current datetime and (optional) folder
-            filename = self.__name__ + "_" + tname + datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv"
+            filename = self.__name__ + "_" + tname +  self._timestamp
             if folder is not None:
                 filename = folder + "/" + filename
             
