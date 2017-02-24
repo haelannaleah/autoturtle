@@ -112,7 +112,8 @@ class Localization():
                 continue
                 
             # incoming position data is relative to the rgb camera frame, so we reset the header to the optical
-            #   frame to get the correct position
+            #   frame to get the correct position (note that this step is necessary since we're getting a shallow
+            #   copy of the header)
             header.frame_id = '/camera_rgb_optical_frame'
             position = self._attemptLookup(self._tf_listener.transformPoint, \
                          target_frame, PointStamped(header, self.tags[id].pose.position))
