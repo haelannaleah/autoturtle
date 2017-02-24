@@ -146,9 +146,9 @@ if __name__ == "__main__":
             fields = ["px", "py", "pz", "qx", "qy", "qz", "qw", "r", "p", "y"]
             
             self.csvfields = []
-            self.csvfields.append("raw_" + field for field in fields)
-            self.csvfields.append("odom_" + field for field in fields)
-            self.csvfields.append("relative_" + field for field in fields)
+            self.csvfields.extend(["raw_" + field for field in fields])
+            self.csvfields.extend(["odom_" + field for field in fields])
+            self.csvfields.extend(["relative_" + field for field in fields])
             self.csvtestname = "stationary"
 
         def main(self):
