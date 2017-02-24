@@ -157,17 +157,23 @@ if __name__ == "__main__":
         
         def logData(self):
             """ Log CSV file and output data to screen. """
+            
+            # make sure the tags don't go changing on us
+            tags = copy.deepcopy(self.localization.tags)
+            landmarks_odom = copy.deepcopy(self.localization.landmarks_odom)
+            landmarks_relative = copy.deepcopy(self.localization.landmarks_relative)
+            
             # separately log all tag data
-            for id in self.tags:
+            for id in localization.tags:
             
                 # make sure that the landmark data is in
-                if id in self.landmarks_odom and id in self.landmarks_relative:
+                if id in landmarks_odom and id in landmarks_relative:
                 
                     # convert landmark into csv data
                     logdata = []
-                    logdata.append(self.localization.tags[id])
-                    logdata.append(self.localization.landmarks_odom[id])
-                    logdata.append(self.localization.landmarks_relative[id])
+                    logdata.append(tags[id])
+                    logdata.append(landmarks_odom[id])
+                    logdata.append(landmarks_relative[id])
     
                     # if we've never encountered this marker before, or it's values have changed
                     if id not in prevs or not np.isclose(logdata, self.prevs):
@@ -182,9 +188,9 @@ if __name__ == "__main__":
                         self.logger.csv(test_name, logdata, folder = "tests")
 
                         # log data to the screen as well
-                        self.screenLog(self.localization.tags[id])
-                        self.screenLog(self.localization.landmarks_odom[id])
-                        self.screenLog(self.localization.landmarks_relative[id])
+                        self.screenLog(tags[id])
+                        self.screenLog(landmarks_odom[id])
+                        self.screenLog(landmarks_relative[id])
         
         def screenLog(self, landmark, id):
             """ Nicely parse landmarks into easily logable data. """
