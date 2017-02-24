@@ -176,8 +176,8 @@ if __name__ == "__main__":
                     csvdata.extend(self.csvPose(landmarks_relative[id]))
 
                     # if we've never encountered this marker before, or it's values have changed
-                    if id not in self.prev or not np.isclose(raw, self.prev[id], atol=.5).all():
-                        self.prev[id] = raw
+                    if id not in self.prev or not np.isclose(csvdata, self.prev[id], atol=.5).all():
+                        self.prev[id] = csvdata
                         test_name = self.csvtestname + "_marker" + str(id)
                         
                         # if we've never encountered this marker before, open a new csv file
