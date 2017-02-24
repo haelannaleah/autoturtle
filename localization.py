@@ -140,26 +140,39 @@ if __name__ == "__main__":
             
             # set up localization
             self.localization = Localization()
-        
-            self.prev_relative = {}
-            self.prev_odom = {}
-        
-            self.logtest = "stationary"
+            
+            self.prev = {}
+    
             fields = ["px", "py", "pz", "qx", "qy", "qz", "qw", "r", "p", "y"]
             
-            test_vals = ["raw_" + field for field in fields]
-            test_vals.append(["odom_" + field for field in fields])
-            test_vals.append(["relative_" + field for field in fields])
-            
-            self.logger.csv(self.logtest, test_vals)
+            self.csvfields = []
+            self.csvfields.append(["raw_" + field for field in fields])
+            self.csvfields.append(["odom_" + field for field in fields])
+            self.csvfields.append(["relative_" + field for field in fields])
+            self.csvtestname = "stationary"
+
 
         def main(self):
             """ Run main tests. """
-            self.slowScreenLog(self.prev_relative, self.localization.landmarks_relative)
-            self.slowScreenLog(self.prev_odom, self.localization.landmarks_odom)
+            pass
         
-        def logCSV(self, name):
-            
+        def logCSV(self):
+            """ Log CSV file. """
+            for id in self.tags:
+                if id in self.landmarks_odom and id in self.landmarks_relative:
+                    logdata = []
+                    logdata.append(self.tags[id])
+                    logdata.append(self.landmarks_odom[id])
+                    logdata.append(self.landmarks_relative[id])
+    
+                    if id not in prevs or not np.isclose(logdata, self.prevs):
+                        self.prevs = logdata
+                        test_name = self.csvtestname + "_marker" + str(id)
+                        
+                        if not self.logger.isLogging(test_name):
+                            self.logger.csv(test_name, self.csvfields)
+        
+                        self.logger.csv(test_name, logdata)
         
         def slowScreenLogging(self, prevs, landmarks):
             """ Only log things on updates! """
@@ -171,9 +184,9 @@ if __name__ == "__main__":
                     
                     prevs[id] = landmarks[id].pose
     
-        def convertPose(self, pose):
-            p = pose.position
-            q = pose.orientation
+        def convertPose(self, landmark):
+            p = landmark.pose.position
+            q = landmark.pose.orientation
             r, p, y = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
             return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, r, p, y]
     
