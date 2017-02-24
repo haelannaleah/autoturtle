@@ -176,7 +176,7 @@ if __name__ == "__main__":
                     csvdata.extend(self.csvPose(landmarks_relative[id]))
 
                     # if we've never encountered this marker before, or it's values have changed
-                    if id not in self.prev or not np.allclose(csvdata, self.prev[id], atol=1):
+                    if id not in self.prev or not np.allclose(csvdata, self.prev[id], rtol = .1, atol=1):
                         self.prev[id] = csvdata
                         test_name = self.csvtestname + "_marker" + str(id)
                         
@@ -203,7 +203,7 @@ if __name__ == "__main__":
             p = landmark.pose.position
             q = landmark.pose.orientation
             roll, pitch, yaw = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
-            return [p.x, p.y, p.z, q.x, q.y, q.z, q.w]#]
+            return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, roll, pitch, yaw]
             
         def logPosition(self, incoming_landmark, id):
             """ Print the position of landmarks in meters. """
