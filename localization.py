@@ -171,13 +171,14 @@ if __name__ == "__main__":
                 
                     # convert landmark into csv data
                     csvdata = []
-                    csvdata.extend(self.csvPose(tags[id]))
+                    raw = self.csvPose(tags[id])
+                    csvdata.extend(raw)
                     csvdata.extend(self.csvPose(landmarks_odom[id]))
                     csvdata.extend(self.csvPose(landmarks_relative[id]))
 
                     # if we've never encountered this marker before, or it's values have changed
-                    if id not in self.prev or not np.isclose(csvdata, self.prev[id], atol=.5).all():
-                        self.prev[id] = csvdata
+                    if id not in self.prev or not np.isclose(raw, self.prev[id], atol=.5).all():
+                        self.prev[id] = raw
                         test_name = self.csvtestname + "_marker" + str(id)
                         
                         # if we've never encountered this marker before, open a new csv file
