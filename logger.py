@@ -76,6 +76,10 @@ class Logger:
             msg = "Warning in method '" + method + "': " + str(msg)
         
         self._print(rospy.logwarn, msg)
+        
+    def isLogging(self, tname):
+        """ True if we've already started logging this test. """
+        return tname in self._open_files
 
     def csv(self, tname, row, folder=None):
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 

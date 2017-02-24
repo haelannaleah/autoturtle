@@ -159,7 +159,7 @@ if __name__ == "__main__":
             self.slowScreenLog(self.prev_odom, self.localization.landmarks_odom)
         
         def logCSV(self, name):
-        
+            
         
         def slowScreenLogging(self, prevs, landmarks):
             """ Only log things on updates! """
