@@ -142,6 +142,9 @@ if __name__ == "__main__":
         
             self.prev_relative = {}
             self.prev_odom = {}
+        
+            self.logtest = "stationary"
+            self.logger.csv(self.logtest, ["px", "py", "pz", "qx", "qy", "qz", "qw", "angle"])
 
         def main(self):
             """ Run main tests. """
@@ -155,6 +158,7 @@ if __name__ == "__main__":
                     self.logger.info("Frame: " + str(landmarks[id].header.frame_id))
                     self.logOrientation(landmarks[id], id)
                     self.logPosition(landmarks[id], id)
+                    
                     prevs[id] = landmarks[id].pose
     
         def similar(self, prev, landmark):
