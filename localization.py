@@ -171,9 +171,9 @@ if __name__ == "__main__":
                 
                     # convert landmark into csv data
                     logdata = []
-                    logdata.append(tags[id])
-                    logdata.append(landmarks_odom[id])
-                    logdata.append(landmarks_relative[id])
+                    logdata.append(self.convertPose(tags[id]))
+                    logdata.append(self.convertPose(landmarks_odom[id]))
+                    logdata.append(self.convertPose(landmarks_relative[id]))
     
                     # if we've never encountered this marker before, or it's values have changed
                     if id not in self.prev or not np.isclose(logdata, self.prevs):
@@ -188,9 +188,9 @@ if __name__ == "__main__":
                         self.logger.csv(test_name, logdata, folder = "tests")
 
                         # log data to the screen as well
-                        self.screenLog(tags[id])
-                        self.screenLog(landmarks_odom[id])
-                        self.screenLog(landmarks_relative[id])
+                        self.screenLog(tags[id], id)
+                        self.screenLog(landmarks_odom[id], id)
+                        self.screenLog(landmarks_relative[id], id)
         
         def screenLog(self, landmark, id):
             """ Nicely parse landmarks into easily logable data. """
