@@ -159,9 +159,9 @@ if __name__ == "__main__":
             """ Log CSV file and output data to screen. """
             
             # make sure the tags don't go changing on us
-            tags = copy.deepcopy(self.localization.tags)
-            landmarks_odom = copy.deepcopy(self.localization.landmarks_odom)
-            landmarks_relative = copy.deepcopy(self.localization.landmarks_relative)
+            tags = deepcopy(self.localization.tags)
+            landmarks_odom = deepcopy(self.localization.landmarks_odom)
+            landmarks_relative = deepcopy(self.localization.landmarks_relative)
             
             # separately log all tag data
             for id in localization.tags:
