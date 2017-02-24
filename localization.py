@@ -171,8 +171,7 @@ if __name__ == "__main__":
                 
                     # convert landmark into csv data
                     csvdata = []
-                    raw = self.csvPose(tags[id])
-                    csvdata.extend(raw)
+                    csvdata.extend(self.csvPose(tags[id]))
                     csvdata.extend(self.csvPose(landmarks_odom[id]))
                     csvdata.extend(self.csvPose(landmarks_relative[id]))
 
@@ -204,7 +203,7 @@ if __name__ == "__main__":
             p = landmark.pose.position
             q = landmark.pose.orientation
             roll, pitch, yaw = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
-            return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, roll, pitch, yaw]
+            return [p.x, p.y, p.z, q.x, q.y, q.z, q.w]#]
             
         def logPosition(self, incoming_landmark, id):
             """ Print the position of landmarks in meters. """
