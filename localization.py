@@ -145,14 +145,23 @@ if __name__ == "__main__":
             self.prev_odom = {}
         
             self.logtest = "stationary"
-            self.logger.csv(self.logtest, ["px", "py", "pz", "qx", "qy", "qz", "qw", "angle"])
+            fields = ["px", "py", "pz", "qx", "qy", "qz", "qw", "r", "p", "y"]
+            
+            test_vals = ["raw_" + field for field in fields]
+            test_vals.append(["odom_" + field for field in fields])
+            test_vals.append(["relative_" + field for field in fields])
+            
+            self.logger.csv(self.logtest, test_vals)
 
         def main(self):
             """ Run main tests. """
-            self.slowLogging(self.prev_relative, self.localization.landmarks_relative)
-            self.slowLogging(self.prev_odom, self.localization.landmarks_odom)
-    
-        def slowLogging(self, prevs, landmarks):
+            self.slowScreenLog(self.prev_relative, self.localization.landmarks_relative)
+            self.slowScreenLog(self.prev_odom, self.localization.landmarks_odom)
+        
+        def logCSV(self, name):
+        
+        
+        def slowScreenLogging(self, prevs, landmarks):
             """ Only log things on updates! """
             for id in landmarks:
                 if id not in prevs or not self.similar(prevs[id], landmarks[id]):
@@ -161,6 +170,12 @@ if __name__ == "__main__":
                     self.logPosition(landmarks[id], id)
                     
                     prevs[id] = landmarks[id].pose
+    
+        def convertPose(self, pose):
+            p = pose.position
+            q = pose.orientation
+            r, p, y = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
+            return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, r, p, y]
     
         def similar(self, prev, landmark):
             """ Check to see if there have been significant changes in positions. """
