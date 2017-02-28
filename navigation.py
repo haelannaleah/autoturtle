@@ -102,7 +102,7 @@ if __name__ == "__main__":
             Tester.__init__(self, "Navigation")
             
             self.navigation = Navigation()
-            self.motion = Motion() #SafeMotion(0)
+            self.motion = SafeMotion(0)
 
             # tests to run:
             #   square with Motion module, minimal.launch
