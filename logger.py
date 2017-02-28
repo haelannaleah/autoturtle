@@ -7,6 +7,7 @@ import csv
 import rospy
 
 from datetime import datetime
+from time import time
 
 class Logger:
     """ Create ROS style log messages.
@@ -17,6 +18,8 @@ class Logger:
     def __init__(self, name):
         self.__name__ = str(name)
         self._open_files = {}
+        self._start_time = time()
+        self._timestamp = datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv"
     
     def _print(self, printer, msg):
         printer("[" + self.__name__ + "]: " + str(msg))
@@ -74,31 +77,48 @@ class Logger:
             msg = "Warning in method '" + method + "': " + str(msg)
         
         self._print(rospy.logwarn, msg)
+        
+    def isLogging(self, tname):
+        """ True if we've already started logging this test. """
+        return tname in self._open_files
 
-    def csv(self, fname, row, folder=None):
+    def csv(self, tname, row, folder=None):
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
-            fname (str): The name of the file we want to add data to.
+            tname (str): The name of the test. Note that this is not the same as the path to the file;
+                rather, this should be descriptive of the test we are logging CSV data for.
             row (list): The line to be added to the CSV file.
             folder (str, optional): The name of the local file we want to store the file in.
+        
+        Note:
+            When called on fname for the first time, Logger will assume that the row contains column 
+                variable names for the following rows.
         """
         # if we haven't been writing to this already, open it up
-        if fname not in self._open_files:
-            filename = self.__name__ + "_" + fname + datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv"
+        if tname not in self._open_files:
+        
+            # set filename to include current datetime and (optional) folder
+            filename = self.__name__ + "_" + tname +  self._timestamp
             if folder is not None:
                 filename = folder + "/" + filename
-            self._open_files[fname] = {}
-            self._open_files[fname]["file"] = open(filename, "w+")
-            self._open_files[fname]["writer"] = csv.writer(self._open_files[fname]["file"])
-
-        # write the current row to the csv file
-        self._open_files[fname]["writer"].writerow(row)
+            
+            # open the file and set up the csv writer
+            self._open_files[tname] = {}
+            self._open_files[tname]["file"] = open(filename, "w+")
+            self._open_files[tname]["writer"] = csv.writer(self._open_files[tname]["file"])
+            
+            # assume that the first message will be variable names
+            self._open_files[tname]["writer"].writerow(["time"] + row)
+    
+        else:
+            # preappend the current time and write current line to file
+            self._open_files[tname]["writer"].writerow([time() - self._start_time] + row)
 
     def shutdown(self):
         """ Close any open logging files. """
-        for fname in self._open_files:
-            self._open_files[fname]["file"].close()
+        for tname in self._open_files:
+            self._open_files[tname]["file"].close()
 
 if __name__ == "__main__":
     from tester import Tester
