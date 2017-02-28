@@ -112,7 +112,8 @@ class Localization():
                 continue
                 
             # incoming position data is relative to the rgb camera frame, so we reset the header to the optical
-            #   frame to get the correct position
+            #   frame to get the correct position (note that this step is necessary since we're getting a shallow
+            #   copy of the header)
             header.frame_id = '/camera_rgb_optical_frame'
             position = self._attemptLookup(self._tf_listener.transformPoint, \
                          target_frame, PointStamped(header, self.tags[id].pose.position))
@@ -139,38 +140,70 @@ if __name__ == "__main__":
             
             # set up localization
             self.localization = Localization()
-        
-            self.prev_relative = {}
-            self.prev_odom = {}
+            
+            self.prev = {}
+    
+            fields = ["px", "py", "pz", "qx", "qy", "qz", "qw", "r", "p", "y"]
+            
+            self.csvfields = []
+            self.csvfields.extend(["raw_" + field for field in fields])
+            self.csvfields.extend(["odom_" + field for field in fields])
+            self.csvfields.extend(["relative_" + field for field in fields])
+            self.csvtestname = "stationary"
 
         def main(self):
             """ Run main tests. """
-            self.slowLogging(self.prev_relative, self.localization.landmarks_relative)
-            self.slowLogging(self.prev_odom, self.localization.landmarks_odom)
-    
-        def slowLogging(self, prevs, landmarks):
-            """ Only log things on updates! """
-            for id in landmarks:
-                if id not in prevs or not self.similar(prevs[id], landmarks[id]):
-                    self.logger.info("Frame: " + str(landmarks[id].header.frame_id))
-                    self.logOrientation(landmarks[id], id)
-                    self.logPosition(landmarks[id], id)
-                    prevs[id] = landmarks[id].pose
-    
-        def similar(self, prev, landmark):
-            """ Check to see if there have been significant changes in positions. """
-            # store these in shorted named variables for notational reasons
-            p_cur = landmark.pose.position
-            q_cur = landmark.pose.orientation
+            self.logData()
         
-            # check that the positions are close
-            close_position = np.isclose([p_cur.x, p_cur.y, p_cur.z], [prev.position.x, prev.position.y, prev.position.z], atol=.05).all()
+        def logData(self):
+            """ Log CSV file and output data to screen. """
             
-            # check that the orientation is close
-            close_orient = np.isclose([q_cur.x, q_cur.y, q_cur.z, q_cur.w], [prev.orientation.x, prev.orientation.y, prev.orientation.z, prev.orientation.w], atol=.05).all()
+            # make sure the tags don't go changing on us
+            tags = deepcopy(self.localization.tags)
+            landmarks_odom = deepcopy(self.localization.landmarks_odom)
+            landmarks_relative = deepcopy(self.localization.landmarks_relative)
+            
+            # separately log all tag data
+            for id in tags:
+            
+                # make sure that the landmark data is in
+                if id in landmarks_odom and id in landmarks_relative:
+                
+                    # convert landmark into csv data
+                    csvdata = []
+                    csvdata.extend(self.csvPose(tags[id]))
+                    csvdata.extend(self.csvPose(landmarks_odom[id]))
+                    csvdata.extend(self.csvPose(landmarks_relative[id]))
+
+                    # if we've never encountered this marker before, or it's values have changed
+                    if id not in self.prev or not np.allclose(csvdata, self.prev[id], rtol=.1, atol=.5):
+                        self.prev[id] = csvdata
+                        test_name = self.csvtestname + "_marker" + str(id)
+                        
+                        # if we've never encountered this marker before, open a new csv file
+                        if not self.logger.isLogging(test_name):
+                            self.logger.csv(test_name, self.csvfields, folder = "tests")
+                    
+                        # write data to the csv file
+                        self.logger.csv(test_name, csvdata, folder = "tests")
+
+                        # log data to the screen as well
+                        self.screenLog(tags[id], id)
+                        self.screenLog(landmarks_odom[id], id)
+                        self.screenLog(landmarks_relative[id], id)
         
-            return close_orient and close_position
-            
+        def screenLog(self, landmark, id):
+            """ Nicely parse landmarks into easily logable data. """
+            self.logger.info("Frame: " + str(landmark.header.frame_id))
+            self.logOrientation(landmark, id)
+            self.logPosition(landmark, id)
+    
+        def csvPose(self, landmark):
+            """ Convert pose object into csv data. """
+            p = landmark.pose.position
+            q = landmark.pose.orientation
+            roll, pitch, yaw = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
+            return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, roll, pitch, yaw]
             
         def logPosition(self, incoming_landmark, id):
             """ Print the position of landmarks in meters. """

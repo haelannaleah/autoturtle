@@ -80,7 +80,7 @@ class Navigation():
         turn_angle = min([turn, turn + self._TWO_PI, turn - self._TWO_PI], key = lambda t: abs(t - self.angle))
 
         # we're (pretty) near our final location
-        if np.isclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.05).all():
+        if np.allclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.05):
             return True
         
         # our orientation has gotten off and we need to adjust
@@ -133,9 +133,9 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            #self.testCCsquare(.5)
+            self.testCCsquare(.5)
             #self.testCsquare(.5)
-            self.testLine(1)
+            #self.testLine(1)
             
         def gotToPos(self, name, x, y):
             """ Default behavior for testing goToPosition. 
@@ -181,7 +181,7 @@ if __name__ == "__main__":
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
             self.filename =filename + ("jerky" if self.jerky else "smooth")
-            self.logger.csv(self.filename, ["map_x", "map_y", "actual_x", "actual_y"], folder = "tests")
+            self.logger.csv(self.filename, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
