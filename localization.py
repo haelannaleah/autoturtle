@@ -69,6 +69,18 @@ class Localization():
         
         # the transformation failed
         return None
+        
+    def _estimatePose(self):
+    
+        # attempt to get the closest landmark in out landmark dict
+        try:
+            closest = min(self.tags_relative[id] for id in self.tags_relative if id in self.landmarks,
+                        key = lambda p : p.pose.position.x**2 + p.pose.position.y**2)
+        
+        # the argument to min was an empty list; we don't see any familiar landmarks
+        except TypeError as e:
+            self.estimated_pose = None
+            return
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
