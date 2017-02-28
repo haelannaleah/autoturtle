@@ -14,20 +14,27 @@ from logger import Logger
 class Localization():
     """ Handle landmark detection and global localization.
     
+    Args:
+        landmarks (geometry_msgs.msg.Pose dict): A dict mapping the map position of landmarks to
+            their AR tag ids.
+    
     Attributes:
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
             their raw form.
-        landmarks_relative (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base
+        tags_relative (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base
             frame.
-        landmarks_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
+        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
+        self.estimated_pose (geometry_msgs.msg.Pose): The estimated pose of the robot based on the 
+            visible tags.
     """
     def __init__(self):
         self._logger = Logger("Localization")
         
         # listen to the raw AprilTag data
         self.tags = {}
-        self.landmarks_relative = {}
-        self.landmarks_odom = {}
+        self.tags_relative = {}
+        self.tags_odom = {}
+        self.estimated_pose = None
         rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)
     
         # listen for frame transformations
@@ -69,13 +76,13 @@ class Localization():
             # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
             #   I promise, its less scary than it looks...
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self.landmarks_relative = self._transformTags('/base_footprint')
-            self.landmarks_odom = self._transformTags('/odom')
+            self.tags_relative = self._transformTags('/base_footprint')
+            self.tags_odom = self._transformTags('/odom')
         else:
             # we don't see any tags, so empty things out
             self.tags = {}
-            self.landmarks_relative = {}
-            self.landmarks_odom = {}
+            self.tags_relative = {}
+            self.tags_odom = {}
 
     def _transformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
@@ -160,8 +167,8 @@ if __name__ == "__main__":
             
             # make sure the tags don't go changing on us
             tags = deepcopy(self.localization.tags)
-            landmarks_odom = deepcopy(self.localization.landmarks_odom)
-            landmarks_relative = deepcopy(self.localization.landmarks_relative)
+            landmarks_odom = deepcopy(self.localization.tags_odom)
+            landmarks_relative = deepcopy(self.localization.tags_relative)
             
             # separately log all tag data
             for id in tags:
