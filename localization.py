@@ -87,6 +87,7 @@ class Localization():
             return
     
         self._logger.info(closest_id)
+        
         closest = self.tags_base[closest_id]
         map = self.landmarks[closest_id]
 
