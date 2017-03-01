@@ -15,30 +15,34 @@ class Localization():
     """ Handle landmark detection and global localization.
     
     Args:
-        landmarks (geometry_msgs.msg.Pose dict): A dict mapping the map position of landmarks to
+        landmarks (FloorPlan.Landmarks dict): A dict mapping the map position of landmarks to
             their AR tag ids.
     
     Attributes:
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
             their raw form.
-        tags_relative (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base
-            frame.
+        tags_base (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base frame.
         tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
-        self.estimated_pose (geometry_msgs.msg.Pose): The estimated pose of the robot based on the 
-            visible tags.
+        self.estimated_pose (geometry_msgs.msg.Pose or None): The estimated pose of the robot based 
+            on the visible tags. None if no tags visible.
     """
-    def __init__(self):
+    def __init__(self, landmarks):
         self._logger = Logger("Localization")
         
-        # listen to the raw AprilTag data
+        # store raw tag data, data in the odom frame, and data in the base frame
         self.tags = {}
-        self.tags_relative = {}
+        self.tags_base = {}
         self.tags_odom = {}
+        
+        # set estimated pose based on local landmarks to None and set up the landmark map
         self.estimated_pose = None
-        rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)
+        self.landmarks = landmarks
     
         # listen for frame transformations
         self._tf_listener = tf.TransformListener()
+    
+        # subscribe to raw tag data
+        rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)
     
     def _attemptLookup(self, transform_func, target_frame, object):
         """ Attempt a coordinate frame transformation.
@@ -74,8 +78,8 @@ class Localization():
     
         # attempt to get the closest landmark in out landmark dict
         try:
-            closest = min(self.tags_relative[id] for id in self.tags_relative if id in self.landmarks,
-                        key = lambda p : p.pose.position.x**2 + p.pose.position.y**2)
+            closest = min(id for id in self.tags_base if id in self.landmarks,
+                        key = lambda i : self.tags_base[i].pose.position.x**2 + self.tags_base[i].pose.position.y**2)
         
         # the argument to min was an empty list; we don't see any familiar landmarks
         except TypeError as e:
@@ -88,12 +92,12 @@ class Localization():
             # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
             #   I promise, its less scary than it looks...
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self.tags_relative = self._transformTags('/base_footprint')
+            self.tags_base = self._transformTags('/base_footprint')
             self.tags_odom = self._transformTags('/odom')
         else:
             # we don't see any tags, so empty things out
             self.tags = {}
-            self.tags_relative = {}
+            self.tags_base = {}
             self.tags_odom = {}
 
     def _transformTags(self, target_frame):
@@ -151,14 +155,19 @@ if __name__ == "__main__":
     from tester import Tester
     from math import degrees
     from copy import deepcopy
+    from floorplan import FloorPlan
 
     class LocalizationTest(Tester):
         """ Run localization tests. """
         def __init__(self):
             Tester.__init__(self, "Localization")
             
-            # set up localization
-            self.localization = Localization()
+            # set up localization (including map)
+            landmarks = {0, 0}
+            landmark_positions = {0:(0,0), 1:(1,1)}
+            landmark_orientations = {0:0, 1:pi/2}
+            self.floorplan = FloorPlan({},{},{},landmarks, landmark_positions, landmark_orientations)
+            self.localization = Localization(self.floorplan.landmarks)
             
             self.prev = {}
     
@@ -167,7 +176,7 @@ if __name__ == "__main__":
             self.csvfields = []
             self.csvfields.extend(["raw_" + field for field in fields])
             self.csvfields.extend(["odom_" + field for field in fields])
-            self.csvfields.extend(["relative_" + field for field in fields])
+            self.csvfields.extend(["base_" + field for field in fields])
             self.csvtestname = "stationary"
 
         def main(self):
@@ -180,7 +189,7 @@ if __name__ == "__main__":
             # make sure the tags don't go changing on us
             tags = deepcopy(self.localization.tags)
             landmarks_odom = deepcopy(self.localization.tags_odom)
-            landmarks_relative = deepcopy(self.localization.tags_relative)
+            landmarks_relative = deepcopy(self.localization.tags_base)
             
             # separately log all tag data
             for id in tags:
