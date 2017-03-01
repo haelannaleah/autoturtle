@@ -8,6 +8,7 @@ import tf
 
 from ar_track_alvar_msgs.msg import AlvarMarkers
 from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped
+from math import cos, sin, sqrt
 
 from logger import Logger
 
@@ -90,7 +91,7 @@ class Localization():
         closest = self.tags_base[closest_id]
         map = self.landmarks[closest_id]
         
-        distance = sqrt(self.tags_base[i].pose.position.x**2 + self.tags_base[i].pose.position.y**2)
+        distance = sqrt(distance)
 
 
     def _tagCallback(self, data):
