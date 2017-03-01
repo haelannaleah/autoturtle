@@ -86,6 +86,7 @@ class Localization():
             self.estimated_pose = None
             return
     
+        self._logger(closest_id)
         closest = self.tags_base[closest_id]
         map = self.landmarks[closest_id]
 
@@ -98,6 +99,7 @@ class Localization():
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
             self.tags_base = self._transformTags('/base_footprint')
             self.tags_odom = self._transformTags('/odom')
+            self._estimatePose()
         else:
             # we don't see any tags, so empty things out
             self.tags = {}
