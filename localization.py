@@ -172,7 +172,7 @@ if __name__ == "__main__":
             Tester.__init__(self, "Localization")
             
             # set up localization (including map)
-            landmarks = {0, 0}
+            landmarks = {0, 1}
             landmark_positions = {0:(0,0), 1:(1,1)}
             landmark_orientations = {0:0, 1:pi/2}
             self.floorplan = FloorPlan({},{},{},landmarks, landmark_positions, landmark_orientations)
