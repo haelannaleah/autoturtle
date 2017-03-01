@@ -86,7 +86,7 @@ class Localization():
             self.estimated_pose = None
             return
     
-        self._logger(closest_id)
+        self._logger.info(closest_id)
         closest = self.tags_base[closest_id]
         map = self.landmarks[closest_id]
 
