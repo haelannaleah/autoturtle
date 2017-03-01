@@ -87,7 +87,7 @@ class Localization():
             dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.y**2, id) for id in t if id in self.landmarks)
         
         # the argument to min was an empty list; we don't see any familiar landmarks
-        except TypeError, ValueError as e:
+        except (TypeError, ValueError) as e:
             self.estimated_pose = None
             return
     
