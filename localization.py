@@ -76,23 +76,31 @@ class Localization():
         return None
         
     def _estimatePose(self):
-    
-        # attempt to get the closest landmark in out landmark dict
+        """ Estimate current position based on proximity to landmarks. """
+        
+        # attempt to get the id of the closest landmark
         try:
-            distance, closest_id = min(((self.tags_base[id].pose.position.x**2 + self.tags_base[id].pose.position.y**2, id) for id in self.tags_base if id in self.landmarks))
+            t = self.tags_base
+            
+            # compute the closest (viable) tag by looking for the smallest distance squared from the robot base
+            #   among tags that also appear in landmarks
+            dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.y**2, id) for id in t if id in self.landmarks)
         
         # the argument to min was an empty list; we don't see any familiar landmarks
-        except TypeError as e:
+        except TypeError, ValueError as e:
             self.estimated_pose = None
             return
     
-        self._logger.info(closest_id)
+        self._logger.debug(closest_id)
         
+        # extract the closest tag and corresponding landmark
         closest = self.tags_base[closest_id]
         map = self.landmarks[closest_id]
         
-        distance = sqrt(distance)
-
+        # compute the distance from the distance squared we got out of our min calculation and get angle
+        distance_to_tag = sqrt(dist2)
+        angle_with_tag = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])[-1]
+        
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
