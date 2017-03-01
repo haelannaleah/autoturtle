@@ -7,7 +7,7 @@ import rospy
 import tf
 
 from ar_track_alvar_msgs.msg import AlvarMarkers
-from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped
+from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped, Point
 from math import cos, sin, sqrt
 
 from logger import Logger
