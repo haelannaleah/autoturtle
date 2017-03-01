@@ -157,7 +157,7 @@ class Localization():
 if __name__ == "__main__":
     import numpy as np
     from tester import Tester
-    from math import degrees
+    from math import degrees, pi
     from copy import deepcopy
     from floorplan import FloorPlan
 
