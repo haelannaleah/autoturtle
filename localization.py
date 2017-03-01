@@ -79,7 +79,7 @@ class Localization():
         # attempt to get the closest landmark in out landmark dict
         try:
             closest_id, distance = min(((id, self.tags_base[i].pose.position.x**2 + self.tags_base[i].pose.position.y**2) for id in self.tags_base if id in self.landmarks),
-                            key = lambda i: )
+                            key = lambda (i, j): j)
         
         # the argument to min was an empty list; we don't see any familiar landmarks
         except TypeError as e:
