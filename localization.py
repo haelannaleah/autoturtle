@@ -90,17 +90,20 @@ class Localization():
         except (TypeError, ValueError) as e:
             self.estimated_pose = None
             return
-    
-        self._logger.debug(closest_id)
         
         # extract the closest tag and corresponding landmark
         closest = self.tags_base[closest_id]
         map = self.landmarks[closest_id]
         
         # compute the distance from the distance squared we got out of our min calculation and get angle
+        q = closest.pose.orientation
         distance_to_tag = sqrt(dist2)
         angle_with_tag = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])[-1]
-        
+
+        x = distance_to_tag * cos(angle_with_tag + map.angle)
+        y = distance_to_tag * sin(angle_with_tag + map.angle)
+
+        print (Point(x,y,0))
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
@@ -198,7 +201,7 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            self.logData()
+            pass
         
         def logData(self):
             """ Log CSV file and output data to screen. """
