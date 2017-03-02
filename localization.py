@@ -5,10 +5,11 @@ Author:
 """
 import rospy
 import tf
+import numpy as np
 
 from ar_track_alvar_msgs.msg import AlvarMarkers
-from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped, Point
-from math import cos, sin, sqrt
+from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped, Point, Quaternion
+from math import acos, cos, sin, sqrt
 
 from logger import Logger
 
@@ -92,11 +93,36 @@ class Localization():
             return
         
         # extract the closest tag and corresponding landmark
-        closest = self.tags_base[closest_id]
+        closest = self.tags_base[closest_id].pose
         map = self.landmarks[closest_id]
         
-        # compute the distance from the distance squared we got out of our min calculation and get angle
-        # turns out there's a lot of weird math that's going to go into this...
+        # compute the value of the radius between the robot base and the ARtag
+        r = sqrt(dist2)
+        
+        # Note: in the following section, names of angles correspond to symbols in graph
+        #   <TODO include graph number>
+        # get the angle between the ARtag's x-axis and the map's x-axis
+        alpha = map.angle
+        
+        # get the angle between the ARtag's x-axis and the robot's x-axis (between 0 and -pi)
+        q = closest.pose.orientation
+        beta = tf.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+        
+        # get the angle between the robot's x-axis and the vector from the robot base to the tag
+        gamma = acos(np.dot([closest.position.x, closest.position.y], [1, 0])) / r
+
+        # the sum of these angles is the angle between the map x-axis and the vector to the AR tag
+        theta = alpha + beta + gamma
+        
+        x = cos(theta) + map.pose.position.x
+        y = sin(theta) + map.pose.position.y
+        
+        # plug this into an estimated pose
+        q = tf.quaternion_from_euler([0,0,theta])
+        self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
+        self._logger.info("POSE AND ANGLE")
+        self._logger.info(self.estimated_pose)
+        self._logger.info(angle)
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
@@ -139,6 +165,7 @@ class Localization():
             # orientation data is in the ar_marker_<id> frame, so we need to update the starting frame
             #   (if we just transform from the optical frame, then turning the AR tag upside down affects the
             #   reported orientation)
+            # this will get us the angle between the ARtag's x-axis and the robot base's x-axis
             header.frame_id = '/ar_marker_' + str(id)
             orientation = self._attemptLookup(self._tf_listener.transformQuaternion, \
                             target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
