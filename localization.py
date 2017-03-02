@@ -217,7 +217,7 @@ if __name__ == "__main__":
             # set up localization (including map)
             landmarks = {0, 1}
             landmark_positions = {0:(0,0), 1:(1,1)}
-            landmark_orientations = {0:pi/2, 1:pi/2}
+            landmark_orientations = {0:-pi/2, 1:pi/2}
             self.floorplan = FloorPlan({},{},{},landmarks, landmark_positions, landmark_orientations)
             self.localization = Localization(self.floorplan.landmarks)
             
