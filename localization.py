@@ -106,7 +106,7 @@ class Localization():
         
         # get the angle between the ARtag's x-axis and the robot's x-axis (between 0 and -pi)
         q = closest.orientation
-        beta = tf.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+        beta = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
         
         # get the angle between the robot's x-axis and the vector from the robot base to the tag
         gamma = acos(np.dot([closest.position.x, closest.position.y], [1, 0])) / r
@@ -119,7 +119,7 @@ class Localization():
         y = r * sin(theta) + map.pose.position.y
         
         # plug this into an estimated pose
-        q = tf.quaternion_from_euler([0,0,theta])
+        q = tf.transformations.quaternion_from_euler([0,0,theta])
         self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
         self._logger.info("POSE AND ANGLE")
         self._logger.info(self.estimated_pose)
