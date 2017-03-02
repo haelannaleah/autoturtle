@@ -109,14 +109,14 @@ class Localization():
         beta = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
         
         # get the angle between the robot's x-axis and the vector from the robot base to the tag
-        gamma = acos(np.dot([closest.position.x, closest.position.y], [1, 0])) / r
+        gamma = acos(np.dot([closest.position.x, closest.position.y], [1, 0]) / r )
 
         # the sum of these angles is the angle between the map x-axis and the vector to the AR tag
         theta = alpha + beta + gamma
         
         # compute the robot position in the map frame
-        x = map.pose.position.x - r * cos(theta)
-        y = map.pose.position.y - r * sin(theta)
+        x = map.pose.position.x + r * cos(theta)
+        y = map.pose.position.y + r * sin(theta)
         
         # plug this into an estimated pose
         q = tf.transformations.quaternion_from_euler(0,0,theta)
