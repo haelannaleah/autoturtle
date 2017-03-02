@@ -9,7 +9,7 @@ import numpy as np
 
 from ar_track_alvar_msgs.msg import AlvarMarkers
 from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped, Point, Quaternion
-from math import acos, cos, sin, sqrt
+from math import acos, cos, sin, sqrt, pi
 
 from logger import Logger
 
@@ -124,7 +124,7 @@ class Localization():
         self._logger.info("POSE AND ANGLE")
         self._logger.info(closest_id)
         self._logger.info(self.estimated_pose)
-        self._logger.info(theta)
+        self._logger.info(theta / pi)
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
