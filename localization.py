@@ -132,6 +132,7 @@ class Localization():
         self._logger.debug(alpha, var_name = "alpha")
         self._logger.debug(beta, var_name = "beta")
         self._logger.debug(gamma, var_name = "gamma")
+        self._logger.debug(delta, var_name = "delta")
         self._logger.debug(theta, var_name = "theta")
         self._logger.info(r)
 
