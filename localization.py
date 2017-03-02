@@ -114,8 +114,9 @@ class Localization():
         # the sum of these angles is the angle between the map x-axis and the vector to the AR tag
         theta = alpha + beta + gamma
         
-        x = cos(theta) + map.pose.position.x
-        y = sin(theta) + map.pose.position.y
+        # compute the robot position in the map frame
+        x = r * cos(theta) + map.pose.position.x
+        y = r * sin(theta) + map.pose.position.y
         
         # plug this into an estimated pose
         q = tf.quaternion_from_euler([0,0,theta])
