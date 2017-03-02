@@ -115,8 +115,8 @@ class Localization():
         theta = alpha + beta + gamma
         
         # compute the robot position in the map frame
-        x = r * cos(theta) + map.pose.position.x
-        y = r * sin(theta) + map.pose.position.y
+        x = map.pose.position.x - r * cos(theta) +
+        y = map.pose.position.y - r * sin(theta)
         
         # plug this into an estimated pose
         q = tf.transformations.quaternion_from_euler(0,0,theta)
