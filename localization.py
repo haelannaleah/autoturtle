@@ -115,7 +115,7 @@ class Localization():
         theta = alpha + beta + gamma
         
         # compute the robot position in the map frame
-        x = map.pose.position.x - r * cos(theta) +
+        x = map.pose.position.x - r * cos(theta)
         y = map.pose.position.y - r * sin(theta)
         
         # plug this into an estimated pose
