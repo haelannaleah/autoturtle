@@ -124,7 +124,10 @@ class Localization():
         self._logger.info("POSE AND ANGLE")
         self._logger.info(closest_id)
         self._logger.info(self.estimated_pose)
-        self._logger.info(theta / pi)
+        self._logger.debug(alpha, var_name = "alpha")
+        self._logger.debug(beta, var_name = "beta")
+        self._logger.debug(gamma, var_name = "gamma")
+        self._logger.debug(theta, var_name = "theta")
         self._logger.info(r)
 
     def _tagCallback(self, data):
@@ -208,7 +211,7 @@ if __name__ == "__main__":
             # set up localization (including map)
             landmarks = {0, 1}
             landmark_positions = {0:(0,0), 1:(1,1)}
-            landmark_orientations = {0:0, 1:pi/2}
+            landmark_orientations = {0:-pi/2, 1:pi/2}
             self.floorplan = FloorPlan({},{},{},landmarks, landmark_positions, landmark_orientations)
             self.localization = Localization(self.floorplan.landmarks)
             
