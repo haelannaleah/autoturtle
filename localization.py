@@ -105,7 +105,7 @@ class Localization():
         alpha = map.angle
         
         # get the angle between the ARtag's x-axis and the robot's x-axis (between 0 and -pi)
-        q = closest.pose.orientation
+        q = closest.orientation
         beta = tf.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
         
         # get the angle between the robot's x-axis and the vector from the robot base to the tag
