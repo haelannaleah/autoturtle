@@ -106,7 +106,7 @@ class Localization():
         
         # get the angle between the ARtag's x-axis and the robot's x-axis (between 0 and -pi)
         q = closest.orientation
-        beta = - tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+        beta = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
         
         # get the angle between the robot's x-axis and the vector from the robot base to the tag
         gamma = acos(np.dot([closest.position.x, closest.position.y], [1, 0]) / r)
@@ -135,6 +135,7 @@ class Localization():
         self._logger.debug(delta, var_name = "delta")
         self._logger.debug(theta, var_name = "theta")
         self._logger.debug(r, var_name = "radius")
+        
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
@@ -150,6 +151,10 @@ class Localization():
             self.tags = {}
             self.tags_base = {}
             self.tags_odom = {}
+
+        for id in self.tags_odom:
+            q = self.tags_odom[id].pose.orientation
+            self._logger.debug(tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w][-1], var_name = "odom_orient")
 
     def _transformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
