@@ -152,10 +152,6 @@ class Localization():
             self.tags_base = {}
             self.tags_odom = {}
 
-        for id in self.tags_odom:
-            q = self.tags_odom[id].pose.orientation
-            self._logger.debug(tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w][-1], var_name = "odom_orient")
-
     def _transformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
         
