@@ -122,8 +122,9 @@ class Localization():
         q = tf.transformations.quaternion_from_euler(0,0,theta)
         self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
         self._logger.info("POSE AND ANGLE")
+        self._logger.info(closest_id)
         self._logger.info(self.estimated_pose)
-        self._logger.info(angle)
+        self._logger.info(theta)
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
