@@ -125,6 +125,7 @@ class Localization():
         self._logger.info(closest_id)
         self._logger.info(self.estimated_pose)
         self._logger.info(theta / pi)
+        self._logger.info(r)
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
