@@ -134,7 +134,7 @@ class Localization():
         self._logger.debug(gamma, var_name = "gamma")
         self._logger.debug(delta, var_name = "delta")
         self._logger.debug(theta, var_name = "theta")
-        self._logger.info(r)
+        self._logger.debug(r, var_name = "radius")
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
