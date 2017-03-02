@@ -96,14 +96,7 @@ class Localization():
         map = self.landmarks[closest_id]
         
         # compute the distance from the distance squared we got out of our min calculation and get angle
-        q = closest.pose.orientation
-        distance_to_tag = sqrt(dist2)
-        angle_with_tag = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])[-1]
-
-        x = distance_to_tag * cos(angle_with_tag + map.angle)
-        y = distance_to_tag * sin(angle_with_tag + map.angle)
-
-        print (Point(x,y,0))
+        # turns out there's a lot of weird math that's going to go into this...
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
