@@ -102,7 +102,7 @@ class Localization():
         # Note: in the following section, names of angles correspond to symbols in graph
         #   <TODO include graph number>
         # get the angle between the ARtag's x-axis and the map's x-axis
-        alpha = map.angle
+        alpha = - map.angle
         
         # get the angle between the ARtag's x-axis and the robot's x-axis (between 0 and -pi)
         q = closest.orientation
