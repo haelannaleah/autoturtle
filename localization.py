@@ -125,10 +125,10 @@ class Localization():
         q = tf.transformations.quaternion_from_euler(0,0,delta)
         self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
         
-        
-        self._logger.info("POSE AND ANGLE")
-        self._logger.info(closest_id)
-        self._logger.info(self.estimated_pose)
+        # log everything to verify that it makes sense
+        self._logger.debug("POSE AND ANGLE")
+        self._logger.debug(closest_id)
+        self._logger.debug(self.estimated_pose)
         self._logger.debug(alpha, var_name = "alpha")
         self._logger.debug(beta, var_name = "beta")
         self._logger.debug(gamma, var_name = "gamma")
@@ -136,7 +136,6 @@ class Localization():
         self._logger.debug(theta, var_name = "theta")
         self._logger.debug(r, var_name = "radius")
         
-
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
         if data.markers:
