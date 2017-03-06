@@ -5,33 +5,46 @@ Author:
 """
 import rospy
 import tf
+import numpy as np
 
 from ar_track_alvar_msgs.msg import AlvarMarkers
-from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped
+from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped, Point, Quaternion
+from math import atan2, cos, sin, sqrt, pi
 
 from logger import Logger
 
 class Localization():
     """ Handle landmark detection and global localization.
     
+    Args:
+        landmarks (FloorPlan.Landmarks dict): A dict mapping the map position of landmarks to
+            their AR tag ids.
+    
     Attributes:
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
             their raw form.
-        landmarks_relative (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base
-            frame.
-        landmarks_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
+        tags_base (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base frame.
+        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
+        self.estimated_pose (geometry_msgs.msg.Pose or None): The estimated pose of the robot based 
+            on the visible tags. None if no tags visible.
     """
-    def __init__(self):
+    def __init__(self, landmarks):
         self._logger = Logger("Localization")
         
-        # listen to the raw AprilTag data
+        # store raw tag data, data in the odom frame, and data in the base frame
         self.tags = {}
-        self.landmarks_relative = {}
-        self.landmarks_odom = {}
-        rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)
+        self.tags_base = {}
+        self.tags_odom = {}
+        
+        # set estimated pose based on local landmarks to None and set up the landmark map
+        self.estimated_pose = None
+        self.landmarks = landmarks
     
         # listen for frame transformations
         self._tf_listener = tf.TransformListener()
+    
+        # subscribe to raw tag data
+        rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)
     
     def _attemptLookup(self, transform_func, target_frame, object):
         """ Attempt a coordinate frame transformation.
@@ -62,6 +75,67 @@ class Localization():
         
         # the transformation failed
         return None
+        
+    def _estimatePose(self):
+        """ Estimate current position based on proximity to landmarks. """
+        
+        # attempt to get the id of the closest landmark
+        try:
+            t = self.tags_base
+            
+            # compute the closest (viable) tag by looking for the smallest distance squared from the robot base
+            #   among tags that also appear in landmarks
+            dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.y**2, id) for id in t if id in self.landmarks)
+        
+        # the argument to min was an empty list; we don't see any familiar landmarks
+        except (TypeError, ValueError) as e:
+            self.estimated_pose = None
+            return
+        
+        # extract the closest tag and corresponding landmark
+        closest = self.tags_base[closest_id].pose
+        map = self.landmarks[closest_id]
+        
+        # compute the value of the radius between the robot base and the ARtag
+        r = sqrt(dist2)
+        
+        # Note: in the following section, names of angles correspond to symbols in graph
+        #   <TODO include graph number>
+        # get the angle between the ARtag's x-axis and the map's x-axis
+        alpha = map.angle
+        
+        # get the angle between the ARtag's x-axis and the robot's x-axis (between 0 and -pi)
+        q = closest.orientation
+        beta = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+        
+        # get the angle between the robot's x-axis and the vector from the robot base to the tag
+        gamma = atan2(closest.position.y, closest.position.x)
+
+        # compute the angle between the x-axis in the robot frame and the x-axis in the map frame
+        delta = alpha - beta
+
+        # now compute the angle between the map x-axis and the vector to the AR tag
+        theta = delta + gamma
+        
+        # compute the robot position in the map frame
+        x = map.pose.position.x - r * cos(theta)
+        y = map.pose.position.y - r * sin(theta)
+        
+        # plug this into an estimated pose
+        q = tf.transformations.quaternion_from_euler(0,0,delta)
+        self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
+        
+        
+        self._logger.info("POSE AND ANGLE")
+        self._logger.info(closest_id)
+        self._logger.info(self.estimated_pose)
+        self._logger.debug(alpha, var_name = "alpha")
+        self._logger.debug(beta, var_name = "beta")
+        self._logger.debug(gamma, var_name = "gamma")
+        self._logger.debug(delta, var_name = "delta")
+        self._logger.debug(theta, var_name = "theta")
+        self._logger.debug(r, var_name = "radius")
+        
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
@@ -69,13 +143,14 @@ class Localization():
             # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
             #   I promise, its less scary than it looks...
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self.landmarks_relative = self._transformTags('/base_footprint')
-            self.landmarks_odom = self._transformTags('/odom')
+            self.tags_base = self._transformTags('/base_footprint')
+            self.tags_odom = self._transformTags('/odom')
+            self._estimatePose()
         else:
             # we don't see any tags, so empty things out
             self.tags = {}
-            self.landmarks_relative = {}
-            self.landmarks_odom = {}
+            self.tags_base = {}
+            self.tags_odom = {}
 
     def _transformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
@@ -88,7 +163,7 @@ class Localization():
                 of the visible AprilTags that were successfully transformed.
                 
         Note: 
-            Raw tag orientation data comes in the /ar_marker_<id> frame, and its position data come in the
+            Raw tag orientation data comes in the /ar_marker_<id> frame, and its position data comes in the
                 /camera_rgb_optical_frame, so our transformations must reflect this.
             Also note that this is the scary function...
         """
@@ -103,6 +178,7 @@ class Localization():
             # orientation data is in the ar_marker_<id> frame, so we need to update the starting frame
             #   (if we just transform from the optical frame, then turning the AR tag upside down affects the
             #   reported orientation)
+            # this will get us the angle between the ARtag's x-axis and the robot base's x-axis
             header.frame_id = '/ar_marker_' + str(id)
             orientation = self._attemptLookup(self._tf_listener.transformQuaternion, \
                             target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
@@ -130,16 +206,21 @@ class Localization():
 if __name__ == "__main__":
     import numpy as np
     from tester import Tester
-    from math import degrees
+    from math import degrees, pi
     from copy import deepcopy
+    from floorplan import FloorPlan
 
     class LocalizationTest(Tester):
         """ Run localization tests. """
         def __init__(self):
             Tester.__init__(self, "Localization")
             
-            # set up localization
-            self.localization = Localization()
+            # set up localization (including map)
+            landmarks = {0, 1}
+            landmark_positions = {0:(0,0), 1:(1,1)}
+            landmark_orientations = {0:-pi/2, 1:pi/2}
+            self.floorplan = FloorPlan({},{},{},landmarks, landmark_positions, landmark_orientations)
+            self.localization = Localization(self.floorplan.landmarks)
             
             self.prev = {}
     
@@ -148,20 +229,20 @@ if __name__ == "__main__":
             self.csvfields = []
             self.csvfields.extend(["raw_" + field for field in fields])
             self.csvfields.extend(["odom_" + field for field in fields])
-            self.csvfields.extend(["relative_" + field for field in fields])
+            self.csvfields.extend(["base_" + field for field in fields])
             self.csvtestname = "stationary"
 
         def main(self):
             """ Run main tests. """
-            self.logData()
+            pass
         
         def logData(self):
             """ Log CSV file and output data to screen. """
             
             # make sure the tags don't go changing on us
             tags = deepcopy(self.localization.tags)
-            landmarks_odom = deepcopy(self.localization.landmarks_odom)
-            landmarks_relative = deepcopy(self.localization.landmarks_relative)
+            landmarks_odom = deepcopy(self.localization.tags_odom)
+            landmarks_relative = deepcopy(self.localization.tags_base)
             
             # separately log all tag data
             for id in tags:
