@@ -9,7 +9,7 @@ import numpy as np
 
 from ar_track_alvar_msgs.msg import AlvarMarkers
 from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped, Point, Quaternion
-from math import acos, cos, sin, sqrt, pi
+from math import atan2, cos, sin, sqrt, pi
 
 from logger import Logger
 
@@ -109,17 +109,17 @@ class Localization():
         beta = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
         
         # get the angle between the robot's x-axis and the vector from the robot base to the tag
-        gamma = acos(np.dot([closest.position.x, closest.position.y], [1, 0]) / r)
+        gamma = atan2(closest.position.y, closest.position.x)
 
         # compute the angle between the x-axis in the robot frame and the x-axis in the map frame
-        delta = alpha + beta
+        delta = alpha - beta
 
         # now compute the angle between the map x-axis and the vector to the AR tag
         theta = delta + gamma
         
         # compute the robot position in the map frame
-        x = map.pose.position.x + r * cos(theta)
-        y = map.pose.position.y + r * sin(theta)
+        x = map.pose.position.x - r * cos(theta)
+        y = map.pose.position.y - r * sin(theta)
         
         # plug this into an estimated pose
         q = tf.transformations.quaternion_from_euler(0,0,delta)
@@ -163,7 +163,7 @@ class Localization():
                 of the visible AprilTags that were successfully transformed.
                 
         Note: 
-            Raw tag orientation data comes in the /ar_marker_<id> frame, and its position data come in the
+            Raw tag orientation data comes in the /ar_marker_<id> frame, and its position data comes in the
                 /camera_rgb_optical_frame, so our transformations must reflect this.
             Also note that this is the scary function...
         """
