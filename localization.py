@@ -121,7 +121,7 @@ class Localization():
         x = map.pose.position.x - r * cos(theta)
         y = map.pose.position.y - r * sin(theta)
         
-        # plug this into an estimated pose
+        # plug this into an estimated pose in the map frame
         q = tf.transformations.quaternion_from_euler(0,0,delta)
         self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
         
