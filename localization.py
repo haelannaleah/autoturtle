@@ -235,7 +235,9 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            pass
+            self.screenLog()
+            if self.localization.estimated_pose is not None:
+                self.logger.info(self.localization.estimated_pose)
         
         def logData(self):
             """ Log CSV file and output data to screen. """
