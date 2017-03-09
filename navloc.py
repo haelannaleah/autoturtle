@@ -70,14 +70,6 @@ if __name__ == "__main__":
         """ Run local navigation tests. """
         def __init__(self):
             Tester.__init__(self, "NavLoc")
-
-            # tests to run:
-            #   square with Motion module, minimal.launch
-            #   square with Motion module, navigation launch
-            #   square with SafeMotion module, minimal launch
-            #   square with SafeMotion module, navigation launch
-            # expect all to turn out the same, but need to sanity check
-            #self.motion = Motion()
             
             # flag for a jerky stop
             self.jerky = False
@@ -130,16 +122,14 @@ if __name__ == "__main__":
             if self.filename is None:
                 self.initFile("line")
             
-            self.reached_corner[0] = True
-            
             if not self.reached_corner[0]:
-                self.reached_corner[0] = self.navloc.goToPosition(length, 0)
+                self.reached_corner[0] = self.navloc.goToPosition(0, 0)
                 if self.reached_corner[0]:
-                    self.logArrival("endpoint", length, 0)
+                    self.logArrival("home", 0, 0)
         
-            elif self.navigation.goToPosition(0, 0):
+            elif self.navloc.goToPosition(length, 0):
                 self.reached_corner[0] = False
-                self.logArrival("home", 0, 0)
+                self.logArrival("endpoint", length, 0)
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. 
