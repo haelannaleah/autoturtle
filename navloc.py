@@ -43,4 +43,12 @@ class NavLoc(Navigation, Localization):
                 rospy.Time.now(), "/robot_pose_ekf", "/map")
             self._lock.release()
             
-            rate.sleep()        
+            rate.sleep()
+    
+    def _estimatePose(self):
+        """ Override pose estimation to include pose calculation. """
+    
+        Localization()._estimatePose(self)
+
+        if self.estimated_pose is None:
+            return
