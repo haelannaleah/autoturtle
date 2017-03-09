@@ -121,7 +121,7 @@ class Navigation(Motion):
                 if self._motion.walking or self._motion.turning:
                     self._motion.stop(now = self._jerky)
                 else:
-                    self._logger.debug("Arrived at " + str(x,y) + " (absolute position is " + str((self.p.x, self.p.y)) + ")")
+                    self._logger.debug("Arrived at " + str((x,y)) + " (absolute position is " + str((self.p.x, self.p.y)) + ")")
                     self._reached_goal = False
                     return True
             
