@@ -38,6 +38,7 @@ class Localization():
         
         # set estimated pose based on local landmarks to None and set up the landmark map
         self.estimated_pose = None
+        self.estimated_angle = None
         self.landmarks = landmarks
     
         # listen for frame transformations
@@ -90,6 +91,7 @@ class Localization():
         # the argument to min was an empty list; we don't see any familiar landmarks
         except (TypeError, ValueError) as e:
             self.estimated_pose = None
+            self.estimated_angle = None
             return
         
         # extract the closest tag and corresponding landmark
@@ -124,6 +126,7 @@ class Localization():
         # plug this into an estimated pose in the map frame
         q = tf.transformations.quaternion_from_euler(0,0,delta)
         self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
+        self.estimated_angle = delta
         
         # log everything to verify that it makes sense
         self._logger.debug("POSE AND ANGLE")
@@ -148,6 +151,7 @@ class Localization():
         else:
             # we don't see any tags, so empty things out
             self.estimated_pose = None
+            self.estimated_angle = None
             self.tags = {}
             self.tags_base = {}
             self.tags_odom = {}
