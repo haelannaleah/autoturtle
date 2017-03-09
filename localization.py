@@ -296,14 +296,14 @@ if __name__ == "__main__":
             
         def logPosition(self, incoming_landmark, id):
             """ Print the position of landmarks in meters. """
-            landmark = deepcopy(incoming_landmark)
-            self.logger.debug("\n" + str(landmark.pose.position), var_name = "position" + str(id))
+            p = deepcopy(incoming_landmark.pose.position)
+            self.logger.debug("\n" + str((p.x, p.y, p.z)), var_name = "position" + str(id))
         
         def logOrientation(self, incoming_landmark, id):
             """ Print the orientation of landmarks as a Euler Angle in degrees. """
             landmark = deepcopy(incoming_landmark)
             q = landmark.pose.orientation
-            self.logger.debug("\n" + str(q), var_name = "quaternion" + str(id))
+            self.logger.debug("\n" + str((q.x, q.y, q.z, q.w)), var_name = "quaternion" + str(id))
             self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name = "orientation" + str(id))
 
     LocalizationTest().run()
