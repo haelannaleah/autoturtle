@@ -113,9 +113,9 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            self.testCCsquare(.5)
+            #self.testCCsquare(.5)
             #self.testCsquare(.5)
-            #self.testLine(1)
+            self.testLine(1)
             
         
         def initFile(self, filename):
