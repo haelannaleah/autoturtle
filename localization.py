@@ -244,6 +244,8 @@ if __name__ == "__main__":
             if self.localization.estimated_pose is not None:
                 self.logger.info(self.localization.estimated_pose)
         
+            self.logData()
+        
         def logData(self):
             """ Log CSV file and output data to screen. """
             
