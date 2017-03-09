@@ -67,6 +67,7 @@ class NavLoc(Navigation, Localization):
 
 if __name__ == "__main__":
     from tester import Tester
+    from math import pi
     
     class NavLocTest(Tester):
         """ Run local navigation tests. """
