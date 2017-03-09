@@ -68,7 +68,7 @@ class NavLoc(Navigation, Localization):
 if __name__ == "__main__":
     from tester import Tester
     
-    class NavLovTest(Tester):
+    class NavLocTest(Tester):
         """ Run local navigation tests. """
         def __init__(self):
             Tester.__init__(self, "NavLoc")
@@ -176,4 +176,4 @@ if __name__ == "__main__":
             self.navloc.shutdown(self.rate)
             Tester.shutdown(self)
         
-    NavigationTest().run()
+    NavLocTest().run()
