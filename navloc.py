@@ -10,18 +10,18 @@ from copy import deepcopy
 from geometry_msgs.msg import Pose, Point, Quaternion
 from math import sin, cos
 
-from navigation import Navigation
 from localization import Localization
 from logger import Logger
+from navigation import Navigation
 
 class NavLoc(Navigation, Localization):
-    def __init__(self, landmarks):
+    def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
         # create transformation object
         self._transform = {"position": Point(0,0,0), "angle" = 0}
     
         # initialize what we're inheriting from
-        Navigation.__init__(self)
+        Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
         Localization.__init__(self, landmarks)
         self._raw_pose = Pose()
 

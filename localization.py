@@ -11,6 +11,7 @@ from ar_track_alvar_msgs.msg import AlvarMarkers
 from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped, Point, Quaternion
 from math import atan2, cos, sin, sqrt, pi
 
+from floorplan import FloorPlan
 from logger import Logger
 
 class Localization():
@@ -39,7 +40,7 @@ class Localization():
         # set estimated pose based on local landmarks to None and set up the landmark map
         self.estimated_pose = None
         self.estimated_angle = None
-        self.landmarks = landmarks
+        self.floorplan = FloorPlan(point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
     
         # listen for frame transformations
         self._tf_listener = tf.TransformListener()
@@ -96,7 +97,7 @@ class Localization():
         
         # extract the closest tag and corresponding landmark
         closest = self.tags_base[closest_id].pose
-        map = self.landmarks[closest_id]
+        map = self.floorplan.landmarks[closest_id]
         
         # compute the value of the radius between the robot base and the ARtag
         r = sqrt(dist2)
@@ -223,8 +224,7 @@ if __name__ == "__main__":
             landmarks = {0, 1}
             landmark_positions = {0:(0,0), 1:(1,1)}
             landmark_orientations = {0:-pi/2, 1:pi/2}
-            self.floorplan = FloorPlan({},{},{},landmarks, landmark_positions, landmark_orientations)
-            self.localization = Localization(self.floorplan.landmarks)
+            self.localization = Localization({},{},{},landmarks, landmark_positions, landmark_orientations)
             
             self.prev = {}
     
