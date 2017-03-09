@@ -137,17 +137,6 @@ class Localization():
         self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
         self.estimated_angle = delta
         
-        # log everything to verify that it makes sense
-        self._logger.debug("POSE AND ANGLE")
-        self._logger.debug(closest_id)
-        self._logger.debug(self.estimated_pose)
-        self._logger.debug(alpha, var_name = "alpha")
-        self._logger.debug(beta, var_name = "beta")
-        self._logger.debug(gamma, var_name = "gamma")
-        self._logger.debug(delta, var_name = "delta")
-        self._logger.debug(theta, var_name = "theta")
-        self._logger.debug(r, var_name = "radius")
-        
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
         if data.markers:
