@@ -95,7 +95,7 @@ class Localization():
             
             # compute the closest (viable) tag by looking for the smallest distance squared from the robot base
             #   among tags that also appear in landmarks
-            dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.y**2, id) for id in t if id in self.landmarks)
+            dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.y**2, id) for id in t if id in self.floorplan.landmarks)
         
         # the argument to min was an empty list; we don't see any familiar landmarks
         except (TypeError, ValueError) as e:
