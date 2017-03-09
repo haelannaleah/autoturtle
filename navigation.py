@@ -103,7 +103,7 @@ class Navigation(Motion):
         else:
             return 0
 
-    def goToPosition(self, name, x, y):
+    def goToPosition(self, x, y):
             """ Default behavior for navigation (currently, no obstacle avoidance).
             
             Args:
@@ -141,6 +141,11 @@ class Navigation(Motion):
                     self._motion.turn(nav_val < 0, .25 if self._motion.walking else 1)
             
             return False
+
+    def shutdown(self, rate):
+        """ Stop the turtlebot. """
+        
+        self._motion.shutdown(rate)
 
 if __name__ == "__main__":
     from tester import Tester
@@ -256,7 +261,7 @@ if __name__ == "__main__":
     
         def shutdown(self):
             """ Kill all behavioral test processes. """
-            self.motion.shutdown(self.rate)
+            self.navigation.shutdown(self.rate)
             Tester.shutdown(self)
         
     NavigationTest().run()
