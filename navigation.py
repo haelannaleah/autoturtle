@@ -196,7 +196,7 @@ if __name__ == "__main__":
             self.filename = filename + ("jerky" if self.jerky else "smooth")
             self.logger.csv(self.filename, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
         
-        def logArrival(self, name):
+        def logArrival(self, name, x, y):
             self.logger.info("Reached " + str(name) + " at " + str((x,y)))
             self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
             self.logger.csv(self.filename, [x, y, self.navigation.p.x, self.navigation.p.y])
@@ -215,11 +215,11 @@ if __name__ == "__main__":
             if not self.reached_corner[0]:
                 self.reached_corner[0] = self.navigation.goToPosition(length, 0)
                 if self.reached_corner[0]:
-                    self.logArrival("endpoint")
+                    self.logArrival("endpoint", length, 0)
         
             elif self.navigation.goToPosition(0, 0):
                 self.reached_corner[0] = False
-                self.logArrival("home")
+                self.logArrival("home", 0, 0)
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. 
@@ -254,7 +254,7 @@ if __name__ == "__main__":
                 self.reached_corner[self.corner_counter] = self.navigation.goToPosition(corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
             
             else:
-                self.logArrival("corner " + str(self.corner_counter))
+                self.logArrival("corner " + str(self.corner_counter), corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
                 if self.corner_counter == len(self.reached_corner) - 1:
                     self.reached_corner = [False] * len(self.reached_corner)
                 self.corner_counter = (self.corner_counter + 1) % len(self.reached_corner)
