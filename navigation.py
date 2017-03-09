@@ -213,16 +213,14 @@ if __name__ == "__main__":
             if self.filename is None:
                 self.initFile("line")
             
-            self.reached_corner[0] = True
-            
             if not self.reached_corner[0]:
-                self.reached_corner[0] = self.navigation.goToPosition(length, 0)
+                self.reached_corner[0] = self.navigation.goToPosition(0, 0)
                 if self.reached_corner[0]:
-                    self.logArrival("endpoint", length, 0)
+                    self.logArrival("home", 0, 0)
         
-            elif self.navigation.goToPosition(0, 0):
+            elif self.navigation.goToPosition(length, 0):
                 self.reached_corner[0] = False
-                self.logArrival("home", 0, 0)
+                self.logArrival("endpoint", length, 0)
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. 
