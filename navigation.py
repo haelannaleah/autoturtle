@@ -246,7 +246,7 @@ if __name__ == "__main__":
             """
             # test a simple square
             if not self.reached_corner[self.corner_counter]:
-                self.reached_corner[self.corner_counter] = self.goToPosition(corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
+                self.reached_corner[self.corner_counter] = self.navigation.goToPosition(corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
             
             else:
                 self.logArrival("corner " + str(self.corner_counter))
