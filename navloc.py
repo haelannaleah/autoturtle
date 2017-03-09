@@ -97,7 +97,7 @@ if __name__ == "__main__":
             landmark_positions = {0:(.5,0)}
             landmark_orientations = {0:-pi/2}
         
-            self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
+            self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, self.jerky, self.walking_speed)
 
         def main(self):
             """ The test currently being run. """
