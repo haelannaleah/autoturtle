@@ -18,8 +18,16 @@ class Localization():
     """ Handle landmark detection and global localization.
     
     Args:
-        landmarks (FloorPlan.Landmarks dict): A dict mapping the map position of landmarks to
-            their AR tag ids.
+        point_ids (set): Unique identifier for each waypoint in the graph.
+        locations (dict): Point_ids mapped to tuples representing locations.
+        neighbors (dict): Point_ids mapped to lists containing other point_ids representing 
+            the current node's neighbors.
+        landmark_ids (set): Unique identifier for each landmark in the graph.
+        landmark_positions (dict): Map AprilTag landmark ids to their absolute
+            position on the floorplan.
+        landmark_angles (dict): Map AprilTag landmark ids to their absolute
+            position on the floorplan. This specifies the angle of rotation of the landmark in the 
+            xy plane; ie, how much has its horizontal vector deviated from the x axis.
     
     Attributes:
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
@@ -29,7 +37,7 @@ class Localization():
         self.estimated_pose (geometry_msgs.msg.Pose or None): The estimated pose of the robot based 
             on the visible tags. None if no tags visible.
     """
-    def __init__(self, landmarks):
+    def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
         self._logger = Logger("Localization")
         
         # store raw tag data, data in the odom frame, and data in the base frame
