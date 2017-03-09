@@ -21,8 +21,8 @@ class NavLoc(Navigation, Localization):
         self._transform = {"position": Point(0,0,0), "angle": 0}
     
         # initialize what we're inheriting from
-        Navigation().__init__(self, jerky = jerky, walking_speed = walking_speed)
-        Localization().__init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
+        Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
+        Localization.__init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
         self._raw_pose = Pose()
 
         self._logger = Logger("NavLoc")
@@ -30,7 +30,7 @@ class NavLoc(Navigation, Localization):
     def _estimatePose(self):
         """ Override pose estimation to include pose calculation. """
     
-        Localization()._estimatePose(self)
+        Localization._estimatePose(self)
         
         # if there is currently no estimated pose, nothing more to do here
         if self.estimated_pose is None:
@@ -65,6 +65,9 @@ class NavLoc(Navigation, Localization):
         # we're deciding not to care about the quaternion for now
         self.q = None
 
+    def self.shutdown(self, rate):
+        Navigation.shutdown(rate)
+
 if __name__ == "__main__":
     from tester import Tester
     from math import pi
@@ -97,7 +100,7 @@ if __name__ == "__main__":
             landmark_positions = {0:(.5,0)}
             landmark_orientations = {0:-pi/2}
         
-            self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, self.jerky, self.walking_speed)
+            self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
 
         def main(self):
             """ The test currently being run. """
