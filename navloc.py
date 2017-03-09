@@ -8,7 +8,7 @@ import rospy
 
 from copy import deepcopy
 from geometry_msgs.msg import Pose, Point, Quaternion
-from math import sin, cos
+from math import sin, cos, pi
 
 from localization import Localization
 from logger import Logger
@@ -61,6 +61,15 @@ class NavLoc(Navigation, Localization):
         #   extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
         self.angle += self._transform["angle"]
+        
+        # wrap angle, if necessary
+        if self.angle > pi:
+            self.angle -= self._TWO_PI
+        elif self.angle < -pi:
+            self.angle += self._TWO_PI
+        
+        self._logger.debug("\n" + str(self.p), var_name = "map_pos")
+        self._logger.debug(self.angle, var_name = "angle")
 
         # we're deciding not to care about the quaternion for now
         self.q = None
