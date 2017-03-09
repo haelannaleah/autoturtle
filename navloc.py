@@ -74,9 +74,6 @@ class NavLoc(Navigation, Localization):
         # we're deciding not to care about the quaternion for now
         self.q = None
 
-    def shutdown(self, rate):
-        Navigation.shutdown(self, rate)
-
 if __name__ == "__main__":
     from tester import Tester
     from math import pi
