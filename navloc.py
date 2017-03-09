@@ -75,7 +75,7 @@ class NavLoc(Navigation, Localization):
         self.q = None
 
     def shutdown(self, rate):
-        Navigation.shutdown(rate)
+        Navigation.shutdown(self, rate)
 
 if __name__ == "__main__":
     from tester import Tester
