@@ -235,8 +235,12 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            if 0 in self.localization.tags_base
+            if 0 in self.localization.tags_base:
                 self.screenLog(self.localization.tags_base, 0)
+            
+            if 0 in self.localization.tags:
+                self.screenLog(self.localization.tags, 0)
+            
             if self.localization.estimated_pose is not None:
                 self.logger.info(self.localization.estimated_pose)
         
