@@ -147,6 +147,7 @@ class Localization():
             self._estimatePose()
         else:
             # we don't see any tags, so empty things out
+            self.estimated_pose = None
             self.tags = {}
             self.tags_base = {}
             self.tags_odom = {}
