@@ -65,7 +65,7 @@ class NavLoc(Navigation, Localization):
         # we're deciding not to care about the quaternion for now
         self.q = None
 
-    def self.shutdown(self, rate):
+    def shutdown(self, rate):
         Navigation.shutdown(rate)
 
 if __name__ == "__main__":
