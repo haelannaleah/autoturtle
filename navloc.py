@@ -60,7 +60,7 @@ class NavLoc(Navigation, Localization):
         # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
         #   extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
-        self.angle += self.transform["angle"]
+        self.angle += self._transform["angle"]
 
         # we're deciding not to care about the quaternion for now
         self.q = None
