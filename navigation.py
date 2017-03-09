@@ -21,6 +21,8 @@ class Navigation(Motion):
     Args:
         jerky (bool, optional): If true, robot will not decelerate, but stop abruptly.
             Defaults to False.
+        walking_speed (float, optional): Percentage of maximum speed, magnitude between 0 and 1.
+                Values with magnitude greater than 1 will be ignored.
     
     Attributes:
         p (geometry_msgs.msg.Point): The position of the robot in the ekf odometry frame according to
@@ -34,11 +36,12 @@ class Navigation(Motion):
     _HALF_PI = pi / 2.0
     _TWO_PI = 2.0 * pi
     
-    def __init__(self, jerky = False):
+    def __init__(self, jerky = False, walking_speed = 1):
     
         # initialize motion component of navigation
         self._motion = Motion()
         self._jerky = jerky
+        self._walking_speed = min(abs(walking_speed), 1)
         self._logger = Logger("Navigation")
 
         # subscibe to the robot_pose_ekf odometry information
