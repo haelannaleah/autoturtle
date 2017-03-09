@@ -13,9 +13,14 @@ from std_msgs.msg import Empty
 from time import time
 
 from logger import Logger
+from safe_motion import SafeMotion as Motion
 
-class Navigation():
+class Navigation(Motion):
     """ Local navigation.
+    
+    Args:
+        jerky (bool, optional): If true, robot will not decelerate, but stop abruptly.
+            Defaults to False.
     
     Attributes:
         p (geometry_msgs.msg.Point): The position of the robot in the ekf odometry frame according to
@@ -29,7 +34,11 @@ class Navigation():
     _HALF_PI = pi / 2.0
     _TWO_PI = 2.0 * pi
     
-    def __init__(self):
+    def __init__(self, jerky = False):
+    
+        # initialize motion component of navigation
+        self._motion = Motion()
+        self._jerky = jerky
         self._logger = Logger("Navigation")
 
         # subscibe to the robot_pose_ekf odometry information
@@ -37,14 +46,17 @@ class Navigation():
         self.q = None
         self.angle = 0
         rospy.Subscriber('/robot_pose_ekf/odom_combined', PoseWithCovarianceStamped, self._ekfCallback)
+        
+        # set up navigation to destination data
+        self._reached_goal = True
     
         # set up the odometry reset publisher (publishing Empty messages here will reset odom)
-        self.reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=1)
+        reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=1)
         
         # reset odometry (these messages take about a second to get through)
         timer = time()
         while time() - timer < 1 or self.p is None:
-            self.reset_odom.publish(Empty())
+            reset_odom.publish(Empty())
 
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
@@ -57,7 +69,7 @@ class Navigation():
         #   extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w])[-1]
 
-    def goToPosition(self, destination):
+    def _getDestData(self, destination):
         """ Move from current position to desired waypoint in the odomety frame.
             
         Args:
@@ -91,18 +103,54 @@ class Navigation():
         else:
             return 0
 
+    def goToPosition(self, name, x, y):
+            """ Default behavior for navigation (currently, no obstacle avoidance).
+            
+            Args:
+                name (str): Name of the waypoint we are approaching.
+                x (float): The x coordinate of the desired location (in meters from the origin).
+                y (float): The y coordinate of the desired location (in meters from the origin).
+            """
+            nav_val = self._getDestData(Point(x,y,0))
+            
+            # did we reach our waypoint?
+            if nav_val is True or self._reached_goal is True:
+            
+                self._reached_goal = True
+                
+                if self._motion.walking or self._motion.turning:
+                    self._motion.stop(now = self._jerky)
+                else:
+                    self._logger.debug("Arrived at " + str(x,y) " (absolute position is " + str((self.p.x, self.p.y))+ ")")
+                    self._reached_goal = False
+                    return True
+            
+            # our goal is straight ahead
+            elif nav_val == 0:
+                if self._motion.turning:
+                    self._motion.stop_rotation(now=True)
+                else:
+                    self._motion.walk(speed=self._walking_speed)
+            
+            # we need to turn to reach our goal
+            else:
+                # large turn, stop, otherwise turn while walking
+                if self._motion.walking and abs(nav_val) > pi / 2:
+                    self._motion.stop(now = self._jerky)
+                else:
+                    self._motion.turn(nav_val < 0, .25 if self._motion.walking else 1)
+            
+            return False
+
 if __name__ == "__main__":
     from tester import Tester
-    from motion import Motion
-    from safe_motion import SafeMotion
     
     class NavigationTest(Tester):
         """ Run local navigation tests. """
         def __init__(self):
             Tester.__init__(self, "Navigation")
             
-            self.navigation = Navigation()
-            self.motion = SafeMotion(0)
+            self.navigation = Navigation
 
             # tests to run:
             #   square with Motion module, minimal.launch
@@ -137,51 +185,16 @@ if __name__ == "__main__":
             #self.testCsquare(.5)
             #self.testLine(1)
             
-        def gotToPos(self, name, x, y):
-            """ Default behavior for testing goToPosition. 
-            
-            Args:
-                name (str): Name of the waypoint we are approaching.
-                x (float): The x coordinate of the desired location (in meters from the origin).
-                y (float): The y coordinate of the desired location (in meters from the origin).
-            """
-            nav_val = self.navigation.goToPosition(Point(x,y,0))
-            
-            # did we reach our waypoint?
-            if nav_val is True or self.reached_goal is True:
-            
-                self.reached_goal = True
-                
-                if self.motion.walking or self.motion.turning:
-                    self.motion.stop(now = self.jerky)
-                else:
-                    self.logger.info("Reached " + str(name) + " at " + str((x,y)))
-                    self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
-                    self.logger.csv(self.filename, [x, y, self.navigation.p.x, self.navigation.p.y])
-                    self.reached_goal = False
-                    return True
-            
-            # our goal is straight ahead
-            elif nav_val == 0:
-                if self.motion.turning:
-                    self.motion.stop_rotation(now=True)
-                else:
-                    self.motion.walk(speed=self.walking_speed)
-            
-            # we need to turn to reach our goal
-            else:
-                # large turn, stop, otherwise turn while walking
-                if self.motion.walking and abs(nav_val) > pi / 2:
-                    self.motion.stop(now = self.jerky)
-                else:
-                    self.motion.turn(nav_val < 0, .25 if self.motion.walking else 1)
-            
-            return False
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
-            self.filename =filename + ("jerky" if self.jerky else "smooth")
+            self.filename = filename + ("jerky" if self.jerky else "smooth")
             self.logger.csv(self.filename, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
+        
+        def logArrival(self, name):
+            self.logger.info("Reached " + str(name) + " at " + str((x,y)))
+            self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
+            self.logger.csv(self.filename, [x, y, self.navigation.p.x, self.navigation.p.y])
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
@@ -192,11 +205,16 @@ if __name__ == "__main__":
             if self.filename is None:
                 self.initFile("line")
             
+            self.reached_corner[0] = True
+            
             if not self.reached_corner[0]:
-                self.reached_corner[0] = self.gotToPos("end point", length, 0)
+                self.reached_corner[0] = self.navigation.goToPosition(length, 0)
+                if self.reached_corner[0]:
+                    self.logArrival("endpoint")
         
-            elif self.gotToPos("home", 0, 0):
+            elif self.navigation.goToPosition(0, 0):
                 self.reached_corner[0] = False
+                self.logArrival("home")
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. 
@@ -228,9 +246,10 @@ if __name__ == "__main__":
             """
             # test a simple square
             if not self.reached_corner[self.corner_counter]:
-                self.reached_corner[self.corner_counter] = self.gotToPos("corner " + str(self.corner_counter), \
-                    corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
+                self.reached_corner[self.corner_counter] = self.goToPosition(corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
+            
             else:
+                self.logArrival("corner " + str(self.corner_counter))
                 if self.corner_counter == len(self.reached_corner) - 1:
                     self.reached_corner = [False] * len(self.reached_corner)
                 self.corner_counter = (self.corner_counter + 1) % len(self.reached_corner)
