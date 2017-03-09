@@ -149,8 +149,6 @@ if __name__ == "__main__":
         """ Run local navigation tests. """
         def __init__(self):
             Tester.__init__(self, "Navigation")
-            
-            self.navigation = Navigation
 
             # tests to run:
             #   square with Motion module, minimal.launch
@@ -178,6 +176,8 @@ if __name__ == "__main__":
         
             # set up the logger output file
             self.filename = None
+        
+            self.navigation = Navigation(self.jerky)
 
         def main(self):
             """ The test currently being run. """
