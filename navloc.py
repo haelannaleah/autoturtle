@@ -41,8 +41,8 @@ class NavLoc(Navigation, Localization):
         ekf_angle = tf.transformations.euler_from_quaternion([ekf_q.x, ekf_q.y, ekf_q.z, ekf_q.w])[-1]
         
         self._transform["angle"] = self.estimated_angle - ekf_angle
-        self._transform["position"].x = self.estimated_pose.x - ekf_pose.position.x
-        self._transform["position"].y = self.estimated_pose.y - ekf_pose.position.y
+        self._transform["position"].x = self.estimated_pose.position.x - ekf_pose.position.x
+        self._transform["position"].y = self.estimated_pose.position.y - ekf_pose.position.y
         
         self._logger.debug(self._transform, var_name = "transformation")
 
