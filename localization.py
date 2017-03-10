@@ -256,9 +256,6 @@ if __name__ == "__main__":
             
             # actually write the data for file
             self.logger.csv(test_name, csvdata, folder = "tests")
-            
-            # print to the screen as well
-            self.logger.screenLog(landmark, id)
         
         def logData(self):
             """ Log CSV file and output data to screen. """
