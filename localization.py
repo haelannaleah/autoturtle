@@ -290,7 +290,7 @@ if __name__ == "__main__":
                         self._log(test_name + "_relative", self.csvPose(landmarks_relative[id].pose), id)
                         self._log(test_name + "_estimated", self.csvPose(self.estimated_pose), id)
         
-        def screenLog(self, landmark, id):
+        def screenLog(self, landmark_pose, id):
             """ Nicely parse landmarks into easily logable data. """
             self.logger.info("Frame: " + str(landmark.header.frame_id))
             self.logOrientation(landmark, id)
@@ -305,13 +305,12 @@ if __name__ == "__main__":
             
         def logPosition(self, incoming_landmark, id):
             """ Print the position of landmarks in meters. """
-            p = deepcopy(incoming_landmark.pose.position)
+            p = deepcopy(incoming_landmark.position)
             self.logger.debug("\n" + str((p.x, p.y, p.z)), var_name = "position" + str(id))
         
         def logOrientation(self, incoming_landmark, id):
             """ Print the orientation of landmarks as a Euler Angle in degrees. """
-            landmark = deepcopy(incoming_landmark)
-            q = landmark.pose.orientation
+            q = deepcopy(incoming_landmark.orientation)
             self.logger.debug("\n" + str((q.x, q.y, q.z, q.w)), var_name = "quaternion" + str(id))
             self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name = "orientation" + str(id))
 
