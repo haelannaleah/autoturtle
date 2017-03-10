@@ -33,7 +33,6 @@ class Localization():
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
             their raw form.
         tags_base (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base frame.
-        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odom frame.
         self.estimated_pose (geometry_msgs.msg.Pose or None): The estimated pose of the robot based 
             on the visible tags. None if no tags visible.
     """
@@ -45,7 +44,6 @@ class Localization():
         # store raw tag data, data in the odom frame, and data in the base frame
         self.tags = {}
         self.tags_base = {}
-        self.tags_odom = {}
         
         # set estimated pose based on local landmarks to None and set up the landmark map
         self.estimated_pose = None
@@ -146,7 +144,6 @@ class Localization():
             #   I promise, its less scary than it looks...
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
             self.tags_base = self._transformTags('/base_footprint')
-            self.tags_odom = self._transformTags('/odom')
             self._estimatePose()
         else:
             # we don't see any tags, so empty things out
@@ -154,7 +151,6 @@ class Localization():
             self.estimated_angle = None
             self.tags = {}
             self.tags_base = {}
-            self.tags_odom = {}
 
     def _transformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
@@ -248,6 +244,7 @@ if __name__ == "__main__":
             self.logData()
         
         def _log(self, csvdata, test_name, landmark, id):
+            """ Log a landmark. """
             
             # if we've never encountered this marker before, open a new csv file
             if not self.logger.isLogging(test_name):
@@ -259,7 +256,7 @@ if __name__ == "__main__":
             # print to the screen as well
             self.logger.screenLog(landmark, id)
         
-        def logData(self, frames):
+        def logData(self):
             """ Log CSV file and output data to screen. """
             
             # make sure the tags don't go changing on us
