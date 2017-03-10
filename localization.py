@@ -172,7 +172,8 @@ class Localization():
         transformed = {}
         for id in self.tags:
         
-            # make sure that the data coming in is in a viable frame of view
+            # make sure that the data coming in is in a viable frame of view, and ignore if it's not
+            # experimentally, I found point more than 7pi/15 rad away from the x-axis gave junk data
             if abs(atan2(self.tags[id].pose.position.x, self.tags[id].pose.position.z)) > self._AR_FOV_LIMIT:
                 continue
             
