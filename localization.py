@@ -230,7 +230,7 @@ if __name__ == "__main__":
             
             self.prev = {}
     
-            self.csvfields = ["x", "y", "z", "qx", "qy", "qz", "qw", "roll", "pitch", "yaw"]
+            self.csvfields = ["X", "Y", "Z", "qx", "qy", "qz", "qw", "roll", "pitch", "yaw"]
             
             self.csvtestname = "stationary"
 
