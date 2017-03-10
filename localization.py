@@ -271,7 +271,7 @@ if __name__ == "__main__":
             for id in tags:
                 
                 # convert landmark into csv data
-                raw_data = self.csvPose(tags[id].pose)
+                raw_data = self.csvPose(tags[id])
 
                 # if we've never encountered this marker before, or it's values have changed
                 if id not in self.prev or not np.allclose(raw_data, self.prev[id], rtol=.1, atol=.5):
@@ -290,11 +290,11 @@ if __name__ == "__main__":
                         self._log(test_name + "_relative", self.csvPose(landmarks_relative[id].pose), id)
                         self._log(test_name + "_estimated", self.csvPose(self.estimated_pose), id)
         
-        def screenLog(self, landmark_pose, id):
+        def screenLog(self, landmark, id):
             """ Nicely parse landmarks into easily logable data. """
-            self.logger.info("Frame: " + str(landmark_pose.header.frame_id))
-            self.logOrientation(landmark_pose, id)
-            self.logPosition(landmark_pose, id)
+            self.logger.info("Frame: " + str(landmark.header.frame_id))
+            self.logOrientation(landmark, id)
+            self.logPosition(landmark, id)
     
         def csvPose(self, landmark_pose):
             """ Convert pose object into csv data. """
@@ -305,12 +305,12 @@ if __name__ == "__main__":
             
         def logPosition(self, incoming_landmark, id):
             """ Print the position of landmarks in meters. """
-            p = deepcopy(incoming_landmark.position)
+            p = deepcopy(incoming_landmark.pose.position)
             self.logger.debug("\n" + str((p.x, p.y, p.z)), var_name = "position" + str(id))
         
         def logOrientation(self, incoming_landmark, id):
             """ Print the orientation of landmarks as a Euler Angle in degrees. """
-            q = deepcopy(incoming_landmark.orientation)
+            q = deepcopy(incoming_landmark.pose.orientation)
             self.logger.debug("\n" + str((q.x, q.y, q.z, q.w)), var_name = "quaternion" + str(id))
             self.logger.debug([round(degrees(t)) for t in tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])], var_name = "orientation" + str(id))
 
