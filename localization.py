@@ -265,24 +265,26 @@ if __name__ == "__main__":
             
             # separately log all tag data
             for id in tags:
-            
-                # make sure that the landmark data is in
-                if id in landmarks_relative:
                 
-                    # convert landmark into csv data
-                    raw_data = self.csvPose(tags[id].pose)
+                # convert landmark into csv data
+                raw_data = self.csvPose(tags[id].pose)
 
-                    # if we've never encountered this marker before, or it's values have changed
-                    if id not in self.prev or not np.allclose(raw_data, self.prev[id], rtol=.1, atol=.5):
-                        self.prev[id] = raw_data
-                        test_name = self.csvtestname + "_marker" + str(id)
-                        
-                        raw_test_name = test_name + "_raw"
-                        rel_test_name = test_name + "_relative"
-                        est_test_name = test_name + "_estimated"
-                        self._log(test_name + "_raw", raw_data, tags, id)
+                # if we've never encountered this marker before, or it's values have changed
+                if id not in self.prev or not np.allclose(raw_data, self.prev[id], rtol=.1, atol=.5):
+                
+                    # set generic name of test
+                    test_name = self.csvtestname + "_marker" + str(id)
+                    
+                    # update previous
+                    self.prev[id] = raw_data
+                    
+                    # log raw data
+                    self._log(test_name + "_raw", raw_data, tags, id)
+                    
+                    # make sure that the landmark data is in; otherwise, we're getting raw data outside the bounds
+                    if id in landmarks_relative:
                         self._log(test_name + "_relative", self.csvPose(landmarks_relative[id].pose), id)
-                        self._log(test_name + "_estimated", self.csvPose(self.estimated_pose[id], id)
+                        self._log(test_name + "_estimated", self.csvPose(self.estimated_pose, id)
         
         def screenLog(self, landmark, id):
             """ Nicely parse landmarks into easily logable data. """
