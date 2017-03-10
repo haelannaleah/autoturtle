@@ -21,7 +21,7 @@ class FloorPlan():
             position on the floorplan.
         landmark_angles (dict): Map AprilTag landmark ids to their absolute
             position on the floorplan. This specifies the angle of rotation of the landmark in the 
-            xy plane; ie, how much has its perpendicular vector deviated from the y axis?
+            xy plane; ie, how much has its horizontal vector deviated from the x axis.
             
     Attributes:
         graph (dict of Waypoints, readonly): Represent the floorplan in an easy to parse way.
