@@ -271,7 +271,7 @@ if __name__ == "__main__":
             for id in tags:
                 
                 # convert landmark into csv data
-                raw_data = self.csvPose(tags[id])
+                raw_data = self.csvPose(tags[id].pose)
 
                 # if we've never encountered this marker before, or it's values have changed
                 if id not in self.prev or not np.allclose(raw_data, self.prev[id], rtol=.1, atol=.5):
