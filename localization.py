@@ -236,12 +236,7 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-#            if 0 in self.localization.tags_base:
-#                self.screenLog(self.localization.tags_base[0], 0)
-#            
-#            if 0 in self.localization.tags:
-#                self.screenLog(self.localization.tags[0], 0)
-        
+            
             self.logData()
         
         def _log(self, test_name, csvdata):
