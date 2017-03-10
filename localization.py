@@ -292,14 +292,14 @@ if __name__ == "__main__":
         
         def screenLog(self, landmark_pose, id):
             """ Nicely parse landmarks into easily logable data. """
-            self.logger.info("Frame: " + str(landmark.header.frame_id))
-            self.logOrientation(landmark, id)
-            self.logPosition(landmark, id)
+            self.logger.info("Frame: " + str(landmark_pose.header.frame_id))
+            self.logOrientation(landmark_pose, id)
+            self.logPosition(landmark_pose, id)
     
         def csvPose(self, landmark_pose):
             """ Convert pose object into csv data. """
-            p = landmark.position
-            q = landmark.orientation
+            p = landmark_pose.position
+            q = landmark_pose.orientation
             roll, pitch, yaw = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
             return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, roll, pitch, yaw]
             
