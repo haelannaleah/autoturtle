@@ -109,7 +109,7 @@ class Logger:
             self._open_files[tname]["writer"] = csv.writer(self._open_files[tname]["file"])
             
             # assume that the first message will be variable names
-            self._open_files[tname]["writer"].writerow(["time"] + row)
+            self._open_files[tname]["writer"].writerow(["Time"] + row)
     
         else:
             # preappend the current time and write current line to file
