@@ -170,7 +170,11 @@ class Localization():
         
         # transform the visible tags that are in the viable field of view
         transformed = {}
-        for id in self.tags if abs(atan2(self.tags[id].pose.position.x, self.tags[id].pose.position.z)) < _AR_FOV_LIMIT:
+        for id in self.tags:
+        
+            # make sure that the data coming in is in a viable frame of view
+            if abs(atan2(self.tags[id].pose.position.x, self.tags[id].pose.position.z)) > _AR_FOV_LIMIT:
+                continue
             
             # get the header from the current tag
             header = self.tags[id].header
