@@ -247,7 +247,7 @@ if __name__ == "__main__":
         
             self.logData()
         
-        def _log(self, csvdata, test_name, landmark, id):
+        def _log(self, test_name, csvdata):
             """ Log a landmark. """
             
             # if we've never encountered this marker before, open a new csv file
@@ -280,12 +280,14 @@ if __name__ == "__main__":
                     self.prev[id] = raw_data
                     
                     # log raw data
-                    self._log(test_name + "_raw", raw_data, tags, id)
+                    self._log(test_name + "_raw", raw_data)
                     
                     # make sure that the landmark data is in; otherwise, we're getting raw data outside the bounds
                     if id in landmarks_relative:
-                        self._log(test_name + "_relative", self.csvPose(landmarks_relative[id].pose), id)
-                        self._log(test_name + "_estimated", self.csvPose(self.estimated_pose), id)
+                        self._log(test_name + "_relative", self.csvPose(landmarks_relative[id].pose))
+                        self._log(test_name + "_estimated", self.csvPose(self.localization.estimated_pose))
+            
+                        self.logger.log(self.localization.estimated_pose)
         
         def screenLog(self, landmark, id):
             """ Nicely parse landmarks into easily logable data. """
