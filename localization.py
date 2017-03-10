@@ -168,7 +168,7 @@ class Localization():
             Also note that this is the scary function...
         """
         
-        # transform the visible tags that are in the valid field of view
+        # transform the visible tags that are in the viable field of view
         transformed = {}
         for id in self.tags if abs(atan2(self.tags[id].pose.position.x, self.tags[id].pose.position.z)) < _AR_FOV_LIMIT:
             
