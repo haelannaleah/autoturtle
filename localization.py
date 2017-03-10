@@ -287,7 +287,7 @@ if __name__ == "__main__":
                         self._log(test_name + "_relative", self.csvPose(landmarks_relative[id].pose))
                         self._log(test_name + "_estimated", self.csvPose(self.localization.estimated_pose))
             
-                        self.logger.log(self.localization.estimated_pose)
+                        self.logger.debug(self.localization.estimated_pose)
         
         def screenLog(self, landmark, id):
             """ Nicely parse landmarks into easily logable data. """
