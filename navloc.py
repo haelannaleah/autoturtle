@@ -46,33 +46,33 @@ class NavLoc(Navigation, Localization):
         
         self._logger.debug(self._transform, var_name = "transformation")
 
-    def _ekfCallback(self, data):
-        """ Process robot_pose_ekf data. """
-        self._raw_pose = data.pose.pose
-        p = self._raw_pose.position
-        q = self._raw_pose.orientation
-
-        # transform from odom to the map frame
-        self.p = Point()
-        self.p.x = self._transform["position"].x + p.x * cos(self._transform["angle"]) + p.y * sin(self._transform["angle"])
-        self.p.y = self._transform["position"].y - p.x * sin(self._transform["angle"]) + p.y * cos(self._transform["angle"])
-        
-        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
-        #   extract the only non zero euler angle as the angle of rotation in the floor plane
-        self.angle = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
-        self.angle += self._transform["angle"]
-        
-        # wrap angle, if necessary
-        if self.angle > pi:
-            self.angle -= self._TWO_PI
-        elif self.angle < -pi:
-            self.angle += self._TWO_PI
-        
-        self._logger.debug("\n" + str(self.p), var_name = "map_pos")
-        self._logger.debug(self.angle, var_name = "angle")
-
-        # we're deciding not to care about the quaternion for now
-        self.q = None
+#    def _ekfCallback(self, data):
+#        """ Process robot_pose_ekf data. """
+#        self._raw_pose = data.pose.pose
+#        p = self._raw_pose.position
+#        q = self._raw_pose.orientation
+#
+#        # transform from odom to the map frame
+#        self.p = Point()
+#        self.p.x = self._transform["position"].x + p.x * cos(self._transform["angle"]) + p.y * sin(self._transform["angle"])
+#        self.p.y = self._transform["position"].y - p.x * sin(self._transform["angle"]) + p.y * cos(self._transform["angle"])
+#        
+#        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
+#        #   extract the only non zero euler angle as the angle of rotation in the floor plane
+#        self.angle = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+#        self.angle += self._transform["angle"]
+#        
+#        # wrap angle, if necessary
+#        if self.angle > pi:
+#            self.angle -= self._TWO_PI
+#        elif self.angle < -pi:
+#            self.angle += self._TWO_PI
+#        
+#        self._logger.debug("\n" + str(self.p), var_name = "map_pos")
+#        self._logger.debug(self.angle, var_name = "angle")
+#
+#        # we're deciding not to care about the quaternion for now
+#        self.q = None
 
 if __name__ == "__main__":
     from tester import Tester
