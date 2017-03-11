@@ -40,7 +40,7 @@ class NavLoc(Navigation, Localization):
         ekf_q = ekf_pose.orientation
         ekf_angle = tf.transformations.euler_from_quaternion([ekf_q.x, ekf_q.y, ekf_q.z, ekf_q.w])[-1]
         
-        # TODO: this is all wrong
+        # create transformation
         self._transform["angle"] = self.estimated_angle - ekf_angle
         self._transform["position"].x = self.estimated_pose.position.x - ekf_pose.position.x
         self._transform["position"].y = self.estimated_pose.position.y - ekf_pose.position.y
@@ -50,13 +50,12 @@ class NavLoc(Navigation, Localization):
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
         self._raw_pose = data.pose.pose
-        p = self._raw_pose.position
         q = self._raw_pose.orientation
 
         # transform from odom to the map frame
         self.p = Point()
-        self.p.x = self._transform["position"].x + p.x * cos(self._transform["angle"]) - p.y * sin(self._transform["angle"])
-        self.p.y = self._transform["position"].y + p.x * sin(self._transform["angle"]) + p.y * cos(self._transform["angle"])
+        self.p.x = self._raw_pose.position.x + self._transform["position"].x
+        self.p.y = self._raw_pose.position.y + self._transform["position"].y
         
         # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
         #   extract the only non zero euler angle as the angle of rotation in the floor plane
@@ -72,8 +71,9 @@ class NavLoc(Navigation, Localization):
         self._logger.debug("\n" + str(self.p), var_name = "map_pos")
         self._logger.debug(self.angle, var_name = "angle")
 
-        # we're deciding not to care about the quaternion for now
-        self.q = None
+        # compute the quaternion
+        q = tf.transformations.quaternion_from_euler(0, 0, self.angle)
+        self.q = Quaternion(q.x, q.y, q.z, q.w)
 
 if __name__ == "__main__":
     from tester import Tester
