@@ -80,7 +80,7 @@ class NavLoc(Navigation, Localization):
         destination.x = self._transform["position"].x + destination.x * cos(self._transform["angle"]) - destination.y * sin(self._transform["angle"])
         destination.y = self._transform["position"].y + destination.x * sin(self._transform["angle"]) - destination.y * cos(self._transform["angle"])
         self._logger.debug("\n" + str(destination), var_name = "dest")
-        Navigation._getDestData(self, destination)
+        return Navigation._getDestData(self, destination)
 
 if __name__ == "__main__":
     from tester import Tester
