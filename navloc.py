@@ -72,8 +72,8 @@ class NavLoc(Navigation, Localization):
         self._logger.debug(self.angle, var_name = "angle")
 
         # compute the quaternion
-        q = tf.transformations.quaternion_from_euler(0, 0, self.angle)
-        self.q = Quaternion(q.x, q.y, q.z, q.w)
+        qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
+        self.q = Quaternion(qx, qy, qz, qw)
 
 if __name__ == "__main__":
     from tester import Tester
