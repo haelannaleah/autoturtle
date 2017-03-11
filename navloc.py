@@ -65,8 +65,6 @@ class NavLoc(Navigation, Localization):
             self.angle -= self._TWO_PI
         elif self.angle < -pi:
             self.angle += self._TWO_PI
-        
-        self._logger.debug("\n" + str(self.p), var_name = "map_pos")
 
         # compute the quaternion
         qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
