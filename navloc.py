@@ -16,8 +16,6 @@ from logger import Logger
 from navigation import Navigation
 
 class NavLoc(Navigation, Localization):
-
-    _TAG_TIME = 5   # seconds before looking for a new landmark
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
@@ -40,8 +38,7 @@ class NavLoc(Navigation, Localization):
         Localization._estimatePose(self)
         
         # if there is currently no estimated pose, nothing more to do here
-        if self.estimated_pose is None or self._timer - time() > self._TAG_TIME:
-            self._timer = time()
+        if self.estimated_pose is None:
             return
 
         ekf_pose = deepcopy(self._raw_pose)
@@ -50,9 +47,9 @@ class NavLoc(Navigation, Localization):
         
         # create transformation
         self._transform["angle"] = self.estimated_angle - ekf_angle
-        self._transform["position"].x = self.estimated_pose.position.x - ekf_pose.position.x
-        self._transform["position"].y = self.estimated_pose.position.y - ekf_pose.position.y
-
+        self._transform["position"].x = self.estimated_pose.position.x - (ekf_pose.position.x * cos(self._transform["angle"]) - ekf_pose.position.y * sin(self._transform["angle"]))
+        self._transform["position"].y = self.estimated_pose.position.y - (ekf_pose.position.x * sin(self._transform["angle"]) + ekf_pose.position.y * cos(self._transform["angle"])
+        
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
         self._raw_pose = data.pose.pose
@@ -60,8 +57,8 @@ class NavLoc(Navigation, Localization):
 
         # transform from odom to the map frame
         self.p = Point()
-        self.p.x = self._raw_pose.position.x + self._transform["position"].x
-        self.p.y = self._raw_pose.position.y + self._transform["position"].y
+        self.p.x = self._transform["position"].x + self._raw_pose.position.x * cos(self._transform["angle"]) - self._raw_pose.position.y * sin(self._transform["angle"])
+        self.p.y = self._transform["position"].y + self._raw_pose.position.x * sin(self._transform["angle"]) + self._raw_pose.position.y * cos(self._transform["angle"])
         
         # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
         #   extract the only non zero euler angle as the angle of rotation in the floor plane
