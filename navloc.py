@@ -48,7 +48,7 @@ class NavLoc(Navigation, Localization):
         # create transformation
         self._transform["angle"] = self.estimated_angle - ekf_angle
         self._transform["position"].x = self.estimated_pose.position.x - (ekf_pose.position.x * cos(self._transform["angle"]) - ekf_pose.position.y * sin(self._transform["angle"]))
-        self._transform["position"].y = self.estimated_pose.position.y - (ekf_pose.position.x * sin(self._transform["angle"]) + ekf_pose.position.y * cos(self._transform["angle"])
+        self._transform["position"].y = self.estimated_pose.position.y - (ekf_pose.position.x * sin(self._transform["angle"]) + ekf_pose.position.y * cos(self._transform["angle"]))
         
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
