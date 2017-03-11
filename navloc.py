@@ -9,6 +9,7 @@ import rospy
 from copy import deepcopy
 from geometry_msgs.msg import Pose, Point, Quaternion
 from math import sin, cos, pi
+from time import time
 
 from localization import Localization
 from logger import Logger
