@@ -45,35 +45,41 @@ class NavLoc(Navigation, Localization):
         ekf_q = ekf_pose.orientation
         ekf_angle = tf.transformations.euler_from_quaternion([ekf_q.x, ekf_q.y, ekf_q.z, ekf_q.w])[-1]
         
-        # create transformation
-        self._transform["angle"] = self.estimated_angle - ekf_angle
-        self._transform["position"].x = self.estimated_pose.position.x - (ekf_pose.position.x * cos(self._transform["angle"]) - ekf_pose.position.y * sin(self._transform["angle"]))
-        self._transform["position"].y = self.estimated_pose.position.y - (ekf_pose.position.x * sin(self._transform["angle"]) + ekf_pose.position.y * cos(self._transform["angle"]))
+        # create transformation from map frame to ekf frame
+        self._transform["angle"] = ekf_angle - self.estimated_angle
+        self._transform["position"].x = ekf_pose.position.x - (self.estimated_pose.position.x * cos(self._transform["angle"]) - self.estimated_pose.position.y * sin(self._transform["angle"]))
+        self._transform["position"].y = ekf_pose.position.y - (self.estimated_pose.position.x * sin(self._transform["angle"]) + self.estimated_pose.position.y * cos(self._transform["angle"]))
         
-    def _ekfCallback(self, data):
-        """ Process robot_pose_ekf data. """
-        self._raw_pose = data.pose.pose
-        q = self._raw_pose.orientation
+#    def _ekfCallback(self, data):
+#        """ Process robot_pose_ekf data. """
+#        self._raw_pose = data.pose.pose
+#        q = self._raw_pose.orientation
+#
+#        # transform from odom to the map frame
+#        self.p = Point()
+#        self.p.x = self._transform["position"].x + self._raw_pose.position.x * cos(self._transform["angle"]) - self._raw_pose.position.y * sin(self._transform["angle"])
+#        self.p.y = self._transform["position"].y + self._raw_pose.position.x * sin(self._transform["angle"]) + self._raw_pose.position.y * cos(self._transform["angle"])
+#        
+#        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
+#        #   extract the only non zero euler angle as the angle of rotation in the floor plane
+#        self.angle = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+#        self.angle += self._transform["angle"]
+#        
+#        # wrap angle, if necessary
+#        if self.angle > pi:
+#            self.angle -= self._TWO_PI
+#        elif self.angle < -pi:
+#            self.angle += self._TWO_PI
+#
+#        # compute the quaternion
+#        qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
+#        self.q = Quaternion(qx, qy, qz, qw)
 
-        # transform from odom to the map frame
-        self.p = Point()
-        self.p.x = self._transform["position"].x + self._raw_pose.position.x * cos(self._transform["angle"]) - self._raw_pose.position.y * sin(self._transform["angle"])
-        self.p.y = self._transform["position"].y + self._raw_pose.position.x * sin(self._transform["angle"]) + self._raw_pose.position.y * cos(self._transform["angle"])
-        
-        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
-        #   extract the only non zero euler angle as the angle of rotation in the floor plane
-        self.angle = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
-        self.angle += self._transform["angle"]
-        
-        # wrap angle, if necessary
-        if self.angle > pi:
-            self.angle -= self._TWO_PI
-        elif self.angle < -pi:
-            self.angle += self._TWO_PI
-
-        # compute the quaternion
-        qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
-        self.q = Quaternion(qx, qy, qz, qw)
+    def _getDestData(self, destination):
+        # convert destination out of the map frame into the odom frame
+        destination.x = self._transform["position"].x + destination.x * cos(self._transform["angle"]) - destination.y * sin(self._transform["angle"])
+        destination.y = self._transform["position"].y + destination.x * sin(self._transform["angle"]) - destination.y * cos(self._transform["angle"])
+        Navigation._getDestData(self, destination)
 
 if __name__ == "__main__":
     from tester import Tester
