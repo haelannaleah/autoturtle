@@ -103,6 +103,7 @@ class Logger:
             if folder is not None:
                 filename = folder + "/" + filename
             
+            # TODO: consider using the dictwriter class instead
             # open the file and set up the csv writer
             self._open_files[tname] = {}
             self._open_files[tname]["file"] = open(filename, "w+")
