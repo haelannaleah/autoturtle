@@ -15,6 +15,9 @@ from logger import Logger
 from navigation import Navigation
 
 class NavLoc(Navigation, Localization):
+
+    _TAG_TIME = 2   # seconds before looking for a new landmark
+    
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
         # create transformation object
@@ -24,6 +27,9 @@ class NavLoc(Navigation, Localization):
         Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
         Localization.__init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
         self._raw_pose = Pose()
+        
+        # create a timer to slow down the amount that we pay attention to landmarks
+        self._timer = float('inf')
 
         self._logger = Logger("NavLoc")
     
@@ -33,7 +39,8 @@ class NavLoc(Navigation, Localization):
         Localization._estimatePose(self)
         
         # if there is currently no estimated pose, nothing more to do here
-        if self.estimated_pose is None:
+        if self.estimated_pose is None or self._timer - time() > self._TAG_TIME:
+            self._timer = time()
             return
 
         ekf_pose = deepcopy(self._raw_pose)
