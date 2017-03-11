@@ -237,7 +237,7 @@ if __name__ == "__main__":
     
             self.csvfields = ["X", "Y", "Z", "qx", "qy", "qz", "qw", "roll", "pitch", "yaw"]
             
-            self.csvtestname = "noise_reduced"
+            self.csvtestname = "angled"
 
         def main(self):
             """ Run main tests. """
