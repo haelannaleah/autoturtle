@@ -137,8 +137,8 @@ class Navigation(Motion):
             
             # we need to turn to reach our goal
             else:
-                # stop and turn
-                if self._motion.walking: # and abs(nav_val) > pi / 2:
+                # turn if necessary 
+                if self._motion.walking and abs(nav_val) > pi / 2:
                     self._motion.stop(now = self._jerky)
                 else:
                     self._motion.turn(nav_val < 0, .25 if self._motion.walking else 1)
