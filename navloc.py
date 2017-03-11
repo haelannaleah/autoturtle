@@ -44,8 +44,6 @@ class NavLoc(Navigation, Localization):
         self._transform["angle"] = self.estimated_angle - ekf_angle
         self._transform["position"].x = self.estimated_pose.position.x - ekf_pose.position.x
         self._transform["position"].y = self.estimated_pose.position.y - ekf_pose.position.y
-        
-        self._logger.debug(self._transform, var_name = "transformation")
 
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
@@ -69,7 +67,6 @@ class NavLoc(Navigation, Localization):
             self.angle += self._TWO_PI
         
         self._logger.debug("\n" + str(self.p), var_name = "map_pos")
-        self._logger.debug(self.angle, var_name = "angle")
 
         # compute the quaternion
         qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
