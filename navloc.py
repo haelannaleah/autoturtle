@@ -17,7 +17,7 @@ from navigation import Navigation
 
 class NavLoc(Navigation, Localization):
 
-    _TAG_TIME = 2   # seconds before looking for a new landmark
+    _TAG_TIME = 5   # seconds before looking for a new landmark
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
