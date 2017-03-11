@@ -79,7 +79,6 @@ class NavLoc(Navigation, Localization):
         # convert destination out of the map frame into the odom frame
         destination.x = self._transform["position"].x + destination.x * cos(self._transform["angle"]) - destination.y * sin(self._transform["angle"])
         destination.y = self._transform["position"].y + destination.x * sin(self._transform["angle"]) - destination.y * cos(self._transform["angle"])
-        self._logger.debug("\n" + str(destination), var_name = "dest")
         return Navigation._getDestData(self, destination)
 
 if __name__ == "__main__":
