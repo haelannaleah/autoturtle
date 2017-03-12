@@ -177,9 +177,8 @@ class Localization():
             if abs(atan2(self.tags[id].pose.position.x, self.tags[id].pose.position.z)) > self._AR_FOV_LIMIT:
                 continue
         
-            # since the tag should always be roughly perpendicular to the ground, if either of these are close
-            #   to 1, we've received noisy data that needs to be ignored
-            if np.isclose(self.tags[id].pose.orientation.x, 1, atol = .001) or np.isclose(self.tags[id].pose.orientation.y, 1, atol = .001):
+            # since the tag should always be roughly perpendicular to the ground, these values should be 
+            if abs(self.tags[id].pose.orientation.x) > 0.75 or abs(self.tags[id].pose.orientation.y) > 0.75:
                 continue
             
             # get the header from the current tag
