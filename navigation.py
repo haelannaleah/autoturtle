@@ -132,14 +132,16 @@ class Navigation(Motion):
             elif nav_val == 0:
                 if self._motion.turning:
                     self._motion.stop_rotation(now=True)
-                else:
-                    self._motion.walk(speed=self._walking_speed)
+                
+                self._motion.walk(speed=self._walking_speed)
             
             # we need to turn to reach our goal
             else:
                 # turn if necessary 
-                if abs(nav_val) > self._HALF_PI:
+                if self._motion.walking and abs(nav_val) > self._HALF_PI:
                     self._motion.stop(now = self._jerky)
+                else:
+                    self._motion.walk(speed=self._walking_speed)
                 
                 self._motion.turn(nav_val < 0, abs(nav_val / pi) if self._motion.walking else 1)
             
