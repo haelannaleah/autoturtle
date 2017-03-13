@@ -103,7 +103,7 @@ if __name__ == "__main__":
             Tester.__init__(self, "NavLoc")
             
             # flag for a jerky stop
-            self.jerky = False
+            self.jerky = True
             
             # I'm a bit concerned about robot safety if we don't slow things down,
             # but I'm also worried it won't be an accurate test if we change the speed
