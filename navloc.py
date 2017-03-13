@@ -21,12 +21,12 @@ class NavLoc(Navigation, Localization):
         
         # create transformation object
         self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0, "angle_delta": 0}
+        self._raw_pose = Pose()
+        self._raw_angle = 0
     
         # initialize what we're inheriting from
         Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
         Localization.__init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
-        self._raw_pose = Pose()
-        self._raw_angle = 0
         
         # create a timer to slow down the amount that we pay attention to landmarks
         self._timer = float('inf')
