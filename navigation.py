@@ -146,7 +146,7 @@ class Navigation(Motion):
                     self._motion.walk(speed=self._walking_speed)
                 
                 # perform our turn
-                self._motion.turn(nav_val < 0, abs(nav_val / pi) if self._motion.walking else 1)
+                self._motion.turn(nav_val < 0, abs(nav_val / pi) + .01 if self._motion.walking else 1)
             
             return False
 
