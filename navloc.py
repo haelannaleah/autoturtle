@@ -20,12 +20,13 @@ class NavLoc(Navigation, Localization):
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
         # create transformation object
-        self._transform = {"position": Point(0,0,0), "angle": 0}
+        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0, "delta_angle": 0}
     
         # initialize what we're inheriting from
         Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
         Localization.__init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
         self._raw_pose = Pose()
+        self._raw_angle = 0
         
         # create a timer to slow down the amount that we pay attention to landmarks
         self._timer = float('inf')
@@ -40,40 +41,51 @@ class NavLoc(Navigation, Localization):
         # if there is currently no estimated pose, nothing more to do here
         if self.estimated_pose is None:
             return
-
+        
+        # save current odometry position
         ekf_pose = deepcopy(self._raw_pose)
-        ekf_q = ekf_pose.orientation
-        ekf_angle = tf.transformations.euler_from_quaternion([ekf_q.x, ekf_q.y, ekf_q.z, ekf_q.w])[-1]
+        ekf_angle = self._raw_angle 
+        self._transform["ekf_pos"] = ekf_pose.position
+        self._transform["ekf_angle"] = ekf_angle
+
+        # save the estimated map position
+        self._transform["map_pos"] = self.estimated_pose.position
+        self._transform["map_angle"] = self.estimated_angle
         
-        # create transformation from map frame to ekf frame
-        self._transform["angle"] = ekf_angle - self.estimated_angle
-        self._transform["position"].x = ekf_pose.position.x - (self.estimated_pose.position.x * cos(self._transform["angle"]) - self.estimated_pose.position.y * sin(self._transform["angle"]))
-        self._transform["position"].y = ekf_pose.position.y - (self.estimated_pose.position.x * sin(self._transform["angle"]) + self.estimated_pose.position.y * cos(self._transform["angle"]))
+        # compute the difference between them
+        self._transform["angle_delta"] = self._transform["ekf_angle"] - self._transform["map_angle"]
         
-#    def _ekfCallback(self, data):
-#        """ Process robot_pose_ekf data. """
-#        self._raw_pose = data.pose.pose
-#        q = self._raw_pose.orientation
-#
-#        # transform from odom to the map frame
-#        self.p = Point()
-#        self.p.x = self._transform["position"].x + self._raw_pose.position.x * cos(self._transform["angle"]) - self._raw_pose.position.y * sin(self._transform["angle"])
-#        self.p.y = self._transform["position"].y + self._raw_pose.position.x * sin(self._transform["angle"]) + self._raw_pose.position.y * cos(self._transform["angle"])
-#        
-#        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
-#        #   extract the only non zero euler angle as the angle of rotation in the floor plane
-#        self.angle = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
-#        self.angle += self._transform["angle"]
-#        
-#        # wrap angle, if necessary
-#        if self.angle > pi:
-#            self.angle -= self._TWO_PI
-#        elif self.angle < -pi:
-#            self.angle += self._TWO_PI
-#
-#        # compute the quaternion
-#        qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
-#        self.q = Quaternion(qx, qy, qz, qw)
+    def _ekfCallback(self, data):
+        """ Process robot_pose_ekf data. """
+        
+        # extract raw data
+        self._raw_pose = data.pose.pose
+        raw_q = self._raw_pose.orientation
+        self._raw_angle = tf.transformations.euler_from_quaternion([raw_q.x, raw_q.y, raw_q.z, raw_q.w])[-1]
+
+        # measure the amount that the robot has moved since we last saw a landmark
+        ekf_dx = self._raw_pose.position.x - self._transform["ekf_pos"].x
+        ekf_dy = self._raw_pose.position.y - self._transform["ekf_pos"].y
+        ekf_delta_angle = self._raw_angle - self._transform["ekf_angle"]
+
+        # transform from odom to the map frame
+        self.p = Point()
+        self.p.x = self._transform["map_pos"].x + ekf_dx * cos(self._transform["angle_delta"]) - ekf_dy * sin(self._transform["angle_delta"])
+        self.p.y = self._transform["map_pos"].y + ekf_dx * sin(self._transform["angle_delta"]) + ekf_dy * cos(self._transform["angle_delta"])
+        
+        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
+        #   extract the only non zero euler angle as the angle of rotation in the floor plane
+        self.angle = self._transform["map_angle"] + ekf_delta_angle
+        
+        # wrap angle, if necessary
+        if self.angle > pi:
+            self.angle -= self._TWO_PI
+        elif self.angle < -pi:
+            self.angle += self._TWO_PI
+
+        # compute the quaternion
+        qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
+        self.q = Quaternion(qx, qy, qz, qw)
 
     def _getDestData(self, destination):
         # convert destination out of the map frame into the odom frame
