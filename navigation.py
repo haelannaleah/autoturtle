@@ -141,7 +141,7 @@ class Navigation(Motion):
                 if self._motion.walking and abs(nav_val) > self._HALF_PI:
                     self._motion.stop(now = self._jerky)
                 else:
-                    self._motion.turn(nav_val < 0, abs(nav_val / self._HALF_PI) if self._motion.walking else 1)
+                    self._motion.turn(nav_val < 0, abs(nav_val / pi) if self._motion.walking else 1)
             
             return False
 
