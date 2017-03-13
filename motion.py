@@ -36,6 +36,7 @@ class Motion():
         self.turning = False
         self.walking = False
         self.stopping = False
+        self.starting = False
         
         # set up private acceleration trackers
         self._accel_time = 0
@@ -81,6 +82,8 @@ class Motion():
         else:
             self.stopping = True
             self._move_cmd.linear.x += self._accelerate(self._LIN_DECCEL)
+
+        self.starting = False
 
     def _rotational_stop(self, now):
         """ Stop the robot and handle associated housekeeping. """
@@ -173,10 +176,12 @@ class Motion():
         
         # if we're under our target speed, accelerate
         if self._move_cmd.linear.x < target_speed:
+            self.starting = True
             self._move_cmd.linear.x += self._accelerate(self._LIN_ACCEL)
         
         # otherwise, set move command to target speed
         else:
+            self.starting = False
             self._move_cmd.linear.x = target_speed
     
         self._publish()
