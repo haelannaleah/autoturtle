@@ -177,7 +177,8 @@ class Localization():
             if abs(atan2(self.tags[id].pose.position.x, self.tags[id].pose.position.z)) > self._AR_FOV_LIMIT:
                 continue
         
-            # since the tag should always be roughly perpendicular to the ground, these values should be 
+            # since the tag should always be roughly perpendicular to the ground, these values should be
+            # todo: emperical experiments
             if abs(self.tags[id].pose.orientation.x) > 0.75 or abs(self.tags[id].pose.orientation.y) > 0.75:
                 continue
             
