@@ -20,7 +20,7 @@ class NavLoc(Navigation, Localization):
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
         # create transformation object
-        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0, "delta_angle": 0}
+        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0, "angle_delta": 0}
     
         # initialize what we're inheriting from
         Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
@@ -44,7 +44,7 @@ class NavLoc(Navigation, Localization):
         
         # save current odometry position
         ekf_pose = deepcopy(self._raw_pose)
-        ekf_angle = self._raw_angle 
+        ekf_angle = self._raw_angle
         self._transform["ekf_pos"] = ekf_pose.position
         self._transform["ekf_angle"] = ekf_angle
 
