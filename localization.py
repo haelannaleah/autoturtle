@@ -179,9 +179,9 @@ class Localization():
         
             # since the tag should always be roughly perpendicular to the ground, these values should be
             # todo: emperical experiments
-            if abs(self.tags[id].pose.orientation.x) > 0.75 or abs(self.tags[id].pose.orientation.y) > 0.75:
-                continue
-            
+#            if abs(self.tags[id].pose.orientation.x) > 0.75 or abs(self.tags[id].pose.orientation.y) > 0.75:
+#                continue
+
             # get the header from the current tag
             header = self.tags[id].header
             
