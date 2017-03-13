@@ -140,10 +140,13 @@ class Navigation(Motion):
                 # turn if necessary 
                 if self._motion.walking and abs(nav_val) > self._HALF_PI:
                     self._motion.stop(now = self._jerky)
+                    self._logger.debug("stopping")
                 else:
                     self._motion.walk(speed=self._walking_speed)
+                    self._logger.debug("walking")
                 
                 self._motion.turn(nav_val < 0, abs(nav_val / pi) if self._motion.walking else 1)
+                self._logger.debug("turning")
             
             return False
 
