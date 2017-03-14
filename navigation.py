@@ -147,7 +147,7 @@ class Navigation(Motion):
             else:
             
                 # if we need to make a big turn and we're walking, stop before turning
-                if self._motion.walking and abs(nav_val) > self._PI_OVER_FOUR:
+                if self._motion.walking and abs(nav_val) > 0.1:
                     self._motion.stop_linear(now = self._jerky)
             
                 # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
