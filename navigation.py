@@ -252,11 +252,11 @@ if __name__ == "__main__":
             if not self.reached_corner[0]:
                 self.reached_corner[0] = self.navigation.goToPosition(0, 0)
                 if self.reached_corner[0]:
-                    self.navigation.csvLogArrival("home", 0, 0)
+                    self.navigation.csvLogArrival(self.filename, 0, 0)
         
             elif self.navigation.goToPosition(length, 0):
                 self.reached_corner[0] = False
-                self.navigation.csvLogArrival("endpoint", length, 0)
+                self.navigation.csvLogArrival(self.filename, length, 0)
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. 
@@ -291,7 +291,7 @@ if __name__ == "__main__":
                 self.reached_corner[self.corner_counter] = self.navigation.goToPosition(corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
             
             else:
-                self.navigation.csvLogArrival("corner " + str(self.corner_counter), corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
+                self.navigation.csvLogArrival(self.filename, corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
                 if self.corner_counter == len(self.reached_corner) - 1:
                     self.reached_corner = [False] * len(self.reached_corner)
                 self.corner_counter = (self.corner_counter + 1) % len(self.reached_corner)
