@@ -157,9 +157,8 @@ if __name__ == "__main__":
             self.logger.warn("Warn!")
             self.logger.warn("Method warn!", method="main")
             
-            self.logger.csv("test", ["hello", "world"])
-            self.logger.csv("test", [1, 3])
-            self.logger.csv("test2", ["hi", "again"])
+            self.logger.csv("test", ["hello", "world"], [1,3])
+            self.logger.csv("test", ["hello", "world"], [2,2])
 
             self.signal_shutdown("Logger test complete.")
 
