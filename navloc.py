@@ -171,13 +171,13 @@ if __name__ == "__main__":
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
-            self.filename = filename + ("jerky" if self.jerky else "smooth")
-            self.logger.csv(self.filename, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
+            self.test_name = filename + ("jerky" if self.jerky else "smooth")
+            self.logger.csv(self.test_name, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
         
         def logArrival(self, name, x, y):
             self.logger.info("Reached " + str(name) + " at " + str((x,y)))
             self.logger.info("Current pose: " + str((self.navloc.p.x, self.navloc.p.y)))
-            self.logger.csv(self.filename, [x, y, self.navloc.p.x, self.navloc.p.y])
+            self.logger.csv(self.test_name, [x, y, self.navloc.p.x, self.navloc.p.y])
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
@@ -185,7 +185,7 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if self.filename is None:
+            if self.test_name is None:
                 self.initFile("line")
             
             if not self.reached_corner[0]:
@@ -203,7 +203,7 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if self.filename is None:
+            if self.test_name is None:
                 self.initFile("counterclockwise")
             
             self.testSquare(length, self.cc_square)
@@ -214,7 +214,7 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if self.filename is None:
+            if self.test_name is None:
                 self.initFile("clockwise")
             
             self.testSquare(length, self.c_square)
