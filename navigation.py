@@ -154,27 +154,29 @@ class Navigation(Motion):
                 if self._motion.stopping:
                     self._motion.stop(now = self._jerky)
                 
-                elif self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
-                    self._motion.stop_linear(now = self._jerky)
-#                    if abs(nav_val) > self._PI_OVER_FOUR:
-#                        self._motion.stop_linear(now = self._jerky)
-#                
-#                    # if we're moving in a circle around our target, we need to stop
-#                    elif np.isclose(abs(sqrt((x - self.p.x)**2 + (y - self.p.y)**2) * self._motion.angular_vel()), self._motion.linear_vel(), atol = .1) or self._motion.stopping:
-#                        self._motion.stop_linear(now = self._jerky)
-#            
-#                    # otherwise, if we're just starting, stop entirely instead of stalling
-#                    elif self._motion.starting:
-#                        self._motion.stop_linear(now = self._jerky)
-                elif self._motion.starting:
-                    self._motion.walk(speed=self._walking_speed)
-            
-                # make sure we're turning in the correct direction, and stop the turn if we're not
-                if (nav_val <= 0) != (self._motion.turn_dir >= 0):
-                    self._motion.stop_rotation(now = True)
+                else:
                 
-                # perform our turn with awareness how far off the target direction we are
-                self._motion.turn(nav_val < 0, abs(nav_val / self._HALF_PI)**2 + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
+                    if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
+                        self._motion.stop_linear(now = self._jerky)
+    #                    if abs(nav_val) > self._PI_OVER_FOUR:
+    #                        self._motion.stop_linear(now = self._jerky)
+    #                
+    #                    # if we're moving in a circle around our target, we need to stop
+    #                    elif np.isclose(abs(sqrt((x - self.p.x)**2 + (y - self.p.y)**2) * self._motion.angular_vel()), self._motion.linear_vel(), atol = .1) or self._motion.stopping:
+    #                        self._motion.stop_linear(now = self._jerky)
+    #            
+    #                    # otherwise, if we're just starting, stop entirely instead of stalling
+    #                    elif self._motion.starting:
+    #                        self._motion.stop_linear(now = self._jerky)
+                    elif self._motion.starting:
+                        self._motion.walk(speed=self._walking_speed)
+                
+                    # make sure we're turning in the correct direction, and stop the turn if we're not
+                    if (nav_val <= 0) != (self._motion.turn_dir >= 0):
+                        self._motion.stop_rotation(now = True)
+                    
+                    # perform our turn with awareness how far off the target direction we are
+                    self._motion.turn(nav_val < 0, abs(nav_val / self._HALF_PI)**2 + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
 
             self._logger.debug((self.p.x, self.p.y), var_name = "pos")
             # we're still moving towards our goal (or our stopping point)
