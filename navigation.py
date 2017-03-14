@@ -163,7 +163,7 @@ class Navigation(Motion):
                     
                     try:
                         # if we're close to the described turn radius, or
-                        bad_radius = np.isclose(dist, abs(linear_vel / angular_vel), atol = .01)
+                        bad_radius = dist > abs(linear_vel / angular_vel - .01))
                 
                     except ZeroDivisionError:
                         pass
