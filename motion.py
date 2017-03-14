@@ -17,6 +17,7 @@ class Motion():
         turning (bool): True if the robot is turning, False otherwise.
         walking (bool): True if robot is moving linearly, False otherwise.
         stopping (bool): True if the robot is in the process of stopping, False otherwise.
+        starting (bool): True if the robot is in the process of starting, False otherwise.
     """
     # Define Turtlebot constants
     _ROT_SPEED = radians(60)    # maximum rotational speed
@@ -36,6 +37,7 @@ class Motion():
         self.turning = False
         self.walking = False
         self.stopping = False
+        self.starting = False
         
         # set up private acceleration trackers
         self._accel_time = 0
