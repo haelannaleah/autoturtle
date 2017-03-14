@@ -259,6 +259,7 @@ class Localization():
 
     def csvLogEstimated(self, test_name, folder = "tests"):
         """ Log current position estimate if different from last logging. """
+        
         if self.estimated_pose is None:
             return
         
@@ -305,6 +306,7 @@ if __name__ == "__main__":
         def main(self):
             """ Run main tests. """
             self.localization.csvLogEstimated(self.csvtestname)
+            self.localization.csvLogRaw(self.csvtestname)
         
         def screenLog(self, landmark, id):
             """ Nicely parse landmarks into easily logable data. """
