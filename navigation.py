@@ -163,7 +163,7 @@ class Navigation(Motion):
 #                    # otherwise, if we're just starting, stop entirely instead of stalling
 #                    elif self._motion.starting:
 #                        self._motion.stop_linear(now = self._jerky)
-                elif self.starting:
+                elif self._motion.starting:
                     self._motion.stop_linear(now = self._jerky)
             
                 # make sure we're turning in the correct direction, and stop the turn if we're not
