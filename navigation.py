@@ -150,7 +150,7 @@ class Navigation(Motion):
                     self._motion.stop_rotation(now = True)
                 
                 # perform our turn
-                self._motion.turn(nav_val < 0, abs(nav_val / pi) + (0.15 if self._motion.walking else 0.5))
+                self._motion.turn(nav_val < 0, abs(nav_val / pi) + (0.1 if self._motion.walking else 0.5))
             
             return False
 
