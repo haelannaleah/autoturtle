@@ -239,7 +239,7 @@ class Localization():
         
             # log each tag in a separate folder
             fields, data = self._csvPose(tags[id].pose)
-            self._logger(test_name + "_" + tag_type + "_marker" + str(id), fields, data, folder = folder)
+            self._logger.csv(test_name + "_" + tag_type + "_marker" + str(id), fields, data, folder = folder)
 
     def csvLogEstimated(self, test_name, folder = "tests"):
         """ Log current position estimate. """
