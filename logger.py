@@ -116,7 +116,7 @@ class Logger:
             self._open_files[tname]["writer"] = csv.writer(self._open_files[tname]["file"])
             
             # assume that the first message will be variable names
-            self._open_files[tname]["writer"].writerow(["Time"] + fieldnames)
+            self._open_files[tname]["writer"].writerow(["Time"] + fields)
             
             # keep track of previous entries so that we don't log the same data multiple times
             self._open_files[tname]["prev"] = 0
