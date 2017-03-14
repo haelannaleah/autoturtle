@@ -252,6 +252,7 @@ if __name__ == "__main__":
             if not self.reached_corner[0]:
                 self.reached_corner[0] = self.navigation.goToPosition(0, 0)
                 if self.reached_corner[0]:
+                    self.logger.debug("logging")
                     self.navigation.csvLogArrival(self.filename, 0, 0)
         
             elif self.navigation.goToPosition(length, 0):
