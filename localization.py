@@ -180,6 +180,7 @@ class Localization():
         
             # since the tag should always be roughly perpendicular to the ground, these values should be relatively small
             if np.isclose(self.tags[id].pose.orientation.x, 1, atol = 0.01) or np.isclose(self.tags[id].pose.orientation.y, 1, atol = 0.01):
+                
                 self._logger.warn("Tag outside acceptable orientation limits. Ignoring.")
                 continue
             # if abs(self.tags[id].pose.orientation.x) > 0.75 or abs(self.tags[id].pose.orientation.y) > 0.75:
