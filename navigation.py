@@ -57,7 +57,6 @@ class Navigation(Motion):
         
         # set up navigation to destination data
         self._reached_goal = True
-        self._stopping = False
     
         # set up the odometry reset publisher (publishing Empty messages here will reset odom)
         reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=1)
@@ -151,33 +150,11 @@ class Navigation(Motion):
             else:
             
                 # if we need to make a big turn and we're walking, stop before turning
-                if self._motion.walking:
-                    
-                    # get the distance between the robot and the destination
-                    dist = sqrt((x - self.p.x)**2 + (y - self.p.y)**2)
-                    
-                    # get linear and anglular velocities
-                    linear_vel = self._motion.linear_vel()
-                    angular_vel = self._motion.angular_vel()
-                    bad_radius = False
-                    
-                    try:
-                        # if we're close to the described turn radius, or
-                        bad_radius = dist > abs(linear_vel / angular_vel - .01))
-                
-                    except ZeroDivisionError:
-                        pass
-            
-                    if self._stopping or bad_radius:
-                        self._logger.debug("avoiding circle")
-                        self._stopping
-                        self._motion.stop_linear()
-            
-                elif self._stopping:
-                    self._stopping = False
+                if self._motion.walking and abs(nav_val) > self._PI_OVER_FOUR:
+                    self._motion.stop_linear(now = self._jerky)
             
                 # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
-                if self._motion.starting:
+                elif self._motion.starting:
                     self._motion.walk(speed=self._walking_speed)
                     
                 # make sure we're turning in the correct direction, and stop the turn if we're not
