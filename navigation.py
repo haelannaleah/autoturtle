@@ -159,9 +159,9 @@ class Navigation(Motion):
                     elif np.isclose(abs(sqrt((x - self.p.x)**2 + (y - self.p.y)**2) * self._motion.angular_vel()), self._motion.linear_vel(), atol = .1) or self._motion.stopping:
                         self._motion.stop_linear(now = self._jerky)
             
-                    # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
+                    # otherwise, if we're just starting, stop entirely instead of stalling
                     elif self._motion.starting:
-                        self._motion.walk(speed=self._walking_speed)
+                        self._motion.stop_linear(now = self._jerky)
                     
                 # make sure we're turning in the correct direction, and stop the turn if we're not
                 if (nav_val <= 0) != (self._motion.turn_dir >= 0):
