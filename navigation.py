@@ -163,18 +163,14 @@ class Navigation(Motion):
                     
                     try:
                         # if we're close to the described turn radius, or
-                        bad_radius = np.isclose(dist, abs(linear_vel / angular_vel), atol = .01) or self._stopping:
+                        bad_radius = np.isclose(dist, abs(linear_vel / angular_vel), atol = .01)
                 
                     except ZeroDivisionError:
                         pass
             
-                    if self._stopping or bad_radius:
+                    if self._motion.stopping or bad_radius:
                         self._logger.debug("avoiding circle")
-                        self._motion.stopping = True
-                        self.motion.stop_linear()
-            
-                elif self._motion.stopping:
-                    self.motion.stopping = False
+                        self._motion.stop_linear()
             
                 # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
                 if self._motion.starting:
