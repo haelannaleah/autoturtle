@@ -41,6 +41,7 @@ class Navigation(Motion):
     _MIN_STATIONARY_TURN_SPEED = 0.5
     _MIN_MOVING_TURN_SPEED = 0.15
     _MAX_MOVING_TURN = pi / 6
+    _MIN_LINEAR_SPEED = .25
     
     def __init__(self, jerky = False, walking_speed = 1):
     
@@ -121,6 +122,8 @@ class Navigation(Motion):
             """
             nav_val = self._getDestData(Point(x,y,0))
             
+            dist = sqrt((x - self.p.x)**2 + (y - self.p.y)**2)
+            
             # did we reach our waypoint?
             if nav_val is True or self._reached_goal is True:
             
@@ -145,7 +148,7 @@ class Navigation(Motion):
                     self._motion.stop_rotation(now = True)
             
                 # onwards we go at the desired pace
-                self._motion.walk(speed=self._walking_speed)
+                self._motion.walk(speed = (self._walking_speed * (dist / 0.5 + self._MIN_LINEAR_SPEED)))
             
             # we need to turn to reach our goal
             else:
