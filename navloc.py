@@ -94,8 +94,8 @@ class NavLoc(Navigation, Localization):
         """ Log the transformation from the ekf frame to the map frame. """
                             
         self._logger.csv(test_name + "_transform", ["X_map", "Y_map", "angle_map", "X_ekf", "Y_ekf", "angle_ekf", "angle_delta"],
-                    [self._transform["map_pos"].x, self._transform["map_pos"].y, self.transform["map_angle"],
-                            self._transform["map_pos"].x, self._transform["map_pos"].y, self.transform["map_angle"],
+                    [self._transform["map_pos"].x, self._transform["map_pos"].y, self._transform["map_angle"],
+                            self._transform["map_pos"].x, self._transform["map_pos"].y, self._transform["map_angle"],
                             self._transform["angle_delta"]],
                     folder = folder)
 
