@@ -55,6 +55,8 @@ class NavLoc(Navigation, Localization):
         # compute the difference between them
         self._transform["angle_delta"] = self._transform["ekf_angle"] - self._transform["map_angle"]
         
+        self._logger.debug(self.estimated_pose, var_name = "estimated position \n")
+        
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
         
@@ -87,7 +89,7 @@ class NavLoc(Navigation, Localization):
         qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
         self.q = Quaternion(qx, qy, qz, qw)
 
-        self._logger.debug(self.p, var_name = "map position \n")
+        #self._logger.debug(self.p, var_name = "map position \n")
 
 #    def _getDestData(self, destination):
 #        # convert destination out of the map frame into the odom frame
