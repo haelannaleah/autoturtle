@@ -92,19 +92,17 @@ class NavLoc(Navigation, Localization):
 
     def csvLogTransform(self, test_name):
         """ Log the transformation from the ekf frame to the map frame. """
-    
-        tname = test_name + "_transform"
-        if not self._logger.isLogging(tname):
-            self._logger.csv(tname, "map_x", "map_y", "map_angle", "ekf_x", "ekf_y", "ekf_angle")
+                            
+        self._logger.csv(test_name + "_transform", ["X_map", "Y_map", "angle_map", "X_ekf", "Y_ekf", "angle_ekf", "angle_delta"],
+                    [self._transform["map_pos"].x, self._transform["map_pos"].y, self.transform["map_angle"],
+                            self._transform["map_pos"].x, self._transform["map_pos"].y, self.transform["map_angle"],
+                            self._transform["angle_delta"]], folder = folder)
 
     def csvLogArrival(self, test_name, x, y):
         """ Log the arrival of the robot at a waypoint. """
-    
-        # open a new file if necessary
-        if not self._logger.isLogging(test_name):
-            self._logger.csv(test_name, ["target_map_x", "target_map_y", "reported_map_x", "reported_map_y", "ekf_x", "ekf_y"], folder = folder)
         
-        self._logger.csv(test_name, [x, y, self.p.x, self.p.y, self._raw_pose.position.x, self._raw_pose.position.y], folder = folder)
+        self._logger.csv(test_name, ["X_target", "Y_target", "X_map", "Y_map", "X_ekf", "Y_ekf"],
+                    [x, y, self.p.x, self.p.y, self._raw_pose.position.x, self._raw_pose.position.y], folder = folder)
 
     def csvLogMap(self, test_name, folder = "tests"):
         """ Log map position data. """
@@ -114,18 +112,9 @@ class NavLoc(Navigation, Localization):
     def csvLogEKF(self, test_name, folder = "tests"):
         """ Log raw EKF position data. """
 
-        # open the file if necessary
-        tname = test_name + "_ekfpose"
-        if "ekf" not in self._prev_csv:
-            self._logger.csv(tname, ["X", "Y", "qZ", "qW", "yaw"], folder = folder)
-
-        # make sure we have new data
         csv_data = [self._raw_pose.position.x, self._raw_pose.position.y, self._raw_pose.orientation.z, self._raw_pose.orientation.w, self._raw_angle]
-        if np.allclose(self._prev_csv["ekf"], csv_data):
-            self._logger.csv(tname, csv_data, folder = folder)
-
-        # set the previous data to this data
-        self._prev_csv["ekf"] = csv_data
+        
+        self._logger.csv(tname + "_ekfpose", ["X", "Y", "qZ", "qW", "yaw"], csv_data, folder = folder)
 
 if __name__ == "__main__":
     from tester import Tester

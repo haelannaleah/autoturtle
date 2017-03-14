@@ -42,8 +42,6 @@ class Localization():
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
         # set up logger and csv logging
         self._logger = Logger("Localization")
-        self._csvfields = ["X", "Y", "Z", "qX", "qY", "qZ", "qW", "roll", "pitch", "yaw"]
-        self._prev_csv = {"estimated": 0, "raw": {}, "relative": {}}
         
         # store raw tag data, data in the odom frame, and data in the base frame
         self.tags = {}
@@ -224,53 +222,33 @@ class Localization():
             
         return transformed
         
-    def _csvLog(self, test_name, csvdata, folder):
-        """ Log csv data. """
-    
-        # if we've never encountered this marker before, open a new csv file
-        if not self._logger.isLogging(test_name):
-            self._logger.csv(test_name, self._csvfields, folder = folder)
-        
-        # actually write the data to file
-        self._logger.csv(test_name, csvdata, folder = folder)
-        
     def _csvPose(self, landmark_pose):
         """ Convert pose object into csv data. """
         
         p = landmark_pose.position
         q = landmark_pose.orientation
         roll, pitch, yaw = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
-        return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, roll, pitch, yaw]
+        return (["X", "Y", "Z", "qX", "qY", "qZ", "qW", "roll", "pitch", "yaw"],
+                [p.x, p.y, p.z, q.x, q.y, q.z, q.w, roll, pitch, yaw])
 
     def _csvLogAR(self, test_name, tags, tag_type, folder):
         """ Log information on all tags currently in view. """
     
         tags = deepcopy(tags)
-        
         for id in tags:
-            csv_tag = self._csvPose(tags[id].pose)
-            
-            # check to see if we've encounted this id before
-            if id not in self._prev_csv[tag_type] or not np.allclose(self._prev_csv[tag_type][id], csv_tag):
-                self._csvLog(test_name + "_" + tag_type + "_marker" + str(id), csv_tag, folder)
-            
-            # update the previous
-            self._prev_csv[tag_type][id] = csv_tag
+        
+            # log each tag in a separate folder
+            fields, data = self._csvPose(tags[id].pose)
+            self._logger(test_name + "_" + tag_type + "_marker" + str(id), fields, data, folder = folder)
 
     def csvLogEstimated(self, test_name, folder = "tests"):
-        """ Log current position estimate if different from last logging. """
+        """ Log current position estimate. """
         
         if self.estimated_pose is None:
             return
         
-        # get the estimated pose in a csv friendly form
-        csv_estimated = self._csvPose(self.estimated_pose)
-
-        # check to make sure that the estimated pose has changed
-        if not np.allclose(self._prev_csv["estimated"], csv_estimated):
-            self._csvLog(test_name + "_estimated", csv_estimated, folder)
-    
-        self._prev_csv["estimated"] = csv_estimated
+        fields, data = self._csvPose(self.estimated_pose)
+        self._logger.csv(test_name + "_estimated", fields, data, folder=folder)
 
     def csvLogRawTags(self, test_name, folder = "tests"):
         """ Log new raw tag data in separate files. """
@@ -281,6 +259,9 @@ class Localization():
         """ Log new position of AR tags relative to the robot base in separate files. """
 
         self._csvLogAR(test_name, self.tags_base, "relative", folder)
+
+    def shutdown(self):
+        self._logger.shutdown()
 
 if __name__ == "__main__":
     import numpy as np

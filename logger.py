@@ -84,14 +84,19 @@ class Logger:
         """ True if we've already started logging this test. """
         return tname in self._open_files
 
-    def csv(self, tname, row, folder = None, tolderance = None):
+    def csv(self, tname, fields, row folder = None, tolerance = None):
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
             tname (str): The name of the test. Note that this is not the same as the path to the file;
                 rather, this should be descriptive of the test we are logging CSV data for.
             row (list): The line to be added to the CSV file.
+            fields (str list): The names of the columns in the csv file
             folder (str, optional): The name of the local file we want to store the file in.
+            tolerance (float, optional): The amount of difference between sequential arguments to the
+                csv writer to trigger a new line written. Larger tolerance will mean more time in between
+                lines written to output files. By default, this tolerance is mostly in place to root out
+                identical lines, since these indicate that the data has not renewed.
         
         Note:
             When called on fname for the first time, Logger will assume that the row contains column 
@@ -104,24 +109,21 @@ class Logger:
             filename = self.__name__ + "_" + tname +  self._timestamp
             if folder is not None:
                 filename = folder + "/" + filename
-            
-            # TODO: consider using the dictwriter class instead
+        
             # open the file and set up the csv writer
             self._open_files[tname] = {}
             self._open_files[tname]["file"] = open(filename, "w+")
             self._open_files[tname]["writer"] = csv.writer(self._open_files[tname]["file"])
             
             # assume that the first message will be variable names
-            self._open_files[tname]["writer"].writerow(["Time"] + row)
+            self._open_files[tname]["writer"].writerow(["Time"] + fieldnames)
             
             # keep track of previous entries so that we don't log the same data multiple times
             self._open_files[tname]["prev"] = 0
     
-        else:
-            # preappend the current time and write current line to file if it's changed since the last call
-            if not allclose(self._open_files[tname]["prev"], row, atol = self._tolerance if tolerance is None else tolerance)
-                self._open_files[tname]["writer"].writerow([time() - self._start_time] + row)
-
+        # preappend the current time and write current line to file if it's changed since the last writing
+        if not allclose(self._open_files[tname]["prev"], row, atol = self._tolerance if tolerance is None else tolerance)
+            self._open_files[tname]["writer"].writerow([time() - self._start_time] + row)
             self._open_files[tname]["prev"] = row
 
     def shutdown(self):

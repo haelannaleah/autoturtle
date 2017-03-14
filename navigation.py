@@ -167,32 +167,22 @@ class Navigation(Motion):
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log Turtlebot's arrival at a waypoint. """
         
-        # open a new file if necessary
-        if not self._logger.isLogging(test_name):
-            self._logger.csv(test_name, ["map_x", "map_y", "reported_x", "reported_y"], folder = folder)
-        
-        self._logger.csv(test_name, [x, y, self.p.x, self.p.y], folder = folder)
+        # send data to the csv logger
+        self._logger.csv(test_name, ["X_target", "Y_target", "X_reported", "Y_reported"],
+                            [x, y, self.p.x, self.p.y], folder = folder)
     
-    def csvLogEKF(self, test_name = "", folder = "tests"):
+    def csvLogEKF(self, test_name, folder = "tests"):
         """ Log the current turtlebot pose information. """
         
-        # open the file if necessary
-        tname = test_name + "pose"
-        if not "pose" not in self._prev_csv:
-            self._logger.csv(tname, ["X", "Y", "qZ", "qW", "yaw"], folder = folder)
-
-        # make sure we have new data
-        csv_data = [self.p.x, self.p.y, self.q.z, self.q.w, self.angle]
-        if np.allclose(self._csv_prev, csv_data):
-            self._logger.csv(tname, csv_data, folder = folder)
-
-        # set the previous data to this data
-        self._prev_csv["pose"] = csv_data
+        # create csv dict and log data
+        self._logger.csv(test_name, ["X", "Y", "qZ", "qW", "yaw"],
+                            [self.p.x, self.p.y, self.q.z, self.q.w, self.angle], folder = folder)
     
     def shutdown(self, rate):
         """ Stop the turtlebot. """
         
         self._motion.shutdown(rate)
+        self._logger.shutdown()
 
 if __name__ == "__main__":
     from tester import Tester
