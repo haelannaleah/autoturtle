@@ -35,7 +35,11 @@ class Navigation(Motion):
     # avoid recomputing constants
     _HALF_PI = pi / 2.0
     _TWO_PI = 2.0 * pi
-    _PI_OVER_FOUR = pi / 4.0
+    
+    # create thresholds
+    _MIN_STATIONARY_TURN_SPEED = 0.5
+    _MIN_MOVING_TURN_SPEED = 0.15
+    _MAX_MOVING_TURN = 0.1
     
     def __init__(self, jerky = False, walking_speed = 1):
     
@@ -147,7 +151,7 @@ class Navigation(Motion):
             else:
             
                 # if we need to make a big turn and we're walking, stop before turning
-                if self._motion.walking and abs(nav_val) > 0.1:
+                if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
                     self._motion.stop_linear(now = self._jerky)
             
                 # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
@@ -159,7 +163,7 @@ class Navigation(Motion):
                     self._motion.stop_rotation(now = True)
                 
                 # perform our turn with awareness how far off the target direction we are
-                self._motion.turn(nav_val < 0, abs(nav_val / pi) + (0.15 if self._motion.walking else 0.5))
+                self._motion.turn(nav_val < 0, abs(nav_val / pi) + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
             
             # we're still moving towards our goal (or our stopping point)
             return False
