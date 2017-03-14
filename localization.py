@@ -43,7 +43,7 @@ class Localization():
         # set up logger and csv logging
         self._logger = Logger("Localization")
         self._csvFields = ["X", "Y", "Z", "qX", "qY", "qZ", "qW", "roll", "pitch", "yaw"]
-        self._prev_csv = {"estimated" = 0, "raw" = {}, "relative" = {}}
+        self._prev_csv = {"estimated": 0, "raw": {}, "relative": {}}
         
         # store raw tag data, data in the odom frame, and data in the base frame
         self.tags = {}
