@@ -161,7 +161,7 @@ class Navigation(Motion):
                     angular_vel = self._motion.angular_vel()
                     
                     if np.nonzero(angular_vel):
-                        if np.isclose(dist, abs(linear_vel / angular_vel)), atol = .01):
+                        if np.isclose(dist, abs(linear_vel / angular_vel), atol = .01):
                             self._logger.debug("avoiding circle")
                             self._motion.stop_linear(now = self._jerky)
             
