@@ -263,8 +263,10 @@ class Localization():
         if self.estimated_pose is None:
             return
         
+        # get the estimated pose in a csv friendly form
         csv_estimated = self._csvPose(self.estimated_pose)
 
+        # check to make sure that the estimated pose has changed
         if not np.allclose(self._prev_csv["estimated"], csv_estimated):
             self._csvLog(test_name + "_estimated", csv_estimated, folder)
     
@@ -297,10 +299,6 @@ if __name__ == "__main__":
             landmark_orientations = {0:-pi/2, 1:pi/2}
             self.localization = Localization({},{},{},landmarks, landmark_positions, landmark_orientations)
             
-            self.prev = {}
-    
-            self.csvfields = ["X", "Y", "Z", "qX", "qY", "qZ", "qW", "roll", "pitch", "yaw"]
-            
             self.csvtestname = "estimation"
 
         def main(self):
@@ -313,13 +311,6 @@ if __name__ == "__main__":
             self.logger.info("Frame: " + str(landmark.header.frame_id))
             self.logOrientation(landmark, id)
             self.logPosition(landmark, id)
-    
-        def csvPose(self, landmark_pose):
-            """ Convert pose object into csv data. """
-            p = landmark_pose.position
-            q = landmark_pose.orientation
-            roll, pitch, yaw = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
-            return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, roll, pitch, yaw]
             
         def logPosition(self, incoming_landmark, id):
             """ Print the position of landmarks in meters. """
