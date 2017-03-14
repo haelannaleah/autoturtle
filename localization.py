@@ -248,7 +248,7 @@ class Localization():
         tags = deepcopy(tags)
         
         for id in tags:
-            csv_tag = self._csvPose(tags[id])
+            csv_tag = self._csvPose(tags[id].pose)
             
             # check to see if we've encounted this id before
             if id not in self._prev_csv[tag_type] or not np.allclose(self._prev_csv[tag_type][id], csv_tag):
