@@ -257,7 +257,7 @@ class Localization():
             # update the previous
             self._prev_csv[tag_type][id] = csv_tag
 
-    def csvLogEstimated(self, test_name, folder = "tests"):
+    def csvLogEstimated(self, test_name, folder = None):
         """ Log current position estimate if different from last logging. """
         
         if self.estimated_pose is None:
@@ -272,12 +272,12 @@ class Localization():
     
         self._prev_csv["estimated"] = csv_estimated
 
-    def csvLogRaw(self, test_name, folder = "tests"):
+    def csvLogRaw(self, test_name, folder = None):
         """ Log new raw tag data in separate files. """
         
         self._csvLogAR(test_name, self.tags, "raw", folder)
 
-    def csvLogRelative(self, test_name, folder = "tests"):
+    def csvLogRelative(self, test_name, folder = None):
         """ Log new position of AR tags relative to the robot base in separate files. """
 
         self._csvLogAR(test_name, self.tags_base, "relative", folder)
