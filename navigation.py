@@ -150,35 +150,17 @@ class Navigation(Motion):
             else:
             
                 # if we need to make a big turn and we're walking, stop before turning
-                if self._motion.walking and abs(nav_val) > self._PI_OVER_FOUR:
-                    self._motion.stop_linear(now = self._jerky)
-                
-                # if we need to make a big turn and we're walking, stop before turning
                 if self._motion.walking:
-                    
-                    # get the distance between the robot and the destination
-                    dist = sqrt((x - self.p.x)**2 + (y - self.p.y)**2)
-                    
-                    # get linear and anglular velocities
-                    linear_vel = self._motion.linear_vel()
-                    angular_vel = self._motion.angular_vel()
-                    bad_radius = False
-                    
-                    try:
-                        # if we're close to the described turn radius, or
-                        bad_radius = dist < abs(linear_vel / angular_vel - .01))
+                    if abs(nav_val) > self._PI_OVER_FOUR:
+                        self._motion.stop_linear(now = self._jerky)
                 
-                    except ZeroDivisionError:
-                        pass
+                    # if we're moving in a circle around our target, we need to stop
+                    elif np.isclose(abs(sqrt((x - self.p.x)**2 + sqrt(y - self.p.y)**2) * self._motion.angular_vel()), self._motion.linear_vel(), atol = .1) or self._motion.stopping:
+                        self._motion.stop_linear(now = self._jerky)
             
-                    if self._stopping or bad_radius:
-                        self._logger.debug("avoiding circle")
-                        self._stopping
-                        self._motion.stop_linear(now = self.jerky)
-            
-                # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
-                elif self._motion.starting:
-                    self._motion.walk(speed=self._walking_speed)
+                    # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
+                    elif self._motion.starting:
+                        self._motion.walk(speed=self._walking_speed)
                     
                 # make sure we're turning in the correct direction, and stop the turn if we're not
                 if (nav_val <= 0) != (self._motion.turn_dir >= 0):
