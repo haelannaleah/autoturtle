@@ -168,7 +168,7 @@ class Navigation(Motion):
         """ Log Turtlebot's arrival at a waypoint. """
         
         # send data to the csv logger
-        self._logger.csv(test_name, ["X_target", "Y_target", "X_reported", "Y_reported"],
+        self._logger.csv(test_name + "_waypoints", ["X_target", "Y_target", "X_reported", "Y_reported"],
                             [x, y, self.p.x, self.p.y], folder = folder)
     
     def csvLogEKF(self, test_name, folder = "tests"):

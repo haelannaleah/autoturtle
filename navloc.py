@@ -101,7 +101,7 @@ class NavLoc(Navigation, Localization):
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log the arrival of the robot at a waypoint. """
         
-        self._logger.csv(test_name, ["X_target", "Y_target", "X_map", "Y_map", "X_ekf", "Y_ekf"],
+        self._logger.csv(test_name + "_waypoints", ["X_target", "Y_target", "X_map", "Y_map", "X_ekf", "Y_ekf"],
                     [x, y, self.p.x, self.p.y, self._raw_pose.position.x, self._raw_pose.position.y], folder = folder)
 
     def csvLogMap(self, test_name, folder = "tests"):
