@@ -35,6 +35,7 @@ class Navigation(Motion):
     # avoid recomputing constants
     _HALF_PI = pi / 2.0
     _TWO_PI = 2.0 * pi
+    _PI_OVER_FOUR = pi / 4.0
     
     # create thresholds
     _MIN_STATIONARY_TURN_SPEED = 0.5
