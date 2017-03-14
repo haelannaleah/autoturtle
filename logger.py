@@ -84,7 +84,7 @@ class Logger:
         """ True if we've already started logging this test. """
         return tname in self._open_files
 
-    def csv(self, tname, fields, row, folder = None, tolerance = None):
+    def csv(self, tname, fields, row, folder = None, tol = None):
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
@@ -93,7 +93,7 @@ class Logger:
             fields (str list): The names of the columns in the csv file.
             row (list): The line to be added to the CSV file.
             folder (str, optional): The name of the local file we want to store the file in.
-            tolerance (float, optional): The amount of difference between sequential arguments to the
+            tol (float, optional): The amount of difference between sequential arguments to the
                 csv writer to trigger a new line written. Larger tolerance will mean more time in between
                 lines written to output files. By default, this tolerance is mostly in place to root out
                 identical lines, since these indicate that the data has not renewed.
@@ -122,7 +122,7 @@ class Logger:
             self._open_files[tname]["prev"] = 0
     
         # preappend the current time and write current line to file if it's changed since the last writing
-        if not allclose(self._open_files[tname]["prev"], row, atol = self._tolerance if tolerance is None else tolerance)
+        if not allclose(self._open_files[tname]["prev"], row, atol = self._tolerance if tol is None else tol):
             self._open_files[tname]["writer"].writerow([time() - self._start_time] + row)
             self._open_files[tname]["prev"] = row
 
