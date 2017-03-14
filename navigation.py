@@ -151,7 +151,7 @@ class Navigation(Motion):
             else:
             
                 # if we need to make a big turn and we're walking, stop before turning
-                if self._motion.walking:
+                if self._motion.walking and self._motion.turning:
                     
                     # get the distance between the robot and the destination
                     dist = sqrt((x - self.p.x)**2 + (y - self.p.y)**2)
