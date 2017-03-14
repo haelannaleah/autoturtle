@@ -163,14 +163,14 @@ class Navigation(Motion):
 #                    # otherwise, if we're just starting, stop entirely instead of stalling
 #                    elif self._motion.starting:
 #                        self._motion.stop_linear(now = self._jerky)
+                else:
+                    # make sure we're turning in the correct direction, and stop the turn if we're not
+                    if (nav_val <= 0) != (self._motion.turn_dir >= 0):
+                        self._motion.stop_rotation(now = True)
+                    
+                    # perform our turn with awareness how far off the target direction we are
+                    self._motion.turn(nav_val < 0, abs(nav_val / pi) + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
 
-                # make sure we're turning in the correct direction, and stop the turn if we're not
-                if (nav_val <= 0) != (self._motion.turn_dir >= 0):
-                    self._motion.stop_rotation(now = True)
-                
-                # perform our turn with awareness how far off the target direction we are
-                self._motion.turn(nav_val < 0, abs(nav_val / pi) + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
-            
             # we're still moving towards our goal (or our stopping point)
             return False
         
