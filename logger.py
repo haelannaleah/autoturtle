@@ -84,14 +84,14 @@ class Logger:
         """ True if we've already started logging this test. """
         return tname in self._open_files
 
-    def csv(self, tname, fields, row folder = None, tolerance = None):
+    def csv(self, tname, fields, row, folder = None, tolerance = None):
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
             tname (str): The name of the test. Note that this is not the same as the path to the file;
                 rather, this should be descriptive of the test we are logging CSV data for.
+            fields (str list): The names of the columns in the csv file.
             row (list): The line to be added to the CSV file.
-            fields (str list): The names of the columns in the csv file
             folder (str, optional): The name of the local file we want to store the file in.
             tolerance (float, optional): The amount of difference between sequential arguments to the
                 csv writer to trigger a new line written. Larger tolerance will mean more time in between
