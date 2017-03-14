@@ -164,7 +164,7 @@ class Navigation(Motion):
             # we're still moving towards our goal (or our stopping point)
             return False
         
-    def csvLogArrival(self, test_name, x, y, folder = None):
+    def csvLogArrival(self, test_name, x, y, folder = "tests"):
         
         # open a new file if necessary
         if not self._logger.isLogging(test_name):
