@@ -178,6 +178,7 @@ class Navigation(Motion):
         # open the file if necessary
         tname = "pose"
         if not self._logger.isLogging(tname):
+            self._logger.debug("hello")
             self._logger.csv(tname, ["X", "Y", "qZ", "qW", "yaw"], folder = folder)
 
         # make sure we have new data
