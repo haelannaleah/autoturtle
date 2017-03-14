@@ -38,7 +38,7 @@ class Navigation(Motion):
     _PI_OVER_FOUR = pi / 4.0
     
     # create thresholds
-    _MIN_STATIONARY_TURN_SPEED = 0.5
+    _MIN_STATIONARY_TURN_SPEED = 0.25
     _MIN_MOVING_TURN_SPEED = 0.15
     _MAX_MOVING_TURN = 0.1
     
@@ -105,7 +105,7 @@ class Navigation(Motion):
             return True
         
         # our orientation has gotten off and we need to adjust
-        elif not np.isclose(self.angle, turn_angle, atol=0.1):
+        elif not np.isclose(self.angle, turn_angle, atol=0.05):
             return self.angle - turn_angle
 
         # otherwise, move toward our goal
