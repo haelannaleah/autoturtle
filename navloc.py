@@ -152,7 +152,7 @@ if __name__ == "__main__":
             self.corner_counter = 0
         
             # set up the logger output file
-            self.filename = None
+            self.test_name = "debug"
         
             landmarks = {0}
             landmark_positions = {0:(1.75,0)}
@@ -165,6 +165,9 @@ if __name__ == "__main__":
             #self.testCCsquare(.5)
             #self.testCsquare(.5)
             self.testLine(1)
+            self.csvLogEKF(self.test_name)
+            self.csvLogMap(self.test_name)
+            self.csvLogTransform(self.test_name)
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
