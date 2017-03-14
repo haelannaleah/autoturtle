@@ -259,7 +259,9 @@ class Localization():
 
     def csvLogEstimated(self, test_name, folder = "tests"):
         """ Log current position estimate if different from last logging. """
-        
+        if self.estimated_pose is None:
+            return
+            
         csv_estimated = self._csvPose(self.estimated_pose)
 
         if not np.allclose(self._prev_csv["estimated"], csv_estimated):
