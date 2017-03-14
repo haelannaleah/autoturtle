@@ -103,6 +103,13 @@ class Motion():
         """ Output commands to the Turtlebot. """
         
         self._move_publisher.publish(self._move_cmd)
+    
+    def linear_speed(self):
+        """ Get the current linear speed of the robot. """
+        return self._move_cmd.linear.x
+    
+    def angular_speed(self):
+        return self._move_cmd.angular.z
 
     def stop(self, now=False): 
         """ Stop the robot, immediately if necessary.
