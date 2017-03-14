@@ -171,6 +171,7 @@ class Navigation(Motion):
                     # perform our turn with awareness how far off the target direction we are
                     self._motion.turn(nav_val < 0, abs(nav_val / self._HALF_PI)**2 + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
 
+            self._logger.debug((self.p.x, self.p.y), var_name = "pos")
             # we're still moving towards our goal (or our stopping point)
             return False
         

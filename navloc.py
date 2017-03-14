@@ -56,8 +56,6 @@ class NavLoc(Navigation, Localization):
         # compute the difference between them
         self._transform["angle_delta"] = self._transform["ekf_angle"] - self._transform["map_angle"]
         
-        self._logger.debug(self.estimated_pose, var_name = "estimated position \n")
-        
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
         
