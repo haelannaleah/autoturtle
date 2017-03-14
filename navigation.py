@@ -156,7 +156,7 @@ class Navigation(Motion):
                         self._motion.stop_linear(now = self._jerky)
                 
                     # if we're moving in a circle around our target, we need to stop
-                    elif np.isclose(abs(sqrt((x - self.p.x)**2 + sqrt(y - self.p.y)**2) * self._motion.angular_vel()), self._motion.linear_vel(), atol = .1) or self._motion.stopping:
+                    elif np.isclose(abs(sqrt((x - self.p.x)**2 + (y - self.p.y)**2) * self._motion.angular_vel()), self._motion.linear_vel(), atol = .1) or self._motion.stopping:
                         self._motion.stop_linear(now = self._jerky)
             
                     # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
