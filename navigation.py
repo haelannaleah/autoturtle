@@ -44,7 +44,7 @@ class Navigation(Motion):
         self._jerky = jerky
         self._walking_speed = min(abs(walking_speed), 1)
         self._logger = Logger("Navigation")
-        self._csv_prev = 0
+        self._prev_csv = {}
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -178,7 +178,7 @@ class Navigation(Motion):
         
         # open the file if necessary
         tname = test_name + "pose"
-        if not self._logger.isLogging(tname):
+        if not "pose" not in self._prev_csv:
             self._logger.csv(tname, ["X", "Y", "qZ", "qW", "yaw"], folder = folder)
 
         # make sure we have new data
@@ -187,7 +187,7 @@ class Navigation(Motion):
             self._logger.csv(tname, csv_data, folder = folder)
 
         # set the previous data to this data
-        self._csv_prev = csv_data
+        self._prev_csv["pose"] = csv_data
     
     def shutdown(self, rate):
         """ Stop the turtlebot. """

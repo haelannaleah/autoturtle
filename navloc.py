@@ -89,6 +89,13 @@ class NavLoc(Navigation, Localization):
         qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
         self.q = Quaternion(qx, qy, qz, qw)
 
+    def csvLogTransform(self, test_name):
+        """ Log the transformation from the ekf frame to the map frame. """
+    
+        tname = test_name + "_transform"
+        if not self._logger.isLogging(tname):
+            self._logger.csv(tname, "map_x", "map_y", "map_angle", "ekf_x", "ekf_y", "ekf_angle")
+
     def csvLogArrival(self, test_name, x, y):
         """ Log the arrival of the robot at a waypoint. """
     
@@ -108,7 +115,7 @@ class NavLoc(Navigation, Localization):
 
         # open the file if necessary
         tname = test_name + "_ekfpose"
-        if not self._logger.isLogging(tname):
+        if "ekf" not in self._prev_csv:
             self._logger.csv(tname, ["X", "Y", "qZ", "qW", "yaw"], folder = folder)
 
         # make sure we have new data
@@ -117,7 +124,7 @@ class NavLoc(Navigation, Localization):
             self._logger.csv(tname, csv_data, folder = folder)
 
         # set the previous data to this data
-        self._csv_prev = csv_data
+        self._prev_csv["ekf"] = csv_data
 
 if __name__ == "__main__":
     from tester import Tester
