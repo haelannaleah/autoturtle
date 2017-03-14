@@ -121,7 +121,7 @@ class NavLoc(Navigation, Localization):
 
         # make sure we have new data
         csv_data = [self._raw_pose.position.x, self._raw_pose.position.y, self._raw_pose.orientation.z, self._raw_pose.orientation.w, self._raw_angle]
-        if np.allclose(self._csv_prev, csv_data):
+        if np.allclose(self._prev_csv["ekf"], csv_data):
             self._logger.csv(tname, csv_data, folder = folder)
 
         # set the previous data to this data
