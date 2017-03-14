@@ -106,9 +106,12 @@ class Motion():
     
     def linear_speed(self):
         """ Get the current linear speed of the robot. """
+        
         return self._move_cmd.linear.x
     
     def angular_speed(self):
+        """ Get the current angular velocity of the robot. """
+            
         return self._move_cmd.angular.z
 
     def stop(self, now=False): 
