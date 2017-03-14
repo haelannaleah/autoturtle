@@ -104,12 +104,12 @@ class Motion():
         
         self._move_publisher.publish(self._move_cmd)
     
-    def linear_speed(self):
+    def linear_vel(self):
         """ Get the current linear speed of the robot. """
         
         return self._move_cmd.linear.x
     
-    def angular_speed(self):
+    def angular_vel(self):
         """ Get the current angular velocity of the robot. """
             
         return self._move_cmd.angular.z

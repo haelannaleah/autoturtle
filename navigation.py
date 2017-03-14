@@ -151,8 +151,17 @@ class Navigation(Motion):
             else:
             
                 # if we need to make a big turn and we're walking, stop before turning
-                if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
-                    self._motion.stop_linear(now = self._jerky)
+                if self._motion.walking:
+                    
+                    # get the distance between the robot and the destination
+                    dist = sqrt((x - self.p.x)**2 + (y - self.p.y)**2)
+                    
+                    # get linear and anglular velocities
+                    linear_vel = self._motion.linear_vel()
+                    angular_vel = self._motion.angular_vel()
+                    
+                    if np.isclose(dist, abs(linear_vel / angular_vel), atol = .01)atan2(0 - "Y", 1 - "X") - "yaw"
+                        self._motion.stop_linear(now = self._jerky)
             
                 # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
                 elif self._motion.starting:
