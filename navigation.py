@@ -48,7 +48,6 @@ class Navigation(Motion):
         self._jerky = jerky
         self._walking_speed = min(abs(walking_speed), 1)
         self._logger = Logger("Navigation")
-        self._prev_csv = {}
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -58,6 +57,7 @@ class Navigation(Motion):
         
         # set up navigation to destination data
         self._reached_goal = True
+        self._stopping = False
     
         # set up the odometry reset publisher (publishing Empty messages here will reset odom)
         reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=1)
@@ -159,13 +159,22 @@ class Navigation(Motion):
                     # get linear and anglular velocities
                     linear_vel = self._motion.linear_vel()
                     angular_vel = self._motion.angular_vel()
+                    bad_radius = False
                     
                     try:
-                        if np.isclose(dist, abs(linear_vel / angular_vel), atol = .01):
-                            self._logger.debug("avoiding circle")
-                            self._motion.stop_linear(now = self._jerky)
+                        # if we're close to the described turn radius, or
+                        bad_radius = np.isclose(dist, abs(linear_vel / angular_vel), atol = .01) or self._stopping:
+                
                     except ZeroDivisionError:
                         pass
+            
+                    if self._stopping or bad_radius:
+                        self._logger.debug("avoiding circle")
+                        self._motion.stopping = True
+                        self.motion.stop_linear()
+            
+                elif self._motion.stopping:
+                    self.motion.stopping = False
             
                 # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
                 if self._motion.starting:
