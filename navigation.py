@@ -40,7 +40,7 @@ class Navigation(Motion):
     # create thresholds
     _MIN_STATIONARY_TURN_SPEED = 0.25
     _MIN_MOVING_TURN_SPEED = 0.15
-    _MAX_MOVING_TURN = 0.1
+    _MAX_MOVING_TURN = pi / 6
     
     def __init__(self, jerky = False, walking_speed = 1):
     
