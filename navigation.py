@@ -147,7 +147,8 @@ class Navigation(Motion):
                     
                 # make sure we're turning in the right direction
                 if (nav_val <= 0) != (self._motion.turn_dir >= 0):
-                    self.motion.stop_rotation(now = True)
+                    self._logger.debug("turning the wrong way! returning")
+                    self._motion.stop_rotation(now = True)
                 
                 # perform our turn
                 self._motion.turn(nav_val < 0, abs(nav_val / pi) + (0.15 if self._motion.walking else 0.5))
