@@ -165,9 +165,9 @@ if __name__ == "__main__":
             #self.testCCsquare(.5)
             #self.testCsquare(.5)
             self.testLine(1)
-            self.csvLogEKF(self.test_name)
-            self.csvLogMap(self.test_name)
-            self.csvLogTransform(self.test_name)
+            self.navloc.csvLogEKF(self.test_name)
+            self.navloc.csvLogMap(self.test_name)
+            self.navloc.csvLogTransform(self.test_name)
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
