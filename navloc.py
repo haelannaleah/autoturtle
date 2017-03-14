@@ -5,6 +5,7 @@ Author:
 """
 import tf
 import rospy
+import numpy as np
 
 from copy import deepcopy
 from geometry_msgs.msg import Pose, Point, Quaternion
