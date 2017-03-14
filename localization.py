@@ -175,10 +175,12 @@ class Localization():
             # make sure that the data coming in is in a viable frame of view, and ignore if it's not
             # experimentally, I found points more than 7pi/15 rad away from the x-axis gave junk data
             if abs(atan2(self.tags[id].pose.position.x, self.tags[id].pose.position.z)) > self._AR_FOV_LIMIT:
+                self._logger.warn("Tag outside FOV. Ignoring.")
                 continue
         
-            # since the tag should always be roughly perpendicular to the ground, these values should be
-            if np.isclose(self.tags[id].pose.orientation.x, 1, atol = 0.01)
+            # since the tag should always be roughly perpendicular to the ground, these values should be relatively small
+            if np.isclose(self.tags[id].pose.orientation.x, 1, atol = 0.01) or np.isclose(self.tags[id].pose.orientation.y, 1, atol = 0.01)
+                self._logger.warn("Tag outside acceptable orientation limits. Ignoring.")
                 continue
             # if abs(self.tags[id].pose.orientation.x) > 0.75 or abs(self.tags[id].pose.orientation.y) > 0.75:
             #     continue
