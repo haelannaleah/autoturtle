@@ -168,12 +168,11 @@ class Navigation(Motion):
         
         # open a new file if necessary
         if not self._logger.isLogging(test_name):
-            self._logger.debug("hello")
             self._logger.csv(test_name, ["map_x", "map_y", "reported_x", "reported_y"])
         
         self._logger.csv(test_name, [x, y, self.p.x, self.p.y], folder = folder)
     
-    def csvLogPose(self, folder = None):
+    def csvLogPose(self, folder = "tests"):
         """ Log the current turtlebot pose information. """
         
         # open the file if necessary
