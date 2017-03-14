@@ -155,10 +155,12 @@ if __name__ == "__main__":
             #self.testCCsquare(.5)
             #self.testCsquare(.5)
             self.testLine(1)
-            self.navloc.csvLogEKF(self.test_name)
-            self.navloc.csvLogMap(self.test_name)
-            self.navloc.csvLogTransform(self.test_name)
-        
+#            self.navloc.csvLogEKF(self.test_name)
+#            self.navloc.csvLogMap(self.test_name)
+#            self.navloc.csvLogTransform(self.test_name)
+#            self.navloc.csvLogRawTags(self.test_name)
+#            self.navloc.csvLogRelativeTags(self.test_name)
+
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
             self.test_name = filename + ("jerky" if self.jerky else "smooth")
@@ -167,7 +169,7 @@ if __name__ == "__main__":
         def logArrival(self, name, x, y):
             self.logger.info("Reached " + str(name) + " at " + str((x,y)))
             self.logger.info("Current pose: " + str((self.navloc.p.x, self.navloc.p.y)))
-            self.logger.csv(self.test_name, [x, y, self.navloc.p.x, self.navloc.p.y])
+            self.navigation.csvLogArrival(self.test_name, x, y)
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
