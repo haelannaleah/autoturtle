@@ -152,17 +152,18 @@ class Navigation(Motion):
             
                 # if we need to make a big turn and we're walking, stop before turning
                 if self._motion.walking:
-                    if abs(nav_val) > self._PI_OVER_FOUR:
-                        self._motion.stop_linear(now = self._jerky)
-                
-                    # if we're moving in a circle around our target, we need to stop
-                    elif np.isclose(abs(sqrt((x - self.p.x)**2 + (y - self.p.y)**2) * self._motion.angular_vel()), self._motion.linear_vel(), atol = .1) or self._motion.stopping:
-                        self._motion.stop_linear(now = self._jerky)
-            
-                    # otherwise, if we're just starting, stop entirely instead of stalling
-                    elif self._motion.starting:
-                        self._motion.stop_linear(now = self._jerky)
-                    
+                    self._motion.stop_linear(now = self._jerky)
+#                    if abs(nav_val) > self._PI_OVER_FOUR:
+#                        self._motion.stop_linear(now = self._jerky)
+#                
+#                    # if we're moving in a circle around our target, we need to stop
+#                    elif np.isclose(abs(sqrt((x - self.p.x)**2 + (y - self.p.y)**2) * self._motion.angular_vel()), self._motion.linear_vel(), atol = .1) or self._motion.stopping:
+#                        self._motion.stop_linear(now = self._jerky)
+#            
+#                    # otherwise, if we're just starting, stop entirely instead of stalling
+#                    elif self._motion.starting:
+#                        self._motion.stop_linear(now = self._jerky)
+
                 # make sure we're turning in the correct direction, and stop the turn if we're not
                 if (nav_val <= 0) != (self._motion.turn_dir >= 0):
                     self._motion.stop_rotation(now = True)
