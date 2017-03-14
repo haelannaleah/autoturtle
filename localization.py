@@ -302,7 +302,7 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            self.localization.csvLogEstimated(self.test_name)
+            self.localization.csvLogEstimated(self.csvtestname)
         
         def screenLog(self, landmark, id):
             """ Nicely parse landmarks into easily logable data. """
