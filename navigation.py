@@ -182,7 +182,7 @@ class Navigation(Motion):
 
         # make sure we have new data
         csv_data = [self.p.x, self.p.y, self.q.z, self.q.w, self.angle]
-        if np.allclose(self._csv_prev, csv_data)
+        if np.allclose(self._csv_prev, csv_data):
             self._logger.csv(tname, csv_data, folder = folder)
 
         # set the previous data to this data
