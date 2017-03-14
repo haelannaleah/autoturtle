@@ -89,14 +89,6 @@ class NavLoc(Navigation, Localization):
         qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
         self.q = Quaternion(qx, qy, qz, qw)
 
-        #self._logger.debug(self.p, var_name = "map position \n")
-
-#    def _getDestData(self, destination):
-#        # convert destination out of the map frame into the odom frame
-#        destination.x = self._transform["position"].x + destination.x * cos(self._transform["angle"]) - destination.y * sin(self._transform["angle"])
-#        destination.y = self._transform["position"].y + destination.x * sin(self._transform["angle"]) - destination.y * cos(self._transform["angle"])
-#        return Navigation._getDestData(self, destination)
-
 if __name__ == "__main__":
     from tester import Tester
     from math import pi
