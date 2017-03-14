@@ -242,7 +242,7 @@ class Localization():
         roll, pitch, yaw = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
         return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, roll, pitch, yaw]
 
-    def _csvLogAR(self, test_name, tags, tag_type, folder)
+    def _csvLogAR(self, test_name, tags, tag_type, folder):
         """ Log information on all tags currently in view. """
     
         tags = deepcopy(tags)
