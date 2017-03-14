@@ -168,6 +168,7 @@ class Navigation(Motion):
         
         # open a new file if necessary
         if not self._logger.isLogging(test_name):
+            self._logger.debug("hello")
             self._logger.csv(test_name, ["map_x", "map_y", "reported_x", "reported_y"])
         
         self._logger.csv(test_name, [x, y, self.p.x, self.p.y], folder = folder)
@@ -178,7 +179,6 @@ class Navigation(Motion):
         # open the file if necessary
         tname = "pose"
         if not self._logger.isLogging(tname):
-            self._logger.debug("hello")
             self._logger.csv(tname, ["X", "Y", "qZ", "qW", "yaw"], folder = folder)
 
         # make sure we have new data
