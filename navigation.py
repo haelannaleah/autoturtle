@@ -168,9 +168,13 @@ class Navigation(Motion):
                     except ZeroDivisionError:
                         pass
             
-                    if self._motion.stopping or bad_radius:
+                    if self._stopping or bad_radius:
                         self._logger.debug("avoiding circle")
+                        self._stopping
                         self._motion.stop_linear()
+            
+                elif self._stopping:
+                    self._stopping = False
             
                 # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
                 if self._motion.starting:
