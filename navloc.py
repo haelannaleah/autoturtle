@@ -169,7 +169,7 @@ if __name__ == "__main__":
         def logArrival(self, name, x, y):
             self.logger.info("Reached " + str(name) + " at " + str((x,y)))
             self.logger.info("Current pose: " + str((self.navloc.p.x, self.navloc.p.y)))
-            self.navigation.csvLogArrival(self.test_name, x, y)
+            self.navloc.csvLogArrival(self.test_name, x, y)
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
