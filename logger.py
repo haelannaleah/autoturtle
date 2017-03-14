@@ -7,6 +7,7 @@ import csv
 import rospy
 
 from datetime import datetime
+from numpy import allclose
 from time import time
 
 class Logger:
@@ -15,11 +16,12 @@ class Logger:
     Args:
         name: The name of the module that owns the logger.
     """
-    def __init__(self, name):
+    def __init__(self, name, tolerance = 1e-10):
         self.__name__ = str(name)
         self._open_files = {}
         self._start_time = time()
         self._timestamp = datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv"
+        self._tolerance = tolerance
     
     def _print(self, printer, msg):
         printer("[" + self.__name__ + "]: " + str(msg))
@@ -82,7 +84,7 @@ class Logger:
         """ True if we've already started logging this test. """
         return tname in self._open_files
 
-    def csv(self, tname, row, folder=None):
+    def csv(self, tname, row, folder = None, tolderance = None):
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
@@ -111,10 +113,16 @@ class Logger:
             
             # assume that the first message will be variable names
             self._open_files[tname]["writer"].writerow(["Time"] + row)
+            
+            # keep track of previous entries so that we don't log the same data multiple times
+            self._open_files[tname]["prev"] = 0
     
         else:
-            # preappend the current time and write current line to file
-            self._open_files[tname]["writer"].writerow([time() - self._start_time] + row)
+            # preappend the current time and write current line to file if it's changed since the last call
+            if not allclose(self._open_files[tname]["prev"], row, atol = self._tolerance if tolerance is None else tolerance)
+                self._open_files[tname]["writer"].writerow([time() - self._start_time] + row)
+
+            self._open_files[tname]["prev"] = row
 
     def shutdown(self):
         """ Close any open logging files. """
