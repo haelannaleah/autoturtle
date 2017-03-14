@@ -89,6 +89,36 @@ class NavLoc(Navigation, Localization):
         qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
         self.q = Quaternion(qx, qy, qz, qw)
 
+    def csvLogArrival(self, test_name, x, y):
+        """ Log the arrival of the robot at a waypoint. """
+    
+        # open a new file if necessary
+        if not self._logger.isLogging(test_name):
+            self._logger.csv(test_name, ["target_map_x", "target_map_y", "reported_map_x", "reported_map_y", "ekf_x", "ekf_y"], folder = folder)
+        
+        self._logger.csv(test_name, [x, y, self.p.x, self.p.y, self._raw_pose.position.x, self._raw_pose.position.y], folder = folder)
+
+    def csvLogMap(self, test_name, folder = "tests"):
+        """ Log map position data. """
+         
+        Navigation.csvLogEKF(self, test_name + "_map", folder)
+
+    def csvLogEKF(self, test_name, folder = "tests"):
+        """ Log raw EKF position data. """
+
+        # open the file if necessary
+        tname = test_name + "_ekfpose"
+        if not self._logger.isLogging(tname):
+            self._logger.csv(tname, ["X", "Y", "qZ", "qW", "yaw"], folder = folder)
+
+        # make sure we have new data
+        csv_data = [self._raw_pose.position.x, self._raw_pose.position.y, self._raw_pose.orientation.z, self._raw_pose.orientation.w, self._raw_angle]
+        if np.allclose(self._csv_prev, csv_data):
+            self._logger.csv(tname, csv_data, folder = folder)
+
+        # set the previous data to this data
+        self._csv_prev = csv_data
+
 if __name__ == "__main__":
     from tester import Tester
     from math import pi

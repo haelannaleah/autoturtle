@@ -272,12 +272,12 @@ class Localization():
     
         self._prev_csv["estimated"] = csv_estimated
 
-    def csvLogRaw(self, test_name, folder = "tests"):
+    def csvLogRawTags(self, test_name, folder = "tests"):
         """ Log new raw tag data in separate files. """
         
         self._csvLogAR(test_name, self.tags, "raw", folder)
 
-    def csvLogRelative(self, test_name, folder = "tests"):
+    def csvLogRelativeTags(self, test_name, folder = "tests"):
         """ Log new position of AR tags relative to the robot base in separate files. """
 
         self._csvLogAR(test_name, self.tags_base, "relative", folder)
@@ -304,7 +304,7 @@ if __name__ == "__main__":
         def main(self):
             """ Run main tests. """
             self.localization.csvLogEstimated(self.csvtestname)
-            self.localization.csvLogRaw(self.csvtestname)
+            self.localization.csvLogRawTags(self.csvtestname)
         
         def screenLog(self, landmark, id):
             """ Nicely parse landmarks into easily logable data. """

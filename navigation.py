@@ -165,6 +165,7 @@ class Navigation(Motion):
             return False
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
+        """ Log Turtlebot's arrival at a waypoint. """
         
         # open a new file if necessary
         if not self._logger.isLogging(test_name):
@@ -172,7 +173,7 @@ class Navigation(Motion):
         
         self._logger.csv(test_name, [x, y, self.p.x, self.p.y], folder = folder)
     
-    def csvLogPose(self, test_name = "", folder = "tests"):
+    def csvLogEKF(self, test_name = "", folder = "tests"):
         """ Log the current turtlebot pose information. """
         
         # open the file if necessary
