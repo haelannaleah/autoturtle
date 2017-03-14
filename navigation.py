@@ -160,7 +160,8 @@ class Navigation(Motion):
                     linear_vel = self._motion.linear_vel()
                     angular_vel = self._motion.angular_vel()
                     
-                    if np.isclose(dist, abs(linear_vel / angular_vel), atol = .01)atan2(0 - "Y", 1 - "X") - "yaw"
+                    if np.isclose(dist, abs(linear_vel / angular_vel), atol = .01):
+                        self._logger.debug("avoiding circle")
                         self._motion.stop_linear(now = self._jerky)
             
                 # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
