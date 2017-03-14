@@ -8,6 +8,7 @@ import tf
 import numpy as np
 
 from ar_track_alvar_msgs.msg import AlvarMarkers
+from copy import deepcopy
 from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped, Point, Quaternion
 from math import atan2, cos, sin, sqrt, pi
 
@@ -39,7 +40,10 @@ class Localization():
     _AR_FOV_LIMIT = 2.0 * pi / 15
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
+        # set up logger and csv logging
         self._logger = Logger("Localization")
+        self._csvFields = ["X", "Y", "Z", "qX", "qY", "qZ", "qW", "roll", "pitch", "yaw"]
+        self._prev_csv = {"estimated" = 0, "raw" = {}, "relative" = {}}
         
         # store raw tag data, data in the odom frame, and data in the base frame
         self.tags = {}
@@ -219,6 +223,59 @@ class Localization():
             transformed[id] = PoseStamped(position.header, Pose(position.point, orientation.quaternion))
             
         return transformed
+        
+    def _csvLog(self, test_name, csvdata, folder):
+        """ Log csv data. """
+    
+        # if we've never encountered this marker before, open a new csv file
+        if not self._logger.isLogging(test_name):
+            self._logger.csv(test_name, self._csvfields, folder = folder)
+        
+        # actually write the data to file
+        self._logger.csv(test_name, csvdata, folder = folder)
+        
+    def _csvPose(self, landmark_pose):
+        """ Convert pose object into csv data. """
+        
+        p = landmark_pose.position
+        q = landmark_pose.orientation
+        roll, pitch, yaw = tf.transformations.euler_from_quaternion([q.x,q.y,q.z,q.w])
+        return [p.x, p.y, p.z, q.x, q.y, q.z, q.w, roll, pitch, yaw]
+
+    def _csvLogAR(self, test_name, tags, tag_type, folder)
+        """ Log information on all tags currently in view. """
+    
+        tags = deepcopy(tags)
+        
+        for id in tags:
+            csv_tag = self._csvPose(tags[id])
+            
+            # check to see if we've encounted this id before
+            if id not in self._prev_csv[tag_type] or not np.allclose(self._prev_csv[tag_type][id], csv_tag):
+                self._csvLog(test_name + "_" + tag_type + "_marker" + str(id), csv_tag, folder)
+            
+            # update the previous
+            self._prev_csv[tag_type][id] = csv_tag
+
+    def csvLogEstimated(self, test_name, folder = "tests"):
+        """ Log current position estimate if different from last logging. """
+        
+        csv_estimated = self._csvPose(self.estimated_pose)
+
+        if not np.allclose(self._prev_csv["estimated"], csv_estimated):
+            self._csvLog(test_name + "_estimated", csv_estimated, folder)
+    
+        self._prev_csv["estimated"] = csv_estimated
+
+    def csvLogRaw(self, test_name, folder = "tests"):
+        """ Log new raw tag data in separate files. """
+        
+        self._csvLogAR(test_name, self.tags, "raw", folder)
+
+    def csvLogRelative(self, test_name, folder = "tests"):
+        """ Log new position of AR tags relative to the robot base in separate files. """
+
+        self._csvLogAR(test_name, self.tags_base, "relative", folder)
 
 if __name__ == "__main__":
     import numpy as np
@@ -239,56 +296,13 @@ if __name__ == "__main__":
             
             self.prev = {}
     
-            self.csvfields = ["X", "Y", "Z", "qx", "qy", "qz", "qw", "roll", "pitch", "yaw"]
+            self.csvfields = ["X", "Y", "Z", "qX", "qY", "qZ", "qW", "roll", "pitch", "yaw"]
             
             self.csvtestname = "estimation"
 
         def main(self):
             """ Run main tests. """
-            
-            self.logData()
-        
-        def _log(self, test_name, csvdata):
-            """ Log a landmark. """
-            
-            # if we've never encountered this marker before, open a new csv file
-            if not self.logger.isLogging(test_name):
-                self.logger.csv(test_name, self.csvfields, folder = "tests")
-            
-            # actually write the data for file
-            self.logger.csv(test_name, csvdata, folder = "tests")
-        
-        def logData(self):
-            """ Log CSV file and output data to screen. """
-            
-            # make sure the tags don't go changing on us
-            tags = deepcopy(self.localization.tags)
-            landmarks_relative = deepcopy(self.localization.tags_base)
-            
-            # separately log all tag data
-            for id in tags:
-                
-                # convert landmark into csv data
-                raw_data = self.csvPose(tags[id].pose)
-
-                # if we've never encountered this marker before, or it's values have changed
-                if id not in self.prev or not np.allclose(raw_data, self.prev[id], rtol=.1, atol=.5):
-                
-                    # set generic name of test
-                    test_name = self.csvtestname + "_marker" + str(id)
-                    
-                    # update previous
-                    self.prev[id] = raw_data
-                    
-                    # log raw data
-                    self._log(test_name + "_raw", raw_data)
-                    
-                    # make sure that the landmark data is in; otherwise, we're getting raw data outside the bounds
-                    if id in landmarks_relative:
-                        self._log(test_name + "_relative", self.csvPose(landmarks_relative[id].pose))
-                        self._log(test_name + "_estimated", self.csvPose(self.localization.estimated_pose))
-            
-                        self.logger.debug(self.localization.estimated_pose)
+            self.localization.csvLogEstimated(self.test_name)
         
         def screenLog(self, landmark, id):
             """ Nicely parse landmarks into easily logable data. """
