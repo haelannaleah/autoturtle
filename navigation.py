@@ -44,6 +44,7 @@ class Navigation(Motion):
         self._jerky = jerky
         self._walking_speed = min(abs(walking_speed), 1)
         self._logger = Logger("Navigation")
+        self._csv_prev = 0
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -162,7 +163,31 @@ class Navigation(Motion):
             
             # we're still moving towards our goal (or our stopping point)
             return False
+        
+    def csvLogArrival(self, test_name, x, y, folder = None):
+        
+        # open a new file if necessary
+        if not self._logger.isLogging(test_name):
+            self._logger.csv(test_name, ["map_x", "map_y", "reported_x", "reported_y"])
+        
+        self._logger.csv(test_name, [x, y, self.navigation.p.x, self.navigation.p.y], folder = folder)
+    
+    def csvLogPose(self, folder = None):
+        """ Log the current turtlebot pose information. """
+        
+        # open the file if necessary
+        tname = "pose"
+        if not self._logger.isLogging(tname):
+            self._logger.csv(tname, ["X", "Y", "qZ", "qW", "yaw"], folder = folder)
 
+        # make sure we have new data
+        csv_data = [self.p.x, self.p.y, self.q.z, self.q.w, self.angle]
+        if np.allclose(self._csv_prev, csv_data)
+            self._logger.csv(tname, csv_data, folder = folder)
+
+        # set the previous data to this data
+        self._csv_prev = csv_data
+    
     def shutdown(self, rate):
         """ Stop the turtlebot. """
         
