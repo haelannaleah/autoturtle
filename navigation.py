@@ -170,7 +170,7 @@ class Navigation(Motion):
         if not self._logger.isLogging(test_name):
             self._logger.csv(test_name, ["map_x", "map_y", "reported_x", "reported_y"])
         
-        self._logger.csv(test_name, [x, y, self.navigation.p.x, self.navigation.p.y], folder = folder)
+        self._logger.csv(test_name, [x, y, self.p.x, self.p.y], folder = folder)
     
     def csvLogPose(self, folder = None):
         """ Log the current turtlebot pose information. """
