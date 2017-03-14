@@ -35,6 +35,7 @@ class Navigation(Motion):
     # avoid recomputing constants
     _HALF_PI = pi / 2.0
     _TWO_PI = 2.0 * pi
+    _PI_OVER_FOUR = pi / 4.0
     
     def __init__(self, jerky = False, walking_speed = 1):
     
@@ -110,7 +111,6 @@ class Navigation(Motion):
             """ Default behavior for navigation (currently, no obstacle avoidance).
             
             Args:
-                name (str): Name of the waypoint we are approaching.
                 x (float): The x coordinate of the desired location (in meters from the origin).
                 y (float): The y coordinate of the desired location (in meters from the origin).
             """
@@ -119,30 +119,48 @@ class Navigation(Motion):
             # did we reach our waypoint?
             if nav_val is True or self._reached_goal is True:
             
+                # we've reached a waypoint, but we may still need to stop
                 self._reached_goal = True
                 
+                # give ourselves a moment to stop if we're not in jerky mode
                 if self._motion.walking or self._motion.turning:
                     self._motion.stop(now = self._jerky)
+                
+                # let the user know that we made it!
                 else:
-                    self._logger.debug("Arrived at " + str((x,y)) + " (absolute position is " + str((self.p.x, self.p.y)) + ")")
+                    self._logger.info("Arrived at " + str((x,y)) + " (absolute position is " + str((self.p.x, self.p.y)) + ")")
                     self._reached_goal = False
                     return True
             
             # our goal is straight ahead
             elif nav_val == 0:
+            
+                # if we're turning, we need to stop
                 if self._motion.turning:
-                    self._motion.stop_rotation(now=True)
-                else:
-                    self._motion.walk(speed=self._walking_speed)
+                    self._motion.stop_rotation(now = True)
+            
+                # onwards we go at the desired pace
+                self._motion.walk(speed=self._walking_speed)
             
             # we need to turn to reach our goal
             else:
-                # large turn, stop, otherwise turn while walking
-                if self._motion.walking and abs(nav_val) > pi / 2:
-                    self._motion.stop(now = self._jerky)
-                else:
-                    self._motion.turn(nav_val < 0, .25 if self._motion.walking else 1)
             
+                # if we need to make a big turn and we're walking, stop before turning
+                if self._motion.walking and abs(nav_val) > self._PI_OVER_FOUR:
+                    self._motion.stop_linear(now = self._jerky)
+            
+                # otherwise, if we're just starting, get up to speed rather than stalling at an awkwardly slow pace
+                elif self._motion.starting:
+                    self._motion.walk(speed=self._walking_speed)
+                    
+                # make sure we're turning in the correct direction, and stop the turn if we're not
+                if (nav_val <= 0) != (self._motion.turn_dir >= 0):
+                    self._motion.stop_rotation(now = True)
+                
+                # perform our turn with awareness how far off the target direction we are
+                self._motion.turn(nav_val < 0, abs(nav_val / pi) + (0.15 if self._motion.walking else 0.5))
+            
+            # we're still moving towards our goal (or our stopping point)
             return False
 
     def shutdown(self, rate):

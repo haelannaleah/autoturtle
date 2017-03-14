@@ -9,21 +9,27 @@ import rospy
 from copy import deepcopy
 from geometry_msgs.msg import Pose, Point, Quaternion
 from math import sin, cos, pi
+from time import time
 
 from localization import Localization
 from logger import Logger
 from navigation import Navigation
 
 class NavLoc(Navigation, Localization):
+    
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
         # create transformation object
-        self._transform = {"position": Point(0,0,0), "angle": 0}
+        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0, "angle_delta": 0}
+        self._raw_pose = Pose()
+        self._raw_angle = 0
     
         # initialize what we're inheriting from
         Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
         Localization.__init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
-        self._raw_pose = Pose()
+        
+        # create a timer to slow down the amount that we pay attention to landmarks
+        self._timer = float('inf')
 
         self._logger = Logger("NavLoc")
     
@@ -35,44 +41,53 @@ class NavLoc(Navigation, Localization):
         # if there is currently no estimated pose, nothing more to do here
         if self.estimated_pose is None:
             return
-
+        
+        # save current odometry position
         ekf_pose = deepcopy(self._raw_pose)
-        ekf_q = ekf_pose.orientation
-        ekf_angle = tf.transformations.euler_from_quaternion([ekf_q.x, ekf_q.y, ekf_q.z, ekf_q.w])[-1]
-        
-        self._transform["angle"] = self.estimated_angle - ekf_angle
-        self._transform["position"].x = self.estimated_pose.position.x - ekf_pose.position.x
-        self._transform["position"].y = self.estimated_pose.position.y - ekf_pose.position.y
-        
-        self._logger.debug(self._transform, var_name = "transformation")
+        ekf_angle = self._raw_angle
+        self._transform["ekf_pos"] = ekf_pose.position
+        self._transform["ekf_angle"] = ekf_angle
 
-#    def _ekfCallback(self, data):
-#        """ Process robot_pose_ekf data. """
-#        self._raw_pose = data.pose.pose
-#        p = self._raw_pose.position
-#        q = self._raw_pose.orientation
-#
-#        # transform from odom to the map frame
-#        self.p = Point()
-#        self.p.x = self._transform["position"].x + p.x * cos(self._transform["angle"]) + p.y * sin(self._transform["angle"])
-#        self.p.y = self._transform["position"].y - p.x * sin(self._transform["angle"]) + p.y * cos(self._transform["angle"])
-#        
-#        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
-#        #   extract the only non zero euler angle as the angle of rotation in the floor plane
-#        self.angle = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
-#        self.angle += self._transform["angle"]
-#        
-#        # wrap angle, if necessary
-#        if self.angle > pi:
-#            self.angle -= self._TWO_PI
-#        elif self.angle < -pi:
-#            self.angle += self._TWO_PI
-#        
-#        self._logger.debug("\n" + str(self.p), var_name = "map_pos")
-#        self._logger.debug(self.angle, var_name = "angle")
-#
-#        # we're deciding not to care about the quaternion for now
-#        self.q = None
+        # save the estimated map position
+        self._transform["map_pos"] = self.estimated_pose.position
+        self._transform["map_angle"] = self.estimated_angle
+        
+        # compute the difference between them
+        self._transform["angle_delta"] = self._transform["ekf_angle"] - self._transform["map_angle"]
+        
+        self._logger.debug(self.estimated_pose, var_name = "estimated position \n")
+        
+    def _ekfCallback(self, data):
+        """ Process robot_pose_ekf data. """
+        
+        # extract raw data
+        self._raw_pose = data.pose.pose
+        raw_q = self._raw_pose.orientation
+        self._raw_angle = tf.transformations.euler_from_quaternion([raw_q.x, raw_q.y, raw_q.z, raw_q.w])[-1]
+
+        # measure the amount that the robot has moved since we last saw a landmark
+        ekf_dx = self._raw_pose.position.x - self._transform["ekf_pos"].x
+        ekf_dy = self._raw_pose.position.y - self._transform["ekf_pos"].y
+        ekf_delta_angle = self._raw_angle - self._transform["ekf_angle"]
+
+        # transform from odom to the map frame
+        self.p = Point()
+        self.p.x = self._transform["map_pos"].x + ekf_dx * cos(self._transform["angle_delta"]) - ekf_dy * sin(self._transform["angle_delta"])
+        self.p.y = self._transform["map_pos"].y + ekf_dx * sin(self._transform["angle_delta"]) + ekf_dy * cos(self._transform["angle_delta"])
+        
+        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
+        #   extract the only non zero euler angle as the angle of rotation in the floor plane
+        self.angle = self._transform["map_angle"] + ekf_delta_angle
+        
+        # wrap angle, if necessary
+        if self.angle > pi:
+            self.angle -= self._TWO_PI
+        elif self.angle < -pi:
+            self.angle += self._TWO_PI
+
+        # compute the quaternion
+        qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
+        self.q = Quaternion(qx, qy, qz, qw)
 
 if __name__ == "__main__":
     from tester import Tester
@@ -103,8 +118,8 @@ if __name__ == "__main__":
             self.filename = None
         
             landmarks = {0}
-            landmark_positions = {0:(-.5,0)}
-            landmark_orientations = {0:pi/2}
+            landmark_positions = {0:(1.75,0)}
+            landmark_orientations = {0:-pi/2}
         
             self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
 
@@ -113,7 +128,6 @@ if __name__ == "__main__":
             #self.testCCsquare(.5)
             #self.testCsquare(.5)
             self.testLine(1)
-            
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """

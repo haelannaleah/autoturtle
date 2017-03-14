@@ -172,15 +172,25 @@ class Localization():
         transformed = {}
         for id in self.tags:
         
-            # make sure that the data coming in is in a viable frame of view
+            # make sure that the data coming in is in a viable frame of view, and ignore if it's not
+            # experimentally, I found points more than 7pi/15 rad away from the x-axis gave junk data
             if abs(atan2(self.tags[id].pose.position.x, self.tags[id].pose.position.z)) > self._AR_FOV_LIMIT:
+                self._logger.warn("Tag outside FOV. Ignoring.")
                 continue
-            
+        
+            # since the tag should always be roughly perpendicular to the ground, these values should be relatively small
+            if np.isclose(self.tags[id].pose.orientation.x, 1, atol = 0.01) or np.isclose(self.tags[id].pose.orientation.y, 1, atol = 0.01):
+                
+                self._logger.warn("Tag outside acceptable orientation limits. Ignoring.")
+                continue
+            # if abs(self.tags[id].pose.orientation.x) > 0.75 or abs(self.tags[id].pose.orientation.y) > 0.75:
+            #     continue
+
             # get the header from the current tag
             header = self.tags[id].header
             
             # set the time to show that we only care about the most recent available transform
-            self.tags[id].header.stamp = rospy.Time(0)
+            header.stamp = rospy.Time(0)
             
             # orientation data is in the ar_marker_<id> frame, so we need to update the starting frame
             #   (if we just transform from the optical frame, then turning the AR tag upside down affects the
@@ -215,7 +225,6 @@ if __name__ == "__main__":
     from tester import Tester
     from math import degrees, pi
     from copy import deepcopy
-    from floorplan import FloorPlan
 
     class LocalizationTest(Tester):
         """ Run localization tests. """
@@ -232,7 +241,7 @@ if __name__ == "__main__":
     
             self.csvfields = ["X", "Y", "Z", "qx", "qy", "qz", "qw", "roll", "pitch", "yaw"]
             
-            self.csvtestname = "stationary"
+            self.csvtestname = "estimation"
 
         def main(self):
             """ Run main tests. """
