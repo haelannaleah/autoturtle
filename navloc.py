@@ -73,12 +73,9 @@ class NavLoc(Navigation, Localization):
         self.p.x = self._transform["map_pos"].x + ekf_dx * cos(self._transform["angle_delta"]) - ekf_dy * sin(self._transform["angle_delta"])
         self.p.y = self._transform["map_pos"].y + ekf_dx * sin(self._transform["angle_delta"]) + ekf_dy * cos(self._transform["angle_delta"])
         
-        self._logger.debug(self._transform)
-        
         # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
         #   extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = self._transform["map_angle"] + ekf_delta_angle
-        self._logger.debug(self.angle, var_name = "angle")
         
         # wrap angle, if necessary
         if self.angle > pi:
