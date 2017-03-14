@@ -42,7 +42,7 @@ class Localization():
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
         # set up logger and csv logging
         self._logger = Logger("Localization")
-        self._csvFields = ["X", "Y", "Z", "qX", "qY", "qZ", "qW", "roll", "pitch", "yaw"]
+        self._csvfields = ["X", "Y", "Z", "qX", "qY", "qZ", "qW", "roll", "pitch", "yaw"]
         self._prev_csv = {"estimated": 0, "raw": {}, "relative": {}}
         
         # store raw tag data, data in the odom frame, and data in the base frame
@@ -261,7 +261,7 @@ class Localization():
         """ Log current position estimate if different from last logging. """
         if self.estimated_pose is None:
             return
-            
+        
         csv_estimated = self._csvPose(self.estimated_pose)
 
         if not np.allclose(self._prev_csv["estimated"], csv_estimated):
