@@ -99,7 +99,7 @@ class Localization():
         # the transformation failed
         return None
     
-    def transformPoint(self, point, from_frame, to_frame):
+    def transformPoint(self, position, from_frame, to_frame):
         """ Compute coordinate transformation.
         
         Args:
