@@ -181,7 +181,8 @@ if __name__ == "__main__":
             self.logger.csv(self.test_name, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
         
         def logArrival(self, name, x, y):
-            self._logger.info("Arrived at " + str((self.p.x,self.p.y)) + " (absolute position is " + str((self.navloc.map_pos.x, self.navloc.map_pos.y)) + ")")
+            self.logger.info("Arrived at " + str((self.p.x,self.p.y)) + " (absolute position is " +
+                str((self.navloc.map_pos.x, self.navloc.map_pos.y)) + ")")
             self.navloc.csvLogArrival(self.test_name, x, y)
         
         def testLine(self, length):
