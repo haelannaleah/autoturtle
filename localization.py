@@ -50,6 +50,7 @@ class Localization():
         # set estimated pose based on local landmarks to None and set up the landmark map
         self.estimated_pose = None
         self.estimated_angle = None
+        self._prev_est = [0,0,0]
         self.floorplan = FloorPlan(point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
     
         # listen for frame transformations
@@ -134,10 +135,17 @@ class Localization():
         x = map.pose.position.x - r * cos(theta)
         y = map.pose.position.y - r * sin(theta)
         
-        # plug this into an estimated pose in the map frame
-        q = tf.transformations.quaternion_from_euler(0,0,delta)
-        self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
-        self.estimated_angle = delta
+        if not (np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
+            self.estimated_pose = None
+            self.estimated_angle = None
+            
+        else:
+            # plug this into an estimated pose in the map frame
+            q = tf.transformations.quaternion_from_euler(0,0,delta)
+            self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
+            self.estimated_angle = delta
+
+        self._prev_est = [x, y, delta]
         
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
