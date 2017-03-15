@@ -99,8 +99,8 @@ if __name__ == "__main__":
             self.test_name = "debug"
         
             landmarks = {0}
-            landmark_positions = {0:(1.75,0)}
-            landmark_orientations = {0:-pi/2}
+            landmark_positions = {0:(-.75,0)}
+            landmark_orientations = {0:pi/2}
         
             self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
 
