@@ -155,7 +155,7 @@ class Localization():
 
         # check to make sure that we haven't just gotten a random noisy outlier.
         cur_odom = [p.x, p.y, p.z, q.x, q.y, q.z, q.w]
-        if np.allclose(self._prev_odom, cur_odom, atol = 0.1, rtol = 0.1)
+        if np.allclose(self._prev_odom, cur_odom, atol = 0.1, rtol = 0.05):
             self._transform["map_pos"] = self.floorplan.landmarks[closest_id].pose.position
             self._transform["map_angle"] = self.floorplan.landmarks[closest_id].angle
             self._transform["odom_pos"] = p
