@@ -344,9 +344,9 @@ class Localization():
     def csvLogTransform(self, test_name, folder = "tests"):
         """ Log the transformation from the ekf frame to the map frame. """
                             
-        self._logger.csv(test_name + "_transform", ["X_map", "Y_map", "angle_map", "X_ekf", "Y_ekf", "angle_ekf"],
+        self._logger.csv(test_name + "_transform", ["X_map", "Y_map", "angle_map", "X_odom", "Y_odom", "angle_odom"],
                     [self._transform["map_pos"].x, self._transform["map_pos"].y, self._transform["map_angle"],
-                            self._transform["map_pos"].x, self._transform["map_pos"].y],
+                            self._transform["odom_pos"].x, self._transform["odom_pos"].y, self._transform["odom_angle"]],
                     folder = folder)
 
     def shutdown(self):
