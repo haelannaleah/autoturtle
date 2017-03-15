@@ -156,6 +156,8 @@ class Localization():
         # extract euler angle
         q = self.tags_odom[closest_id].pose.orientation
         self._transform["odom_angle"] = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+        
+        self._logger.debug(self._transform)
     
 #    def _estimatePose(self):
 #        """ Estimate current position based on proximity to landmarks. """
