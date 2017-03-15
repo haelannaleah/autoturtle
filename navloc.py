@@ -21,9 +21,9 @@ class NavLoc(Navigation, Localization):
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
         # create transformation object
-        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0, "angle_delta": 0}
-        self._raw_pose = Pose()
-        self._raw_angle = 0
+        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0}
+        self.map_position = Point()
+        self.map_angle = 0
     
         # initialize what we're inheriting from
         Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
@@ -53,14 +53,11 @@ class NavLoc(Navigation, Localization):
         self._transform["map_pos"] = self.estimated_pose.position
         self._transform["map_angle"] = self.estimated_angle
         
-        # compute the difference between them
-        self._transform["angle_delta"] = self._transform["ekf_angle"] - self._transform["map_angle"]
-        
     def _getDestData(self, destination):
         """ Move from current position to desired waypoint in the odomety frame.
             
         Args:
-            destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
+            destination (geometry_msgs.msg.Point): A destination relative to the map origin, in meters.
         
         Returns:
             True if we are close to the desired location 
@@ -69,48 +66,47 @@ class NavLoc(Navigation, Localization):
                 A negative value indicates that the desired angle is that many radians to the left of 
                 the current orientation, positive indicates the desired angle is to the right.
         """
-        dx = destination.x - self._transform["map_pos"].x
-        dy = destination.y - self._transform["map_pos"].y
+        return Navigation._getDestData(self, self._computeTransformation(destination, "map", "ekf"))
+    
+    def _computeTransformation(self, position, from_frame, to_frame):
+        """ Compute coordinate transformation.
         
-        delta = self._transform["map_angle"] - self._transform["ekf_angle"]
+        Args:
+            position (geometry_msgs.msg.Point): A position in the from_frame.
+            from_frame (str): The frame that the incoming point is in. "map" or "ekf"
+            to_frame (str): The frame that the final point will be in. "map" or "ekf"
         
-        dest = Point()
-        dest.x = self._transform["ekf_pos"].x + dx * cos(delta) - dy * sin(delta)
-        dest.y = self._transform["ekf_pos"].y + dx * sin(delta) + dy * cos(delta)
+        Returns:
+            A geometry_msgs.msg.Point in the target frame.
+        """
+        from_key = from_frame + "_pos"
         
-        return Navigation._getDestData(self, dest)
+        dx = position.x - self._transform[from_key].x
+        dy = position.y - self._transform[from_key].y
+        delta = self._transform[from_frame + "_angle"] - self._transform[to_frame + "_angle"]
+    
+        to_key = to_frame + "_pos"
+    
+        x = self._transform[to_key].x + dx * cos(delta) - dy * sin(delta)
+        y = self._transform[to_key].y + dx * sin(delta) + dy * cos(delta)
+    
+        return Point(x, y, 0)
+    
+    def _ekfCallback(self, data):
+        """ Process robot_pose_ekf data. """
         
-#    def _ekfCallback(self, data):
-#        """ Process robot_pose_ekf data. """
-#        
-#        # extract raw data
-#        self._raw_pose = data.pose.pose
-#        raw_q = self._raw_pose.orientation
-#        self._raw_angle = tf.transformations.euler_from_quaternion([raw_q.x, raw_q.y, raw_q.z, raw_q.w])[-1]
-#
-#        # measure the amount that the robot has moved since we last saw a landmark
-#        ekf_dx = self._raw_pose.position.x - self._transform["ekf_pos"].x
-#        ekf_dy = self._raw_pose.position.y - self._transform["ekf_pos"].y
-#        ekf_delta_angle = self._raw_angle - self._transform["ekf_angle"]
-#
-#        # transform from odom to the map frame
-#        self.p = Point()
-#        self.p.x = self._transform["map_pos"].x + ekf_dx * cos(self._transform["angle_delta"]) - ekf_dy * sin(self._transform["angle_delta"])
-#        self.p.y = self._transform["map_pos"].y + ekf_dx * sin(self._transform["angle_delta"]) + ekf_dy * cos(self._transform["angle_delta"])
-#        
-#        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
-#        #   extract the only non zero euler angle as the angle of rotation in the floor plane
-#        self.angle = self._transform["map_angle"] + ekf_delta_angle
-#        
-#        # wrap angle, if necessary
-#        if self.angle > pi:
-#            self.angle -= self._TWO_PI
-#        elif self.angle < -pi:
-#            self.angle += self._TWO_PI
-#
-#        # compute the quaternion
-#        qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
-#        self.q = Quaternion(qx, qy, qz, qw)
+        # get the ekf data
+        Navigation._ekfCallback(self, data)
+        
+        # compute map data
+        self.map_position = self._computeTransformation(self.p, "ekf", "map")
+        self.map_angle = self._transform["map_angle"] + self.angle - self._transform["ekf_angle"]
+        
+        # wrap angle, if necessary
+        if self.map_angle > pi:
+            self.map_angle -= self._TWO_PI
+        elif self.map_angle < -pi:
+            self.map_angle += self._TWO_PI
 
     def csvLogTransform(self, test_name, folder = "tests"):
         """ Log the transformation from the ekf frame to the map frame. """
@@ -131,14 +127,7 @@ class NavLoc(Navigation, Localization):
     def csvLogMap(self, test_name, folder = "tests"):
         """ Log map position data. """
          
-        Navigation.csvLogEKF(self, test_name + "_map", folder)
-
-    def csvLogEKF(self, test_name, folder = "tests"):
-        """ Log raw EKF position data. """
-        
-        self._logger.csv(test_name + "_ekfpose", ["X", "Y", "qZ", "qW", "yaw"],
-                    [self._raw_pose.position.x, self._raw_pose.position.y, self._raw_pose.orientation.z, self._raw_pose.orientation.w, self._raw_angle],
-                    folder = folder)
+        self._logger.csv(test_name + "_mappose", ["X", "Y", "yaw"], [self.map_pos.x, self.map_pos.y, self.map_angle], folder = folder)
 
 if __name__ == "__main__":
     from tester import Tester
