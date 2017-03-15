@@ -10,7 +10,6 @@ import numpy as np
 from copy import deepcopy
 from geometry_msgs.msg import Pose, Point, Quaternion
 from math import sin, cos, pi
-from time import time
 
 from localization import Localization
 from logger import Logger
@@ -33,26 +32,6 @@ class NavLoc(Navigation, Localization):
         self._timer = float('inf')
 
         self._logger = Logger("NavLoc")
-    
-#    def _estimatePose(self):
-#        """ Override pose estimation to include pose calculation. """
-#    
-#        Localization._estimatePose(self)
-#        
-#        # if there is currently no estimated pose, nothing more to do here
-#        if self.estimated_pos is None:
-#            return
-#        
-#        # save current odometry position
-#        self._transform["ekf_pos"] = deepcopy(self.p)
-#        self._transform["ekf_angle"] = self.angle
-#
-#        # save the estimated map position
-#        self._transform["map_pos"] = deepcopy(self.estimated_pos)
-#        self._transform["map_angle"] = self.estimated_angle
-#        
-#        self._logger.debug(self.estimated_pos, var_name = "estimated_pose")
-#        self._logger.debug(self.estimated_angle, var_name = "estimated_angle")
 
     def _getDestData(self, destination):
         """ Move from current position to desired waypoint in the odomety frame.
@@ -78,14 +57,6 @@ class NavLoc(Navigation, Localization):
         # compute map data
         self.map_pos = self.transformPoint(self.p, "odom", "map")
         self.map_angle = self.transformAngle(self.angle, "odom", "map")
-
-    def csvLogTransform(self, test_name, folder = "tests"):
-        """ Log the transformation from the ekf frame to the map frame. """
-                            
-        self._logger.csv(test_name + "_transform", ["X_map", "Y_map", "angle_map", "X_ekf", "Y_ekf", "angle_ekf", "angle_delta"],
-                    [self._transform["map_pos"].x, self._transform["map_pos"].y, self._transform["map_angle"],
-                            self._transform["map_pos"].x, self._transform["map_pos"].y, self._transform["map_angle"]],
-                    folder = folder)
 
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log the arrival of the robot at a waypoint. """

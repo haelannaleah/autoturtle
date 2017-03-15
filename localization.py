@@ -1,4 +1,4 @@
-""" Global localization.
+""" Compute the transformation between odometry and map.
     
 Author:
     Annaleah Ernst
@@ -51,10 +51,6 @@ class Localization():
         self.tags_base = {}
         self.tags_odom = {}
         
-        # set estimated pose based on local landmarks to None and set up the landmark map
-        #self.estimated_pos = None
-        #self.estimated_angle = None
-        
         # set up the transformer between the map and ekf
         self._transform = self._transform = {"map_pos": Point(), "map_angle": 0, "odom_pos": Point(), "odom_angle": 0}
         self.floorplan = FloorPlan(point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
@@ -103,22 +99,25 @@ class Localization():
         
         Args:
             position (geometry_msgs.msg.Point): A position in the from_frame.
-            from_frame (str): The frame that the incoming point is in. "map" or "odom"
-            to_frame (str): The frame that the final point will be in. "map" or "odom"
+            from_frame (str, "map" or "odom") The frame that the incoming point is in.
+            to_frame (str, "map" or "odom") The frame that the final point will be in.
         
         Returns:
             A geometry_msgs.msg.Point in the target frame.
         """
-        from_key = from_frame + "_pos"
+        from_pos = from_frame + "_pos"
+        to_pos = to_frame + "_pos"
         
-        dx = position.x - self._transform[from_key].x
-        dy = position.y - self._transform[from_key].y
+        # the amount we've moved since we logged a transform point
+        dx = position.x - self._transform[from_pos].x
+        dy = position.y - self._transform[from_pos].y
+        
+        # the amount we've rotated since we've logged a transform point
         delta = self._transform[from_frame + "_angle"] - self._transform[to_frame + "_angle"]
     
-        to_key = to_frame + "_pos"
-    
-        x = self._transform[to_key].x + dx * cos(delta) - dy * sin(delta)
-        y = self._transform[to_key].y + dx * sin(delta) + dy * cos(delta)
+        # now, add this movement back in to last transform point in the desired frame
+        x = self._transform[to_pos].x + dx * cos(delta) - dy * sin(delta)
+        y = self._transform[to_pos].y + dx * sin(delta) + dy * cos(delta)
     
         return Point(x, y, 0)
     
@@ -157,7 +156,7 @@ class Localization():
         # extract euler angle
         q = self.tags_odom[closest_id].pose.orientation
         self._transform["odom_angle"] = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
-#        
+    
 #    def _estimatePose(self):
 #        """ Estimate current position based on proximity to landmarks. """
 #        
@@ -231,12 +230,9 @@ class Localization():
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
             self.tags_odom = self._transformTags('/odom')
             self._setTransform()
-#            self.tags_base = self._transformTags('/base_footprint')
-#            self._estimatePose()
+        
         else:
             # we don't see any tags, so empty things out
-            self.estimated_pos = None
-            self.estimated_angle = None
             self.tags = {}
             self.tags_odom = {}
 
@@ -327,23 +323,23 @@ class Localization():
             fields, data = self._csvPose(tags[id].pose)
             self._logger.csv(test_name + "_" + tag_type + "_marker" + str(id), fields, data, folder = folder)
 
-#    def csvLogEstimated(self, test_name, folder = "tests"):
-#        """ Log current position estimate. """
-#        
-#        if self.estimated_pos is None:
-#            return
-#        
-#        self._logger.csv(test_name + "_estimated", ["X", "Y", "yaw"], [self.estimated_pos.x, self.estimated_pos.y, self.estimated_angle], folder=folder)
-
     def csvLogRawTags(self, test_name, folder = "tests"):
         """ Log new raw tag data in separate files. """
         
         self._csvLogAR(test_name, self.tags, "raw", folder)
 
-    def csvLogRelativeTags(self, test_name, folder = "tests"):
+    def csvLogOdomTags(self, test_name, folder = "tests"):
         """ Log new position of AR tags relative to the robot base in separate files. """
 
-        self._csvLogAR(test_name, self.tags_odom, "relative", folder)
+        self._csvLogAR(test_name, self.tags_odom, "odom", folder)
+    
+    def csvLogTransform(self, test_name, folder = "tests"):
+        """ Log the transformation from the ekf frame to the map frame. """
+                            
+        self._logger.csv(test_name + "_transform", ["X_map", "Y_map", "angle_map", "X_ekf", "Y_ekf", "angle_ekf"],
+                    [self._transform["map_pos"].x, self._transform["map_pos"].y, self._transform["map_angle"],
+                            self._transform["map_pos"].x, self._transform["map_pos"].y],
+                    folder = folder)
 
     def shutdown(self):
         self._logger.shutdown()
