@@ -49,6 +49,8 @@ class Localization():
         # store raw tag data, data in the odom frame, and data in the base frame
         self.tags = {}
         self.tags_base = {}
+        self.tags_odom = {}
+        self.transform = self._transform = {"map_pos": Point(), "map_angle": 0, "ekf_pos": Point(), "ekf_angle": 0}
         
         # set estimated pose based on local landmarks to None and set up the landmark map
         self.estimated_pos = None
@@ -94,70 +96,93 @@ class Localization():
         # the transformation failed
         return None
         
-    def _estimatePose(self):
-        """ Estimate current position based on proximity to landmarks. """
-        
+    def _setTransform(self):
         # attempt to get the id of the closest landmark
         try:
-            t = self.tags_base
+            t = self.tags
             
             # compute the closest (viable) tag by looking for the smallest distance squared from the robot base
             #   among tags that also appear in landmarks
-            dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.y**2, id) for id in t if id in self.floorplan.landmarks)
+            dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.y**2, id)
+                for id in t if (id in self.floorplan.landmarks and id in self.tags_odom))
         
         # the argument to min was an empty list; we don't see any familiar landmarks
         except (TypeError, ValueError) as e:
-            self.estimated_pos = None
-            self.estimated_angle = None
             return
         
-        # extract the closest tag and corresponding landmark
-        closest = self.tags_base[closest_id].pose
-        map = self.floorplan.landmarks[closest_id]
+        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0}
         
-        # compute the value of the radius between the robot base and the ARtag
-        r = sqrt(dist2)
+        q = self.tags_odom[closest_id].orientation
         
-        # Note: in the following section, names of angles correspond to symbols in graph
-        #   <TODO include graph number>
-        # get the angle between the ARtag's x-axis and the map's x-axis
-        alpha = map.angle
-        
-        # get the angle between the ARtag's x-axis and the robot's x-axis (between 0 and -pi)
-        q = closest.orientation
-        beta = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
-        
-        # get the angle between the robot's x-axis and the vector from the robot base to the tag
-        gamma = atan2(closest.position.y, closest.position.x)
-
-        # compute the angle between the x-axis in the robot frame and the x-axis in the map frame
-        delta = alpha - beta
-
-        # now compute the angle between the map x-axis and the vector to the AR tag
-        theta = delta + gamma
-        
-        # compute the robot position in the map frame
-        x = map.pose.position.x - r * cos(theta)
-        y = map.pose.position.y - r * sin(theta)
-        
-        # plug this into an estimated pose in the map frame
-        self.estimated_pos = Point(x,y,0)
-        self.estimated_angle = delta
-            
-        # make sure that we are getting reasonable
-        if np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
-            
-            # plug this into an estimated pose in the map frame
-            self.estimated_pos = Point(x,y,0)
-            self.estimated_angle = delta
-
-        # otherwise, we need to reset estimation
-        else:
-            self.estimated_pos = None
-            self.estimated_angle = None
-
-        # update the previous so that we can continue sanity checking
-        self._prev_est = [x, y, delta]
+        self.transform["map_pos"] = self.floorplan[closest_id].pose.position
+        self.transform["map_angle"] = self.floorplan[closest_id].angle
+        self.transform["odom_pos"] = self.tags_odom[closest_id].pose.position
+        self.transform["odom_angle"] = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+#        
+#    def _estimatePose(self):
+#        """ Estimate current position based on proximity to landmarks. """
+#        
+#        # attempt to get the id of the closest landmark
+#        try:
+#            t = self.tags_base
+#            
+#            # compute the closest (viable) tag by looking for the smallest distance squared from the robot base
+#            #   among tags that also appear in landmarks
+#            dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.y**2, id) for id in t if id in self.floorplan.landmarks)
+#        
+#        # the argument to min was an empty list; we don't see any familiar landmarks
+#        except (TypeError, ValueError) as e:
+#            self.estimated_pos = None
+#            self.estimated_angle = None
+#            return
+#        
+#        # extract the closest tag and corresponding landmark
+#        closest = self.tags_base[closest_id].pose
+#        map = self.floorplan.landmarks[closest_id]
+#        
+#        # compute the value of the radius between the robot base and the ARtag
+#        r = sqrt(dist2)
+#        
+#        # Note: in the following section, names of angles correspond to symbols in graph
+#        #   <TODO include graph number>
+#        # get the angle between the ARtag's x-axis and the map's x-axis
+#        alpha = map.angle
+#        
+#        # get the angle between the ARtag's x-axis and the robot's x-axis (between 0 and -pi)
+#        q = closest.orientation
+#        beta = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+#        
+#        # get the angle between the robot's x-axis and the vector from the robot base to the tag
+#        gamma = atan2(closest.position.y, closest.position.x)
+#
+#        # compute the angle between the x-axis in the robot frame and the x-axis in the map frame
+#        delta = alpha - beta
+#
+#        # now compute the angle between the map x-axis and the vector to the AR tag
+#        theta = delta + gamma
+#        
+#        # compute the robot position in the map frame
+#        x = map.pose.position.x - r * cos(theta)
+#        y = map.pose.position.y - r * sin(theta)
+#        
+#        # plug this into an estimated pose in the map frame
+#        self.estimated_pos = Point(x,y,0)
+#        self.estimated_angle = delta
+#            
+#        # make sure that we are getting reasonable
+#        if np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
+#            
+#            # plug this into an estimated pose in the map frame
+#            self.estimated_pos = Point(x,y,0)
+#            self.estimated_angle = delta
+#
+#        # otherwise, we need to reset estimation
+#        else:
+#            self.estimated_pos = None
+#            self.estimated_angle = None
+#
+#        # update the previous so that we can continue sanity checking
+#        self._prev_est = [x, y, delta]
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
@@ -165,14 +190,15 @@ class Localization():
             # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
             #   I promise, its less scary than it looks...
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self.tags_base = self._transformTags('/base_footprint')
-            self._estimatePose()
+            self.tags_odom = self._transformTags('/odom')
+#            self.tags_base = self._transformTags('/base_footprint')
+#            self._estimatePose()
         else:
             # we don't see any tags, so empty things out
             self.estimated_pos = None
             self.estimated_angle = None
             self.tags = {}
-            self.tags_base = {}
+            self.tags_odom = {}
 
     def _transformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
@@ -277,7 +303,7 @@ class Localization():
     def csvLogRelativeTags(self, test_name, folder = "tests"):
         """ Log new position of AR tags relative to the robot base in separate files. """
 
-        self._csvLogAR(test_name, self.tags_base, "relative", folder)
+        self._csvLogAR(test_name, self.tags_odom, "relative", folder)
 
     def shutdown(self):
         self._logger.shutdown()
