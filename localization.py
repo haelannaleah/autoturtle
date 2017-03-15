@@ -95,7 +95,35 @@ class Localization():
         
         # the transformation failed
         return None
+    
+    def transformPoint(self, point, from_frame, to_frame):
+        """ Compute coordinate transformation.
         
+        Args:
+            position (geometry_msgs.msg.Point): A position in the from_frame.
+            from_frame (str): The frame that the incoming point is in. "map" or "odom"
+            to_frame (str): The frame that the final point will be in. "map" or "odom"
+        
+        Returns:
+            A geometry_msgs.msg.Point in the target frame.
+        """
+        from_key = from_frame + "_pos"
+        
+        dx = position.x - self._transform[from_key].x
+        dy = position.y - self._transform[from_key].y
+        delta = self._transform[from_frame + "_angle"] - self._transform[to_frame + "_angle"]
+    
+        to_key = to_frame + "_pos"
+    
+        x = self._transform[to_key].x + dx * cos(delta) - dy * sin(delta)
+        y = self._transform[to_key].y + dx * sin(delta) + dy * cos(delta)
+    
+        return Point(x, y, 0)
+    
+    def transformAngle(self, angle, from_frame, to_frame):
+        """ Transform an angle from the from frame to the to frame. """
+        return self.transform[to_frame + "_angle"] + angle - self._transform[from_frame + "_angle"]
+    
     def _setTransform(self):
         # attempt to get the id of the closest landmark
         try:
@@ -191,6 +219,7 @@ class Localization():
             #   I promise, its less scary than it looks...
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
             self.tags_odom = self._transformTags('/odom')
+            self._setTransform()
 #            self.tags_base = self._transformTags('/base_footprint')
 #            self._estimatePose()
         else:
