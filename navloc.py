@@ -40,7 +40,7 @@ class NavLoc(Navigation, Localization):
         Localization._estimatePose(self)
         
         # if there is currently no estimated pose, nothing more to do here
-        if self.estimated_pose is None:
+        if self.estimated_pos is None:
             return
         
         # save current odometry position
@@ -48,7 +48,7 @@ class NavLoc(Navigation, Localization):
         self._transform["ekf_angle"] = self.angle
 
         # save the estimated map position
-        self._transform["map_pos"] = self.estimated_pose.position
+        self._transform["map_pos"] = deepcopy(self.estimated_pos)
         self._transform["map_angle"] = self.estimated_angle
     
     def _getDestData(self, destination):
