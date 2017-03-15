@@ -38,7 +38,7 @@ class Localization():
         self.estimated_pose (geometry_msgs.msg.Pose or None): The estimated pose of the robot based 
             on the visible tags. None if no tags visible.
     """
-    _AR_FOV_LIMIT = pi / 8  # radians
+    _AR_FOV_LIMIT = 2.0 * pi / 15.0  # radians
     _AR_UPDATE_TIME = 0.25  # seconds
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
