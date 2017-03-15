@@ -39,7 +39,7 @@ class Localization():
             on the visible tags. None if no tags visible.
     """
     _AR_FOV_LIMIT = pi / 8  # radians
-    _AR_UPDATE_TIME = 0.0   # seconds
+    _AR_UPDATE_TIME = 0.25  # seconds
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
         # set up logger and csv logging
@@ -141,7 +141,7 @@ class Localization():
         y = map.pose.position.y - r * sin(theta)
         
         # make sure that we aren't getting insane localization data and are sampling at our reduced rate
-        if (np.allclose([x, y, delta], self._prev_est, atol = 0.05, rtol = 0.05)
+        if (np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05)
             and self._prev_update_time - time() > self._AR_UPDATE_TIME):
             
             # plug this into an estimated pose in the map frame
