@@ -39,7 +39,7 @@ class Localization():
             on the visible tags. None if no tags visible.
     """
     _AR_FOV_LIMIT = pi / 8  # radians
-    _AR_UPDATE_TIME = 0.05  # seconds
+    _AR_UPDATE_TIME = 0.0   # seconds
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
         # set up logger and csv logging
