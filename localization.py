@@ -39,7 +39,6 @@ class Localization():
             on the visible tags. None if no tags visible.
     """
     _AR_FOV_LIMIT = 2.0 * pi / 15.0  # radians
-    _AR_UPDATE_TIME = 0.25  # seconds
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
         # set up logger and csv logging
@@ -141,14 +140,17 @@ class Localization():
         y = map.pose.position.y - r * sin(theta)
         
         # make sure that we aren't getting insane localization data and are sampling at our reduced rate
-        if (np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05)
-            and self._prev_update_time - time() > self._AR_UPDATE_TIME):
+        if (np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
             
             # plug this into an estimated pose in the map frame
             q = tf.transformations.quaternion_from_euler(0,0,delta)
             self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
             self.estimated_angle = delta
-            self._prev_update_time += self._AR_UPDATE_TIME
+            
+        # otherwise, we need to set our estimation to None
+        else:
+            self.estimated_pose = None
+            self.estimated_angle = None
 
         # update the previous so that we can continue annealing
         self._prev_est = [x, y, delta]
