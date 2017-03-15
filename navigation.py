@@ -146,7 +146,7 @@ class Navigation(Motion):
                     self._motion.stop_rotation(now = True)
             
                 # onwards we go at the desired pace
-                self._motion.walk(speed = (self._walking_speed)
+                self._motion.walk(speed = self._walking_speed)
             
             # we need to turn to reach our goal
             else:
