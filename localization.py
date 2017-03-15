@@ -37,7 +37,7 @@ class Localization():
         self.estimated_pose (geometry_msgs.msg.Pose or None): The estimated pose of the robot based 
             on the visible tags. None if no tags visible.
     """
-    _AR_FOV_LIMIT = 2.0 * pi / 15
+    _AR_FOV_LIMIT = pi / 6 #2.0 * pi / 15
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
         # set up logger and csv logging
