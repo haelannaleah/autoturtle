@@ -141,21 +141,25 @@ class Localization():
         x = map.pose.position.x - r * cos(theta)
         y = map.pose.position.y - r * sin(theta)
         
-        # make sure that we aren't getting insane localization data
-        if np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
+        # plug this into an estimated pose in the map frame
+        self.estimated_pos = Point(x,y,0)
+        self.estimated_angle = delta
             
-            # plug this into an estimated pose in the map frame
-            self.estimated_pos = Point(x,y,0)
-            self.estimated_angle = delta
-            
-        # otherwise, we need to set our estimation to None
-        else:
-            self.estimated_pos = None
-            self.estimated_angle = None
+#        # make sure that we aren't getting insane localization data
+#        if np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
+#            
+#            # plug this into an estimated pose in the map frame
+#            self.estimated_pos = Point(x,y,0)
+#            self.estimated_angle = delta
+#            
+#        # otherwise, we need to set our estimation to None
+#        else:
+#            self.estimated_pos = None
+#            self.estimated_angle = None
+#
+#        # update the previous so that we can continue annealing
+#        self._prev_est = [x, y, delta]
 
-        # update the previous so that we can continue annealing
-        self._prev_est = [x, y, delta]
-        
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
         if data.markers:
@@ -263,7 +267,7 @@ class Localization():
         
         if self.estimated_pos is None:
             return
-            
+        
         self._logger.csv(test_name + "_estimated", ["X", "Y", "yaw"], [self.estimated_pos.x, self.estimated_pos.y, self.estimated_angle], folder=folder)
 
     def csvLogRawTags(self, test_name, folder = "tests"):
