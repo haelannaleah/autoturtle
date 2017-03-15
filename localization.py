@@ -113,7 +113,7 @@ class Localization():
         dy = position.y - self._transform[from_pos].y
         
         # the amount we've rotated since we've logged a transform point
-        delta = self._transform[from_frame + "_angle"] - self._transform[to_frame + "_angle"]
+        delta = self._transform[to_frame + "_angle"] - self._transform[from_frame + "_angle"] #self._transform[from_frame + "_angle"] - self._transform[to_frame + "_angle"]
     
         # now, add this movement back in to last transform point in the desired frame
         x = self._transform[to_pos].x + dx * cos(delta) - dy * sin(delta)
