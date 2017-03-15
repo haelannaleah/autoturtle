@@ -35,8 +35,10 @@ class Localization():
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
             their raw form.
         tags_base (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base frame.
-        self.estimated_pose (geometry_msgs.msg.Pose or None): The estimated pose of the robot based 
+        self.estimated_pos (geometry_msgs.msg.Point or None): The estimated position of the robot based
             on the visible tags. None if no tags visible.
+        self.estimated_angle (float or None): The estimated orientation of the robot based on visible tags. 
+            None if no tag visible.
     """
     _AR_FOV_LIMIT = 2.0 * pi / 15.0  # radians
     
@@ -49,7 +51,7 @@ class Localization():
         self.tags_base = {}
         
         # set estimated pose based on local landmarks to None and set up the landmark map
-        self.estimated_pose = None
+        self.estimated_pos = None
         self.estimated_angle = None
         self.floorplan = FloorPlan(point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
         
@@ -106,7 +108,7 @@ class Localization():
         
         # the argument to min was an empty list; we don't see any familiar landmarks
         except (TypeError, ValueError) as e:
-            self.estimated_pose = None
+            self.estimated_pos = None
             self.estimated_angle = None
             return
         
@@ -143,13 +145,12 @@ class Localization():
         if np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
             
             # plug this into an estimated pose in the map frame
-            q = tf.transformations.quaternion_from_euler(0,0,delta)
-            self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
+            self.estimated_pos = Point(x,y,0)
             self.estimated_angle = delta
             
         # otherwise, we need to set our estimation to None
         else:
-            self.estimated_pose = None
+            self.estimated_pos = None
             self.estimated_angle = None
 
         # update the previous so that we can continue annealing
@@ -165,7 +166,7 @@ class Localization():
             self._estimatePose()
         else:
             # we don't see any tags, so empty things out
-            self.estimated_pose = None
+            self.estimated_pos = None
             self.estimated_angle = None
             self.tags = {}
             self.tags_base = {}
@@ -260,10 +261,10 @@ class Localization():
     def csvLogEstimated(self, test_name, folder = "tests"):
         """ Log current position estimate. """
         
-        if self.estimated_pose is None:
+        if self.estimated_pos is None:
             return
         
-        fields, data = self._csvPose(self.estimated_pose)
+        fields, data = self._csvPose(self.estimated_pos)
         self._logger.csv(test_name + "_estimated", fields, data, folder=folder)
 
     def csvLogRawTags(self, test_name, folder = "tests"):
