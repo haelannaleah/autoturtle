@@ -122,8 +122,6 @@ class Navigation(Motion):
             """
             nav_val = self._getDestData(Point(x,y,0))
             
-            d2 = (x - self.p.x)**2 + (y - self.p.y)**2
-            
             # did we reach our waypoint?
             if nav_val is True or self._reached_goal is True:
             
@@ -148,7 +146,7 @@ class Navigation(Motion):
                     self._motion.stop_rotation(now = True)
             
                 # onwards we go at the desired pace
-                self._motion.walk(speed = (self._walking_speed * (d2 + self._MIN_LINEAR_SPEED)))
+                self._motion.walk(speed = (self._walking_speed)
             
             # we need to turn to reach our goal
             else:
@@ -177,7 +175,7 @@ class Navigation(Motion):
                     self._motion.stop_rotation(now = True)
                 
                 # perform our turn with awareness how far off the target direction we are
-                self._motion.turn(nav_val < 0, abs(nav_val / self._HALF_PI)**2 + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
+                self._motion.turn(nav_val < 0, .25 if self._motion.walking else 1 #abs(nav_val / self._HALF_PI)**2 + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
 
             # we're still moving towards our goal (or our stopping point)
             return False
