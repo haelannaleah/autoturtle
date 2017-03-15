@@ -44,10 +44,8 @@ class NavLoc(Navigation, Localization):
             return
         
         # save current odometry position
-        ekf_pose = deepcopy(self._raw_pose)
-        ekf_angle = self._raw_angle
-        self._transform["ekf_pos"] = ekf_pose.position
-        self._transform["ekf_angle"] = ekf_angle
+        self._transform["ekf_pos"] = deepcopy(self.p)
+        self._transform["ekf_angle"] = self.angle
 
         # save the estimated map position
         self._transform["map_pos"] = self.estimated_pose.position
