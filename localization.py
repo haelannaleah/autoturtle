@@ -122,7 +122,17 @@ class Localization():
     
     def transformAngle(self, angle, from_frame, to_frame):
         """ Transform an angle from the from frame to the to frame. """
-        return self.transform[to_frame + "_angle"] + angle - self._transform[from_frame + "_angle"]
+        
+        # compute transformation
+        transformed_angle = self.transform[to_frame + "_angle"] + angle - self._transform[from_frame + "_angle"]
+        
+        # wrap angle, if necessary
+        if transformed_angle > pi:
+            transformed_angle -= self._TWO_PI
+        elif transformed_angle < -pi:
+            transformed_angle += self._TWO_PI
+        
+        return transformed_angle
     
     def _setTransform(self):
         # attempt to get the id of the closest landmark

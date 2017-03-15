@@ -69,30 +69,6 @@ class NavLoc(Navigation, Localization):
         """
         return Navigation._getDestData(self, self._computeTransformation(destination, "map", "ekf"))
     
-    def _computeTransformation(self, position, from_frame, to_frame):
-        """ Compute coordinate transformation.
-        
-        Args:
-            position (geometry_msgs.msg.Point): A position in the from_frame.
-            from_frame (str): The frame that the incoming point is in. "map" or "ekf"
-            to_frame (str): The frame that the final point will be in. "map" or "ekf"
-        
-        Returns:
-            A geometry_msgs.msg.Point in the target frame.
-        """
-        from_key = from_frame + "_pos"
-        
-        dx = position.x - self._transform[from_key].x
-        dy = position.y - self._transform[from_key].y
-        delta = self._transform[from_frame + "_angle"] - self._transform[to_frame + "_angle"]
-    
-        to_key = to_frame + "_pos"
-    
-        x = self._transform[to_key].x + dx * cos(delta) - dy * sin(delta)
-        y = self._transform[to_key].y + dx * sin(delta) + dy * cos(delta)
-    
-        return Point(x, y, 0)
-    
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
         
@@ -100,14 +76,8 @@ class NavLoc(Navigation, Localization):
         Navigation._ekfCallback(self, data)
         
         # compute map data
-        self.map_pos = self._computeTransformation(self.p, "ekf", "map")
-        self.map_angle = self._transform["map_angle"] + self.angle - self._transform["ekf_angle"]
-        
-        # wrap angle, if necessary
-        if self.map_angle > pi:
-            self.map_angle -= self._TWO_PI
-        elif self.map_angle < -pi:
-            self.map_angle += self._TWO_PI
+        self.map_pos = self.transformPoint(self.p, "odom", "map")
+        self.map_angle = self.transformAngle(self.angle, "odom", "map")
 
     def csvLogTransform(self, test_name, folder = "tests"):
         """ Log the transformation from the ekf frame to the map frame. """
