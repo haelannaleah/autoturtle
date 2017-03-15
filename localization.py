@@ -52,11 +52,11 @@ class Localization():
         self.tags_odom = {}
         
         # set up the transformer between the map and ekf
-        self._transform = self._transform = {"map_pos": Point(), "map_angle": 0, "odom_pos": Point(), "odom_angle": 0}
+        self._transform = self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "odom_pos": Point(0,0,0), "odom_angle": 0}
         self.floorplan = FloorPlan(point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
         
         # smooth data by selectively sampling
-        self._prev_est = [0,0,0]
+        self._prev_odom = [0,0,0,0,0,0,1]
     
         # listen for frame transformations
         self._tf_listener = tf.TransformListener()
@@ -149,15 +149,19 @@ class Localization():
         except (TypeError, ValueError) as e:
             return
         
-        self._transform["map_pos"] = self.floorplan.landmarks[closest_id].pose.position
-        self._transform["map_angle"] = self.floorplan.landmarks[closest_id].angle
-        self._transform["odom_pos"] = self.tags_odom[closest_id].pose.position
+        # make sure that the values don't change on us
+        p = deepcopy(self.tags_odom[closest_id].pose.position)
+        q = deepcopy(self.tags_odom[closest_id].pose.orientation)
 
-        # extract euler angle
-        q = self.tags_odom[closest_id].pose.orientation
-        self._transform["odom_angle"] = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
-        
-        self._logger.debug(self._transform)
+        # check to make sure that we haven't just gotten a random noisy outlier.
+        cur_odom = [p.x, p.y, p.z, q.x, q.y, q.z, q.w]
+        if np.allclose(self._prev_odom, cur_odom, atol = 0.1, rtol = 0.1)
+            self._transform["map_pos"] = self.floorplan.landmarks[closest_id].pose.position
+            self._transform["map_angle"] = self.floorplan.landmarks[closest_id].angle
+            self._transform["odom_pos"] = p
+            self._transform["odom_angle"] = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+
+        self._prev_odom = cur_odom
     
 #    def _estimatePose(self):
 #        """ Estimate current position based on proximity to landmarks. """
