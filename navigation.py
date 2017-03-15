@@ -149,12 +149,8 @@ class Navigation(Motion):
             
             # we need to turn to reach our goal
             else:
-            
-                # if we need to make a big turn and we're walking, stop before turning
-                if self._motion.stopping:
-                    self._motion.stop_linear(now = self._jerky)
                 
-                elif self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
+                if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
                     self._motion.stop_linear(now = self._jerky)
 
                 elif self._motion.starting:
@@ -181,7 +177,7 @@ class Navigation(Motion):
         """ Log the current turtlebot pose information. """
         
         # create csv dict and log data
-        self._logger.csv(test_name, ["X", "Y", "qZ", "qW", "yaw"],
+        self._logger.csv(test_name + "_ekf", ["X", "Y", "qZ", "qW", "yaw"],
                             [self.p.x, self.p.y, self.q.z, self.q.w, self.angle], folder = folder)
     
     def shutdown(self, rate):
