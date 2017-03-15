@@ -34,26 +34,26 @@ class NavLoc(Navigation, Localization):
 
         self._logger = Logger("NavLoc")
     
-    def _estimatePose(self):
-        """ Override pose estimation to include pose calculation. """
-    
-        Localization._estimatePose(self)
-        
-        # if there is currently no estimated pose, nothing more to do here
-        if self.estimated_pos is None:
-            return
-        
-        # save current odometry position
-        self._transform["ekf_pos"] = deepcopy(self.p)
-        self._transform["ekf_angle"] = self.angle
+#    def _estimatePose(self):
+#        """ Override pose estimation to include pose calculation. """
+#    
+#        Localization._estimatePose(self)
+#        
+#        # if there is currently no estimated pose, nothing more to do here
+#        if self.estimated_pos is None:
+#            return
+#        
+#        # save current odometry position
+#        self._transform["ekf_pos"] = deepcopy(self.p)
+#        self._transform["ekf_angle"] = self.angle
+#
+#        # save the estimated map position
+#        self._transform["map_pos"] = deepcopy(self.estimated_pos)
+#        self._transform["map_angle"] = self.estimated_angle
+#        
+#        self._logger.debug(self.estimated_pos, var_name = "estimated_pose")
+#        self._logger.debug(self.estimated_angle, var_name = "estimated_angle")
 
-        # save the estimated map position
-        self._transform["map_pos"] = deepcopy(self.estimated_pos)
-        self._transform["map_angle"] = self.estimated_angle
-        
-        self._logger.debug(self.estimated_pos, var_name = "estimated_pose")
-        self._logger.debug(self.estimated_angle, var_name = "estimated_angle")
-    
     def _getDestData(self, destination):
         """ Move from current position to desired waypoint in the odomety frame.
             
@@ -67,7 +67,7 @@ class NavLoc(Navigation, Localization):
                 A negative value indicates that the desired angle is that many radians to the left of 
                 the current orientation, positive indicates the desired angle is to the right.
         """
-        return Navigation._getDestData(self, self._computeTransformation(destination, "map", "ekf"))
+        return Navigation._getDestData(self, self.transformPoint(destination, "map", "odom"))
     
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
