@@ -37,7 +37,7 @@ class Localization():
         self.estimated_pose (geometry_msgs.msg.Pose or None): The estimated pose of the robot based 
             on the visible tags. None if no tags visible.
     """
-    _AR_FOV_LIMIT = pi / 8 #2.0 * pi / 15
+    _AR_FOV_LIMIT = pi / 8
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
         # set up logger and csv logging
@@ -136,7 +136,7 @@ class Localization():
         y = map.pose.position.y - r * sin(theta)
         
         # make sure that we aren't getting insane localization data
-        if not np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
+        if not np.allclose([x, y, delta], self._prev_est, atol = 0.05, rtol = 0.05):
             self.estimated_pose = None
             self.estimated_angle = None
             
