@@ -160,6 +160,8 @@ class Localization():
             self._transform["map_angle"] = self.floorplan.landmarks[closest_id].angle
             self._transform["odom_pos"] = p
             self._transform["odom_angle"] = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+        else:
+            self._logger.debug("noisy signal. ignoring")
 
         self._prev_odom = cur_odom
     
