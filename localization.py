@@ -51,7 +51,6 @@ class Localization():
         self.tags_base = {}
         self.tags_odom = {}
         
-        
         # set estimated pose based on local landmarks to None and set up the landmark map
         #self.estimated_pos = None
         #self.estimated_angle = None
@@ -151,11 +150,12 @@ class Localization():
         except (TypeError, ValueError) as e:
             return
         
-        q = self.tags_odom[closest_id].orientation
-        
         self._transform["map_pos"] = self.floorplan[closest_id].pose.position
         self._transform["map_angle"] = self.floorplan[closest_id].angle
         self._transform["odom_pos"] = self.tags_odom[closest_id].pose.position
+
+        # extract euler angle
+        q = self.tags_odom[closest_id].pose.orientation
         self._transform["odom_angle"] = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
 #        
 #    def _estimatePose(self):
