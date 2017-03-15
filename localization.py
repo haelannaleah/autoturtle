@@ -11,6 +11,7 @@ from ar_track_alvar_msgs.msg import AlvarMarkers
 from copy import deepcopy
 from geometry_msgs.msg import PointStamped, PoseStamped, Pose, QuaternionStamped, Point, Quaternion
 from math import atan2, cos, sin, sqrt, pi
+from time import time
 
 from floorplan import FloorPlan
 from logger import Logger
@@ -37,7 +38,8 @@ class Localization():
         self.estimated_pose (geometry_msgs.msg.Pose or None): The estimated pose of the robot based 
             on the visible tags. None if no tags visible.
     """
-    _AR_FOV_LIMIT = pi / 8
+    _AR_FOV_LIMIT = pi / 8  # radians
+    _AR_UPDATE_TIME = 0.25  # seconds
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
         # set up logger and csv logging
@@ -50,8 +52,11 @@ class Localization():
         # set estimated pose based on local landmarks to None and set up the landmark map
         self.estimated_pose = None
         self.estimated_angle = None
-        self._prev_est = [0,0,0]
         self.floorplan = FloorPlan(point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
+        
+        # smooth data by selectively sampling
+        self._prev_est = [0,0,0]
+        self._prev_update_time = float('inf')
     
         # listen for frame transformations
         self._tf_listener = tf.TransformListener()
@@ -135,16 +140,15 @@ class Localization():
         x = map.pose.position.x - r * cos(theta)
         y = map.pose.position.y - r * sin(theta)
         
-        # make sure that we aren't getting insane localization data
-        if not np.allclose([x, y, delta], self._prev_est, atol = 0.05, rtol = 0.05):
-            self.estimated_pose = None
-            self.estimated_angle = None
+        # make sure that we aren't getting insane localization data and are sampling at our reduced rate
+        if (np.allclose([x, y, delta], self._prev_est, atol = 0.05, rtol = 0.05)
+            and self._prev_update_time - time() > self._AR_UPDATE_TIME):
             
-        else:
             # plug this into an estimated pose in the map frame
             q = tf.transformations.quaternion_from_euler(0,0,delta)
             self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
             self.estimated_angle = delta
+            self._prev_update_time = time()
 
         # update the previous so that we can continue annealing
         self._prev_est = [x, y, delta]
