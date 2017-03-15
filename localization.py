@@ -135,7 +135,8 @@ class Localization():
         x = map.pose.position.x - r * cos(theta)
         y = map.pose.position.y - r * sin(theta)
         
-        if not (np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
+        # make sure that we aren't getting insane localization data
+        if not np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
             self.estimated_pose = None
             self.estimated_angle = None
             
@@ -145,6 +146,7 @@ class Localization():
             self.estimated_pose = Pose(Point(x,y,0), Quaternion(q[0], q[1], q[2], q[3]))
             self.estimated_angle = delta
 
+        # update the previous so that we can continue annealing
         self._prev_est = [x, y, delta]
         
     def _tagCallback(self, data):
