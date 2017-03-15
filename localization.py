@@ -50,11 +50,14 @@ class Localization():
         self.tags = {}
         self.tags_base = {}
         self.tags_odom = {}
-        self.transform = self._transform = {"map_pos": Point(), "map_angle": 0, "ekf_pos": Point(), "ekf_angle": 0}
+        
         
         # set estimated pose based on local landmarks to None and set up the landmark map
-        self.estimated_pos = None
-        self.estimated_angle = None
+        #self.estimated_pos = None
+        #self.estimated_angle = None
+        
+        # set up the transformer between the map and ekf
+        self._transform = self._transform = {"map_pos": Point(), "map_angle": 0, "ekf_pos": Point(), "ekf_angle": 0}
         self.floorplan = FloorPlan(point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
         
         # smooth data by selectively sampling
@@ -124,7 +127,7 @@ class Localization():
         """ Transform an angle from the from frame to the to frame. """
         
         # compute transformation
-        transformed_angle = self.transform[to_frame + "_angle"] + angle - self._transform[from_frame + "_angle"]
+        transformed_angle = self._transform[to_frame + "_angle"] + angle - self._transform[from_frame + "_angle"]
         
         # wrap angle, if necessary
         if transformed_angle > pi:
@@ -141,21 +144,19 @@ class Localization():
             
             # compute the closest (viable) tag by looking for the smallest distance squared from the robot base
             #   among tags that also appear in landmarks
-            dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.y**2, id)
+            dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.z**2, id)
                 for id in t if (id in self.floorplan.landmarks and id in self.tags_odom))
         
         # the argument to min was an empty list; we don't see any familiar landmarks
         except (TypeError, ValueError) as e:
             return
         
-        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0}
-        
         q = self.tags_odom[closest_id].orientation
         
-        self.transform["map_pos"] = self.floorplan[closest_id].pose.position
-        self.transform["map_angle"] = self.floorplan[closest_id].angle
-        self.transform["odom_pos"] = self.tags_odom[closest_id].pose.position
-        self.transform["odom_angle"] = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
+        self._transform["map_pos"] = self.floorplan[closest_id].pose.position
+        self._transform["map_angle"] = self.floorplan[closest_id].angle
+        self._transform["odom_pos"] = self.tags_odom[closest_id].pose.position
+        self._transform["odom_angle"] = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
 #        
 #    def _estimatePose(self):
 #        """ Estimate current position based on proximity to landmarks. """
@@ -326,13 +327,13 @@ class Localization():
             fields, data = self._csvPose(tags[id].pose)
             self._logger.csv(test_name + "_" + tag_type + "_marker" + str(id), fields, data, folder = folder)
 
-    def csvLogEstimated(self, test_name, folder = "tests"):
-        """ Log current position estimate. """
-        
-        if self.estimated_pos is None:
-            return
-        
-        self._logger.csv(test_name + "_estimated", ["X", "Y", "yaw"], [self.estimated_pos.x, self.estimated_pos.y, self.estimated_angle], folder=folder)
+#    def csvLogEstimated(self, test_name, folder = "tests"):
+#        """ Log current position estimate. """
+#        
+#        if self.estimated_pos is None:
+#            return
+#        
+#        self._logger.csv(test_name + "_estimated", ["X", "Y", "yaw"], [self.estimated_pos.x, self.estimated_pos.y, self.estimated_angle], folder=folder)
 
     def csvLogRawTags(self, test_name, folder = "tests"):
         """ Log new raw tag data in separate files. """

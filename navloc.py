@@ -141,7 +141,7 @@ if __name__ == "__main__":
             self.navloc.csvLogEKF(self.test_name)
             self.navloc.csvLogMap(self.test_name)
             self.navloc.csvLogTransform(self.test_name)
-            self.navloc.csvLogEstimated(self.test_name)
+            #self.navloc.csvLogEstimated(self.test_name)
             self.navloc.csvLogRawTags(self.test_name)
             self.navloc.csvLogRelativeTags(self.test_name)
 
