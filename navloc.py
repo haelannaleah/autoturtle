@@ -56,37 +56,61 @@ class NavLoc(Navigation, Localization):
         # compute the difference between them
         self._transform["angle_delta"] = self._transform["ekf_angle"] - self._transform["map_angle"]
         
-    def _ekfCallback(self, data):
-        """ Process robot_pose_ekf data. """
+    def _getDestData(self, destination):
+        """ Move from current position to desired waypoint in the odomety frame.
+            
+        Args:
+            destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
         
-        # extract raw data
-        self._raw_pose = data.pose.pose
-        raw_q = self._raw_pose.orientation
-        self._raw_angle = tf.transformations.euler_from_quaternion([raw_q.x, raw_q.y, raw_q.z, raw_q.w])[-1]
-
-        # measure the amount that the robot has moved since we last saw a landmark
-        ekf_dx = self._raw_pose.position.x - self._transform["ekf_pos"].x
-        ekf_dy = self._raw_pose.position.y - self._transform["ekf_pos"].y
-        ekf_delta_angle = self._raw_angle - self._transform["ekf_angle"]
-
-        # transform from odom to the map frame
-        self.p = Point()
-        self.p.x = self._transform["map_pos"].x + ekf_dx * cos(self._transform["angle_delta"]) - ekf_dy * sin(self._transform["angle_delta"])
-        self.p.y = self._transform["map_pos"].y + ekf_dx * sin(self._transform["angle_delta"]) + ekf_dy * cos(self._transform["angle_delta"])
+        Returns:
+            True if we are close to the desired location 
+            0 if the goal is straight ahead
+            The difference between the current angle and the desired angle if we are not on course.
+                A negative value indicates that the desired angle is that many radians to the left of 
+                the current orientation, positive indicates the desired angle is to the right.
+        """
+        dx = destination.x - self._transform["map_pos"].x
+        dy = destination.y - self._transform["map_pos"].y
         
-        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
-        #   extract the only non zero euler angle as the angle of rotation in the floor plane
-        self.angle = self._transform["map_angle"] + ekf_delta_angle
+        delta = self._transform["map_angle"] - self._transform["ekf_angle"]
         
-        # wrap angle, if necessary
-        if self.angle > pi:
-            self.angle -= self._TWO_PI
-        elif self.angle < -pi:
-            self.angle += self._TWO_PI
-
-        # compute the quaternion
-        qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
-        self.q = Quaternion(qx, qy, qz, qw)
+        dest = Point()
+        dest.x = self._transform["ekf_pos"].x + dx * cos(delta) - dy * sin(delta)
+        dest.y = self._transform["ekf_pos"].y + dx * sin(delta) + dy * cos(delta)
+        
+        return Navigation._getDestData(self, dest)
+        
+#    def _ekfCallback(self, data):
+#        """ Process robot_pose_ekf data. """
+#        
+#        # extract raw data
+#        self._raw_pose = data.pose.pose
+#        raw_q = self._raw_pose.orientation
+#        self._raw_angle = tf.transformations.euler_from_quaternion([raw_q.x, raw_q.y, raw_q.z, raw_q.w])[-1]
+#
+#        # measure the amount that the robot has moved since we last saw a landmark
+#        ekf_dx = self._raw_pose.position.x - self._transform["ekf_pos"].x
+#        ekf_dy = self._raw_pose.position.y - self._transform["ekf_pos"].y
+#        ekf_delta_angle = self._raw_angle - self._transform["ekf_angle"]
+#
+#        # transform from odom to the map frame
+#        self.p = Point()
+#        self.p.x = self._transform["map_pos"].x + ekf_dx * cos(self._transform["angle_delta"]) - ekf_dy * sin(self._transform["angle_delta"])
+#        self.p.y = self._transform["map_pos"].y + ekf_dx * sin(self._transform["angle_delta"]) + ekf_dy * cos(self._transform["angle_delta"])
+#        
+#        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
+#        #   extract the only non zero euler angle as the angle of rotation in the floor plane
+#        self.angle = self._transform["map_angle"] + ekf_delta_angle
+#        
+#        # wrap angle, if necessary
+#        if self.angle > pi:
+#            self.angle -= self._TWO_PI
+#        elif self.angle < -pi:
+#            self.angle += self._TWO_PI
+#
+#        # compute the quaternion
+#        qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
+#        self.q = Quaternion(qx, qy, qz, qw)
 
     def csvLogTransform(self, test_name, folder = "tests"):
         """ Log the transformation from the ekf frame to the map frame. """
