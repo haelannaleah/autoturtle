@@ -122,6 +122,8 @@ class Navigation(Motion):
             """
             nav_val = self._getDestData(Point(x,y,0))
             
+            d2 = (x - self.p.x)**2 + (y - self.p.y)**2
+            
             # did we reach our waypoint?
             if nav_val is True or self._reached_goal is True:
             
