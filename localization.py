@@ -263,9 +263,8 @@ class Localization():
         
         if self.estimated_pos is None:
             return
-        
-        fields, data = self._csvPose(self.estimated_pos)
-        self._logger.csv(test_name + "_estimated", fields, data, folder=folder)
+            
+        self._logger.csv(test_name + "_estimated", ["X", "Y", "yaw"], [self.estimated_pos.x, self.estimated_pos.y, self.estimated_angle], folder=folder)
 
     def csvLogRawTags(self, test_name, folder = "tests"):
         """ Log new raw tag data in separate files. """
