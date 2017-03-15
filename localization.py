@@ -57,7 +57,6 @@ class Localization():
         
         # smooth data by selectively sampling
         self._prev_est = [0,0,0]
-        self._prev_update_time = float('inf')
     
         # listen for frame transformations
         self._tf_listener = tf.TransformListener()
@@ -145,20 +144,20 @@ class Localization():
         self.estimated_pos = Point(x,y,0)
         self.estimated_angle = delta
             
-#        # make sure that we aren't getting insane localization data
-#        if np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
-#            
-#            # plug this into an estimated pose in the map frame
-#            self.estimated_pos = Point(x,y,0)
-#            self.estimated_angle = delta
-#            
-#        # otherwise, we need to set our estimation to None
-#        else:
-#            self.estimated_pos = None
-#            self.estimated_angle = None
-#
-#        # update the previous so that we can continue annealing
-#        self._prev_est = [x, y, delta]
+        # make sure that we are getting reasonable
+        if np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
+            
+            # plug this into an estimated pose in the map frame
+            self.estimated_pos = Point(x,y,0)
+            self.estimated_angle = delta
+
+        # otherwise, we need to reset estimation
+        else:
+            self.estimated_pos = None
+            self.estimated_angle = None
+
+        # update the previous so that we can continue sanity checking
+        self._prev_est = [x, y, delta]
 
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
