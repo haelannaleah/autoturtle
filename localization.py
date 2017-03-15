@@ -150,8 +150,8 @@ class Localization():
         except (TypeError, ValueError) as e:
             return
         
-        self._transform["map_pos"] = self.floorplan[closest_id].pose.position
-        self._transform["map_angle"] = self.floorplan[closest_id].angle
+        self._transform["map_pos"] = self.floorplan.landmarks[closest_id].pose.position
+        self._transform["map_angle"] = self.floorplan.landmarks[closest_id].angle
         self._transform["odom_pos"] = self.tags_odom[closest_id].pose.position
 
         # extract euler angle
