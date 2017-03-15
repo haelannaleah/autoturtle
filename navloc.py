@@ -22,7 +22,7 @@ class NavLoc(Navigation, Localization):
         
         # create transformation object
         self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0}
-        self.map_position = Point()
+        self.map_pos = Point()
         self.map_angle = 0
     
         # initialize what we're inheriting from
@@ -99,7 +99,7 @@ class NavLoc(Navigation, Localization):
         Navigation._ekfCallback(self, data)
         
         # compute map data
-        self.map_position = self._computeTransformation(self.p, "ekf", "map")
+        self.map_pos = self._computeTransformation(self.p, "ekf", "map")
         self.map_angle = self._transform["map_angle"] + self.angle - self._transform["ekf_angle"]
         
         # wrap angle, if necessary
