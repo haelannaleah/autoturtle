@@ -140,7 +140,7 @@ class Localization():
         y = map.pose.position.y - r * sin(theta)
         
         # make sure that we aren't getting insane localization data and are sampling at our reduced rate
-        if (np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
+        if np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
             
             # plug this into an estimated pose in the map frame
             q = tf.transformations.quaternion_from_euler(0,0,delta)
