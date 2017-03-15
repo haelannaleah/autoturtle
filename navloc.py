@@ -50,6 +50,9 @@ class NavLoc(Navigation, Localization):
         # save the estimated map position
         self._transform["map_pos"] = deepcopy(self.estimated_pos)
         self._transform["map_angle"] = self.estimated_angle
+        
+        self._logger.debug(self.estimated_pos, var_name = "estimated_pose")
+        self._logger.debug(self.estimated_angle, var_name = "estimated_angle")
     
     def _getDestData(self, destination):
         """ Move from current position to desired waypoint in the odomety frame.
