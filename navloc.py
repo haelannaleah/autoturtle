@@ -52,7 +52,7 @@ class NavLoc(Navigation, Localization):
         # save the estimated map position
         self._transform["map_pos"] = self.estimated_pose.position
         self._transform["map_angle"] = self.estimated_angle
-        
+    
     def _getDestData(self, destination):
         """ Move from current position to desired waypoint in the odomety frame.
             
@@ -181,8 +181,7 @@ if __name__ == "__main__":
             self.logger.csv(self.test_name, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
         
         def logArrival(self, name, x, y):
-            self.logger.info("Reached " + str(name) + " at " + str((x,y)))
-            self.logger.info("Current pose: " + str((self.navloc.p.x, self.navloc.p.y)))
+            self._logger.info("Arrived at " + str((self.p.x,self.p.y)) + " (absolute position is " + str((self.navloc.map_pos.x, self.navloc.map_pos.y)) + ")")
             self.navloc.csvLogArrival(self.test_name, x, y)
         
         def testLine(self, length):

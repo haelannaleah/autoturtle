@@ -134,7 +134,6 @@ class Navigation(Motion):
                 
                 # let the user know that we made it!
                 else:
-                    self._logger.info("Arrived at " + str((x,y)) + " (absolute position is " + str((self.p.x, self.p.y)) + ")")
                     self._reached_goal = False
                     return True
             
