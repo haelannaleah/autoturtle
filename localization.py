@@ -57,7 +57,7 @@ class Localization():
         #self.estimated_angle = None
         
         # set up the transformer between the map and ekf
-        self._transform = self._transform = {"map_pos": Point(), "map_angle": 0, "ekf_pos": Point(), "ekf_angle": 0}
+        self._transform = self._transform = {"map_pos": Point(), "map_angle": 0, "odom_pos": Point(), "odom_angle": 0}
         self.floorplan = FloorPlan(point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
         
         # smooth data by selectively sampling
