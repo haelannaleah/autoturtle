@@ -113,8 +113,7 @@ class NavLoc(Navigation, Localization):
                             
         self._logger.csv(test_name + "_transform", ["X_map", "Y_map", "angle_map", "X_ekf", "Y_ekf", "angle_ekf", "angle_delta"],
                     [self._transform["map_pos"].x, self._transform["map_pos"].y, self._transform["map_angle"],
-                            self._transform["map_pos"].x, self._transform["map_pos"].y, self._transform["map_angle"],
-                            self._transform["angle_delta"]],
+                            self._transform["map_pos"].x, self._transform["map_pos"].y, self._transform["map_angle"]],
                     folder = folder)
 
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
