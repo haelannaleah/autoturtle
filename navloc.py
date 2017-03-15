@@ -114,7 +114,7 @@ if __name__ == "__main__":
             self.navloc.csvLogTransform(self.test_name)
             #self.navloc.csvLogEstimated(self.test_name)
             self.navloc.csvLogRawTags(self.test_name)
-            self.navloc.csvLogRelativeTags(self.test_name)
+            self.navloc.csvLogOdomTags(self.test_name)
 
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
