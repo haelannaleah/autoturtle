@@ -125,7 +125,10 @@ class Navigation(Motion):
     
         # if we hit something, stop
         elif self._sensors.bump:
-            self._motion.stopLinear(now=True)
+            if self._motion.walking:
+                self._motion.stopLinear(now = True)
+            else:
+                self._motion.turn(self._sensors.bump_dir > 0)
             return True
         
         # no colliding with anything
