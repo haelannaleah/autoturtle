@@ -146,7 +146,8 @@ class Navigation(Motion):
         # if we hit something, stop
         elif self._sensors.bump:
             self._bumped = True
-            self._motion.stopLinear(now = True)
+            if self._motion.walking:
+                self._motion.stopLinear(now = True)
             self._motion._avoid_time = time()
             self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
             self._bumper = self._sensors.bumper
@@ -168,21 +169,21 @@ class Navigation(Motion):
             self._logger.debug("in obstacle")
             
             if self._motion.walking:
-                self._motion.stopLinear()
-        
-            self._motion.turn(self._sensors.obstacle_dir > 0)
+                self._motion.stop()
+            else:
+                self._motion.turn(self._sensors.obstacle_dir > 0)
             self._avoid_time = time()
             
         # if there's a wall, we need to get around it
         elif self._sensors.wall and self._avoiding:
             self._logger.debug("in wall")
             
+            self._motion.walk(speed = self._walking_speed)
+            
             if nav_val < 0 and self._sensors.wall_dir < 0:
                 self._motion.stopRotation(now = self._jerky)
-                return True
-        
-            self._motion.walk(speed = self._walking_speed)
-            return False
+            else:
+                return False
 
         elif self._avoiding:
             self._motion.walk(speed = self._walking_speed)
