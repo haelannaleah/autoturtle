@@ -115,7 +115,7 @@ class Navigation(Motion):
         else:
             return 0
 
-    def _checkSensors(self):
+    def _checkSensors(self, nav_val):
         """ Take stock of sensor data when deciding how to move. """
         
         # if we see a cliff or get picked up, stop
@@ -155,7 +155,7 @@ class Navigation(Motion):
         """
         nav_val = self._getDestData(Point(x,y,0))
         
-        if self._checkSensors():
+        if self._checkSensors(nav_val):
             return False
         
         # otherwise, did we reach our waypoint?
