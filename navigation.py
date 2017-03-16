@@ -127,6 +127,20 @@ class Navigation(Motion):
         """ Take stock of sensor data when deciding how to move. """
         if self._avoiding:
             self._logger.debug("avoiding")
+        
+                # if we're in avoidance mode, just go forward
+        if time() - self._avoid_time < self._AVOID_TIME:
+            self._avoiding = True
+            
+            if self._motion.starting:
+                self._avoid_time = time()
+            
+            self._motion.walk()
+#            self._motion.stopRotation(now = self._jerky)
+#            self._motion.walk(speed = self._walking_speed)
+#            self._logger.debug("avoiding")
+        else:
+            self._avoiding = False
     
         # if we see a cliff or get picked up, stop
         if self._sensors.cliff or self._sensors.wheeldrop:
@@ -169,22 +183,9 @@ class Navigation(Motion):
             #self._motion.turn(self._sensors.obstacle_dir > 0)
             self._motion.walk(speed = self._walking_speed)
             self._avoid_time = time()
-
+            
         else:
-            self._avoiding = False
             return False
-
-        # if we're in avoidance mode, just go forward
-        if time() - self._avoid_time < self._AVOID_TIME:
-            self._avoiding = True
-            
-            if self._motion.starting:
-                self._avoid_time = time()
-            
-            self._motion.walk()
-#            self._motion.stopRotation(now = self._jerky)
-#            self._motion.walk(speed = self._walking_speed)
-#            self._logger.debug("avoiding")
 
         return True
 
