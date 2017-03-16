@@ -46,6 +46,7 @@ class Navigation(Motion):
     
     # set avoidance time
     _AVOID_TIME = 1
+    _BUMP_TIME = .5
     
     def __init__(self, jerky = False, walking_speed = 1):
     
@@ -57,6 +58,8 @@ class Navigation(Motion):
         self._logger = Logger("Navigation")
         self._avoiding = False
         self._avoid_time = 0
+        
+        self._bumped = False
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -129,11 +132,20 @@ class Navigation(Motion):
     
         # if we hit something, stop
         elif self._sensors.bump:
+            self._bumped = True
             if self._motion.walking:
                 self._motion.stopLinear(now = True)
             else:
                 self._motion._avoid_time = time()
                 self._motion.turn(self._sensors.bumper > 0)
+
+        # if we've been bumped, turn away!
+        elif self._bumped:
+            if time() - self._avoid_time < self._BUMP_TIME:
+                self._motion.turn(self._sensors.bumper > 0)
+            else:
+                self._bumped = False
+                self._avoid_time = time()
         
         # no colliding with anything
         elif self._sensors.obstacle:
