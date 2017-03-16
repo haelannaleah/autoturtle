@@ -155,6 +155,8 @@ class Navigation(Motion):
 
         # if we're in avoidance mode, just go forward
         elif time() - self._avoid_time < self._AVOID_TIME:
+            while self._motion.starting:
+                self._avoid_time = time()
             self._motion.stopRotation(now = self._jerky)
             self._motion.walk(speed = self._walking_speed)
             self._logger.debug("avoiding")
