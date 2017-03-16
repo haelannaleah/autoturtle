@@ -185,10 +185,6 @@ class Navigation(Motion):
             else:
                 return False
 
-        elif self._avoiding:
-            self._motion.walk(speed = self._walking_speed)
-            self._logger.debug("in avoid")
-
         else:
             return False
 
