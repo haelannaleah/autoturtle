@@ -19,7 +19,7 @@ class ObstacleDetector():
     # obstacle detection constants
     _OBSTACLE_DIST_THRESH =  0.55   # distance threshold for obstacles to the Turtlebot
     _OBSTACLE_SAMPLE_WIDTH = 0.3    # slice of the robot's vision to check for obstacles
-    _WALL_SAMPLE_WIDTH = 0.4
+    _WALL_SAMPLE_WIDTH = 0.5
 
     def __init__(self):
         self._logger = Logger("ObstacleDetector")
@@ -72,7 +72,7 @@ class ObstacleDetector():
         Returns:
             True on success, False on failure.
         """
-        self.obstacle, self.obstacle_dir = self._extractObstruction(depth_img, self._OBSTACLE_SAMPLE_WIDTH)
+        self.obstacle, self.obstacle_dir = self._extractObstruction(depth_img, self._OBSTACLE_SAMPLE_WIDTH, self.obstacle)
         
         if self.obstacle and self.obstacle_dir == 0:
             return False
@@ -91,14 +91,14 @@ class ObstacleDetector():
         if self.obstacle:
             self.wall, self.wall_dir = True, self.obstacle_dir
         else:
-            self.wall, self.wall_dir = self.extractObstacle(depth_img, self._WALL_SAMPLE_WIDTH)
+            self.wall, self.wall_dir = self.extractObstacle(depth_img, self._WALL_SAMPLE_WIDTH, self.wall)
         
         if self.wall and self.wall_dir == 0:
             return False
         
         return True
     
-    def _extractObstruction(self, depth_img, obstruction_sample_width):
+    def _extractObstruction(self, depth_img, obstruction_sample_width, cur_state):
         """ If there is an obstacle nearby, find it. 
         
         Args:
@@ -130,7 +130,7 @@ class ObstacleDetector():
             #   if we don't do this, then the obstacle direction is allowed to fluctuate and the robot
             #   behaves irratically; here we are fixing the direction to be the inital trigger for the
             #   current obstacle state
-            if not self.obstacle:
+            if not cur_state:
                 return (True, -1 if min_index[1] < w_center else 1)
         
         # otherwise, return no obstruction
