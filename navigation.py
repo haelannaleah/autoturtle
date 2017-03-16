@@ -130,7 +130,7 @@ class Navigation(Motion):
         
         # no colliding with anything
         elif self._sensors.obstacle:
-            if self.walking:
+            if self._motion.walking:
                 self._motion.stopLinear()
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
@@ -138,7 +138,7 @@ class Navigation(Motion):
             
         # if the wall is in the direction of our desired turn, don't make a turn
         elif self._sensors.wall and (nav_val < 0) == (self._sensors.wall_dir < 0):
-                self.motion.walk(speed = self.walking_speed)
+                self._motion.walk(speed = self._walking_speed)
                 return True
                 
         return False
