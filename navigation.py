@@ -195,9 +195,6 @@ class Navigation(Motion):
         """
         nav_val = self._getDestData(Point(x,y,0))
         
-        if self._checkSensors(nav_val):
-            return False
-        
         # otherwise, did we reach our waypoint?
         if nav_val is True or self._reached_goal is True:
         
@@ -212,6 +209,11 @@ class Navigation(Motion):
             else:
                 self._reached_goal = False
                 return True
+                
+            self._avoid_time = 0
+        
+        if self._checkSensors(nav_val):
+            return False
         
         # our goal is straight ahead
         elif nav_val == 0:
