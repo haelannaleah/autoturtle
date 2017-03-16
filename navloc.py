@@ -96,7 +96,7 @@ if __name__ == "__main__":
             self.corner_counter = 0
         
             # set up the logger output file
-            self.test_name = "debug"
+            self.test_name = "basic_line"
         
             # set map location of the landmark
             landmarks = {0}
@@ -109,7 +109,7 @@ if __name__ == "__main__":
             """ The test currently being run. """
             #self.testCCsquare(.5)
             #self.testCsquare(.5)
-            self.testLine(1)
+            self.testLine(1.5)
             self.navloc.csvLogEKF(self.test_name)
             self.navloc.csvLogMap(self.test_name)
             self.navloc.csvLogTransform(self.test_name)
