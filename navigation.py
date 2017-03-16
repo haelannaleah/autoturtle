@@ -148,13 +148,13 @@ class Navigation(Motion):
             self._bumped = True
             self._motion.stopLinear(now = True)
             self._motion._avoid_time = time()
-            self._motion.turn(self._sensors.bumper > 0)
+            self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
 
         # if we've been bumped, turn away!
         elif self._bumped:
             if time() - self._avoid_time < self._BUMP_TIME:
                 self._motion.stopLinear(now = True)
-                self._motion.turn(self._sensors.bumper > 0)
+                self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
             else:
                 self._bumped = False
                 self._avoid_time = time()
@@ -168,6 +168,7 @@ class Navigation(Motion):
             self._motion.turn(self._sensors.obstacle_dir > 0)
             self._avoid_time = time()
             
+        # if there's a wall, we need to get around it
         elif self._sensors.wall:
             
             if nav_val < 0 and self._sensors.wall_dir < 0:
