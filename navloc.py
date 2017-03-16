@@ -92,7 +92,7 @@ if __name__ == "__main__":
             # square test
             self.reached_corner = [False, False, False, False]
             self.cc_square = [(0,0), (1,0), (1,1), (0,1)]
-            self.c_square = [(0,0), (-1,0), (-1,1), (0,1)]
+            self.c_square = [(0,0), (0,-1), (1,-1), (1,0)]
             self.corner_counter = 0
         
             # set up the logger output file
@@ -107,8 +107,8 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            #self.testCCsquare(1)
-            self.testCsquare(1)
+            self.testCCsquare(1)
+            #self.testCsquare(1)
             #self.testLine(1.5)
             self.navloc.csvLogEKF(self.test_name)
             self.navloc.csvLogMap(self.test_name)
