@@ -8,12 +8,13 @@ import tf
 import numpy as np
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion
-from math import atan2, pi
+from math import atan2, pi, sqrt
 from std_msgs.msg import Empty
 from time import time
 
 from logger import Logger
-from safe_motion import SafeMotion as Motion
+from motion import Motion
+from sensors import Sensors
 
 class Navigation(Motion):
     """ Local navigation.
@@ -35,11 +36,19 @@ class Navigation(Motion):
     # avoid recomputing constants
     _HALF_PI = pi / 2.0
     _TWO_PI = 2.0 * pi
+    _PI_OVER_FOUR = pi / 4.0
+    
+    # create thresholds
+    _MIN_STATIONARY_TURN_SPEED = 0.5
+    _MIN_MOVING_TURN_SPEED = 0.15
+    _MAX_MOVING_TURN = pi / 6
+    _MIN_LINEAR_SPEED = .25
     
     def __init__(self, jerky = False, walking_speed = 1):
     
         # initialize motion component of navigation
         self._motion = Motion()
+        self._sensors = Sensors()
         self._jerky = jerky
         self._walking_speed = min(abs(walking_speed), 1)
         self._logger = Logger("Navigation")
@@ -107,48 +116,89 @@ class Navigation(Motion):
             return 0
 
     def goToPosition(self, x, y):
-            """ Default behavior for navigation (currently, no obstacle avoidance).
+        """ Default behavior for navigation (currently, no obstacle avoidance).
+        
+        Args:
+            x (float): The x coordinate of the desired location (in meters from the origin).
+            y (float): The y coordinate of the desired location (in meters from the origin).
+        """
+        nav_val = self._getDestData(Point(x,y,0))
+        
+        # if we see a cliff or get picked up, stop
+        if self._sensors.cliff or self._sensors.wheeldrop:
+            self._motion.stop(now=True)
+    
+        # if we hit something, stop
+        elif self._sensors.bump:
+            self._motion.stopLinear(now=True)
+        
+        # for now, we're keeping obstacle avoidance simple
+        elif self._sensors.obstacle:
+            self._motion.stopLinear()
+        
+        # otherwise, did we reach our waypoint?
+        elif nav_val is True or self._reached_goal is True:
+        
+            # we've reached a waypoint, but we may still need to stop
+            self._reached_goal = True
             
-            Args:
-                name (str): Name of the waypoint we are approaching.
-                x (float): The x coordinate of the desired location (in meters from the origin).
-                y (float): The y coordinate of the desired location (in meters from the origin).
-            """
-            nav_val = self._getDestData(Point(x,y,0))
+            # give ourselves a moment to stop if we're not in jerky mode
+            if self._motion.walking or self._motion.turning:
+                self._motion.stop(now = self._jerky)
             
-            # did we reach our waypoint?
-            if nav_val is True or self._reached_goal is True:
-            
-                self._reached_goal = True
-                
-                if self._motion.walking or self._motion.turning:
-                    self._motion.stop(now = self._jerky)
-                else:
-                    self._logger.debug("Arrived at " + str((x,y)) + " (absolute position is " + str((self.p.x, self.p.y)) + ")")
-                    self._reached_goal = False
-                    return True
-            
-            # our goal is straight ahead
-            elif nav_val == 0:
-                if self._motion.turning:
-                    self._motion.stop_rotation(now=True)
-                else:
-                    self._motion.walk(speed=self._walking_speed)
-            
-            # we need to turn to reach our goal
+            # let the user know that we made it!
             else:
-                # large turn, stop, otherwise turn while walking
-                if self._motion.walking and abs(nav_val) > pi / 2:
-                    self._motion.stop(now = self._jerky)
-                else:
-                    self._motion.turn(nav_val < 0, .25 if self._motion.walking else 1)
+                self._reached_goal = False
+                return True
+        
+        # our goal is straight ahead
+        elif nav_val == 0:
+        
+            # if we're turning, we need to stop
+            if self._motion.turning:
+                self._motion.stopRotation(now = True)
+        
+            # onwards we go at the desired pace
+            self._motion.walk(speed = self._walking_speed)
+        
+        # we need to turn to reach our goal
+        else:
             
-            return False
+            if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
+                self._motion.stopLinear(now = self._jerky)
 
+            elif self._motion.starting:
+                self._motion.walk(speed=self._walking_speed)
+        
+            # make sure we're turning in the correct direction, and stop the turn if we're not
+            if (nav_val <= 0) != (self._motion.turn_dir >= 0):
+                self._motion.stopRotation(now = True)
+            
+            # perform our turn # with awareness how far off the target direction we are
+            self._motion.turn(nav_val < 0, abs(nav_val / self._HALF_PI)**2 + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
+
+        # we're still moving towards our goal (or our stopping point), or we've gotten trapped
+        return False
+        
+    def csvLogArrival(self, test_name, x, y, folder = "tests"):
+        """ Log Turtlebot's arrival at a waypoint. """
+        
+        # send data to the csv logger
+        self._logger.csv(test_name + "_waypoints", ["X_target", "Y_target", "X_reported", "Y_reported"],
+                            [x, y, self.p.x, self.p.y], folder = folder)
+    
+    def csvLogEKF(self, test_name, folder = "tests"):
+        """ Log the current turtlebot pose information. """
+        
+        # create csv dict and log data
+        self._logger.csv(test_name + "_ekf", ["X", "Y", "qZ", "qW", "yaw"],
+                            [self.p.x, self.p.y, self.q.z, self.q.w, self.angle], folder = folder)
+    
     def shutdown(self, rate):
         """ Stop the turtlebot. """
         
         self._motion.shutdown(rate)
+        self._logger.shutdown()
 
 if __name__ == "__main__":
     from tester import Tester
@@ -161,13 +211,11 @@ if __name__ == "__main__":
             # tests to run:
             #   square with Motion module, minimal.launch
             #   square with Motion module, navigation launch
-            #   square with SafeMotion module, minimal launch
-            #   square with SafeMotion module, navigation launch
             # expect all to turn out the same, but need to sanity check
             #self.motion = Motion()
             
             # flag for a jerky stop
-            self.jerky = False
+            self.jerky = True
             
             # I'm a bit concerned about robot safety if we don't slow things down,
             # but I'm also worried it won't be an accurate test if we change the speed
@@ -179,7 +227,7 @@ if __name__ == "__main__":
             # square test
             self.reached_corner = [False, False, False, False]
             self.cc_square = [(0,0), (1,0), (1,1), (0,1)]
-            self.c_square = [(0,0), (0,1), (1,1), (1,0)]
+            self.c_square = [(0,0), (1,0), (1,-1), (0, -1)]
             self.corner_counter = 0
         
             # set up the logger output file
@@ -189,19 +237,14 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            #self.testCCsquare(.5)
-            #self.testCsquare(.5)
-            self.testLine(1)
+            self.testCCsquare(1)
+            #self.testCsquare(1)
+            #self.testLine(1.5)
+            self.navigation.csvLogEKF(self.filename)
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
-            self.filename = filename + ("jerky" if self.jerky else "smooth")
-            self.logger.csv(self.filename, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
-        
-        def logArrival(self, name, x, y):
-            self.logger.info("Reached " + str(name) + " at " + str((x,y)))
-            self.logger.info("Current pose: " + str((self.navigation.p.x, self.navigation.p.y)))
-            self.logger.csv(self.filename, [x, y, self.navigation.p.x, self.navigation.p.y])
+            self.filename = filename + ("_jerky" if self.jerky else "_smooth")
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
@@ -209,17 +252,17 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if self.filename is None:
-                self.initFile("line")
+            self.initFile("line")
             
             if not self.reached_corner[0]:
                 self.reached_corner[0] = self.navigation.goToPosition(0, 0)
                 if self.reached_corner[0]:
-                    self.logArrival("home", 0, 0)
+                    self.logger.debug("logging")
+                    self.navigation.csvLogArrival(self.filename, 0, 0)
         
             elif self.navigation.goToPosition(length, 0):
                 self.reached_corner[0] = False
-                self.logArrival("endpoint", length, 0)
+                self.navigation.csvLogArrival(self.filename, length, 0)
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. 
@@ -254,7 +297,7 @@ if __name__ == "__main__":
                 self.reached_corner[self.corner_counter] = self.navigation.goToPosition(corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
             
             else:
-                self.logArrival("corner " + str(self.corner_counter), corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
+                self.navigation.csvLogArrival(self.filename, corners[self.corner_counter][0]*length, corners[self.corner_counter][1]*length)
                 if self.corner_counter == len(self.reached_corner) - 1:
                     self.reached_corner = [False] * len(self.reached_corner)
                 self.corner_counter = (self.corner_counter + 1) % len(self.reached_corner)

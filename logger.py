@@ -7,6 +7,7 @@ import csv
 import rospy
 
 from datetime import datetime
+from numpy import allclose
 from time import time
 
 class Logger:
@@ -15,11 +16,12 @@ class Logger:
     Args:
         name: The name of the module that owns the logger.
     """
-    def __init__(self, name):
+    def __init__(self, name, tolerance = 1e-10):
         self.__name__ = str(name)
         self._open_files = {}
         self._start_time = time()
         self._timestamp = datetime.now().strftime("_%Y%m%d-%H%M%S") + ".csv"
+        self._tolerance = tolerance
     
     def _print(self, printer, msg):
         printer("[" + self.__name__ + "]: " + str(msg))
@@ -82,14 +84,19 @@ class Logger:
         """ True if we've already started logging this test. """
         return tname in self._open_files
 
-    def csv(self, tname, row, folder=None):
+    def csv(self, tname, fields, row, folder = None, tol = None):
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
             tname (str): The name of the test. Note that this is not the same as the path to the file;
                 rather, this should be descriptive of the test we are logging CSV data for.
+            fields (str list): The names of the columns in the csv file.
             row (list): The line to be added to the CSV file.
             folder (str, optional): The name of the local file we want to store the file in.
+            tol (float, optional): The amount of difference between sequential arguments to the
+                csv writer to trigger a new line written. Larger tolerance will mean more time in between
+                lines written to output files. By default, this tolerance is mostly in place to root out
+                identical lines, since these indicate that the data has not renewed.
         
         Note:
             When called on fname for the first time, Logger will assume that the row contains column 
@@ -102,18 +109,22 @@ class Logger:
             filename = self.__name__ + "_" + tname +  self._timestamp
             if folder is not None:
                 filename = folder + "/" + filename
-            
+        
             # open the file and set up the csv writer
             self._open_files[tname] = {}
             self._open_files[tname]["file"] = open(filename, "w+")
             self._open_files[tname]["writer"] = csv.writer(self._open_files[tname]["file"])
             
             # assume that the first message will be variable names
-            self._open_files[tname]["writer"].writerow(["Time"] + row)
+            self._open_files[tname]["writer"].writerow(["Time"] + fields)
+            
+            # keep track of previous entries so that we don't log the same data multiple times
+            self._open_files[tname]["prev"] = 0
     
-        else:
-            # preappend the current time and write current line to file
+        # preappend the current time and write current line to file if it's changed since the last writing
+        if not allclose(self._open_files[tname]["prev"], row, atol = self._tolerance if tol is None else tol):
             self._open_files[tname]["writer"].writerow([time() - self._start_time] + row)
+            self._open_files[tname]["prev"] = row
 
     def shutdown(self):
         """ Close any open logging files. """
@@ -146,9 +157,8 @@ if __name__ == "__main__":
             self.logger.warn("Warn!")
             self.logger.warn("Method warn!", method="main")
             
-            self.logger.csv("test", ["hello", "world"])
-            self.logger.csv("test", [1, 3])
-            self.logger.csv("test2", ["hi", "again"])
+            self.logger.csv("test", ["hello", "world"], [1,3])
+            self.logger.csv("test", ["hello", "world"], [2,2])
 
             self.signal_shutdown("Logger test complete.")
 
