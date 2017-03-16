@@ -125,6 +125,8 @@ class Navigation(Motion):
 
     def _checkSensors(self, nav_val):
         """ Take stock of sensor data when deciding how to move. """
+        if self._avoiding:
+            self._logger.debug("avoiding")
     
         # if we see a cliff or get picked up, stop
         if self._sensors.cliff or self._sensors.wheeldrop:
