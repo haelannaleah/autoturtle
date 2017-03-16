@@ -130,7 +130,7 @@ class Navigation(Motion):
     
         # if we hit something or see something coming, stop
         # for now, we're keeping obstacle avoidance simple
-        elif self._sensors.bump or self.sensors.obstacle:
+        elif self._sensors.bump or self._sensors.obstacle:
             self._motion.stopLinear(now=True)
         
         # otherwise, did we reach our waypoint?
