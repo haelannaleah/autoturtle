@@ -57,6 +57,7 @@ class Navigation(Motion):
         self._logger = Logger("Navigation")
         self._avoiding = False
         self._avoid_time = float('inf')
+        self._prev_problem
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -136,20 +137,21 @@ class Navigation(Motion):
                 self._motion.turn(self._sensors.bumper > 0)
         
         # no colliding with anything
-        elif self._sensors.obstacle:
+        elif self._sensors.obstacle and self._prev_problem:
+            self._avoid_time = time()
             if self._motion.walking:
                 self._motion.stopLinear()
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
             
-        elif self._sensors.wall:
+        elif self._sensors.wall and self._prev_problem:
             
             # if the wall is in the direction of our desired turn, don't make a turn
             if (nav_val < 0) == (self._sensors.wall_dir < 0):
                 self._avoid_time = time()
                 self._motion.stopRotation(now = self._jerky)
                 self._motion.walk(speed = self._walking_speed)
-        
+
         # if we're in avoidance mode, just go forward
         elif self._avoid_time - time() < self._AVOID_TIME:
             self._motion.stopRotation(now = self._jerky)
@@ -158,8 +160,10 @@ class Navigation(Motion):
 
         else:
             self._avoiding = False
+            self._prev_problem = False
             return False
 
+        self._prev_problem = True
         return True
 
     def goToPosition(self, x, y):
