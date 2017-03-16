@@ -60,7 +60,6 @@ class Navigation(Motion):
         self._avoid_time = 0
         
         self._bumped = False
-        self._bumper = 0
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -180,9 +179,9 @@ class Navigation(Motion):
             
             if nav_val < 0 and self._sensors.wall_dir < 0:
                 self._motion.stopRotation(now = self._jerky)
-            
+                self._avoid_time = time()
+        
             self._motion.walk(speed = self._walking_speed)
-            self._avoid_time = time()
             return False
 
         elif self._avoiding:
