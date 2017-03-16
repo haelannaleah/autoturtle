@@ -26,6 +26,8 @@ class ObstacleDetector():
         # initialize obstacle states and directions
         self.obstacle = False
         self.obstacle_dir = 0
+    
+        # intialize wall detection
 
     def _getBlurredDepthSlice(self, depth_img, min_height, max_height, min_width, max_width):
         """ Get a blurred slice of the image. 
@@ -57,7 +59,7 @@ class ObstacleDetector():
             return np.unravel_index(operation(img[np.nonzero(img)]), img.shape)
         except ValueError:
             return None
-    
+
     def extractObstacle(self, depth_img):
         """ If there is an obstacle nearby, find it. 
         
@@ -67,9 +69,30 @@ class ObstacleDetector():
         Returns:
             True on success, False on failure.
         """
+        extraction = self._extractObstruction(depth_img, self._OBSTACLE_SAMPLE_WIDTH)
+        
+        if self._extract() is None:
+            self.obstacle = True
+            self.obstacle_dir = 0
+            return False
+
+        self.obstacle, self.obstacle_dir = extraction
+        
+        return True
+    
+    def _extractObstruction(self, depth_img, obstruction_sample_width):
+        """ If there is an obstacle nearby, find it. 
+        
+        Args:
+            depth_img (numpy matrix): The cv2 depth image that we want to detect obstacles on.
+            obstruction_sample_width (numpy matrix): The width of the sample space in the image
+            
+        Returns:
+            True on success, False on failure.
+        """
         # compute the bounds of our image slice
         img_height, img_width = depth_img.shape
-        s_width = int(img_width * self._OBSTACLE_SAMPLE_WIDTH)
+        s_width = int(img_width * obstruction_sample_width)
         w_center = img_width // 2
     
         # get a slice and apply blur to smooth out irregularities
@@ -80,9 +103,7 @@ class ObstacleDetector():
         
         # if the operation failed (likely due to an all NaN slice), set obstacle state and return failure
         if min_index is None:
-            self.obstacle = True
-            self.obstacle_dir = 0
-            return False
+            return None
         
         # if the closest thing in our slice is too close, trigger obstacle detection
         if sample[min_index] < self._OBSTACLE_DIST_THRESH:
@@ -92,11 +113,7 @@ class ObstacleDetector():
             #   behaves irratically; here we are fixing the direction to be the inital trigger for the
             #   current obstacle state
             if not self.obstacle:
-                self.obstacle_dir = -1 if min_index[1] < w_center else 1
-                self.obstacle = True
+                return (True, -1 if min_index[1] < w_center else 1)
         
-        # otherwise, set obstacle state to false
-        else:
-            self.obstacle = False
-
-        return True
+        # otherwise, return no obstruction
+        return False, 0

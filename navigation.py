@@ -13,7 +13,8 @@ from std_msgs.msg import Empty
 from time import time
 
 from logger import Logger
-from safe_motion import SafeMotion as Motion
+from motion import Motion
+from sensors import Sensors
 
 class Navigation(Motion):
     """ Local navigation.
@@ -47,6 +48,7 @@ class Navigation(Motion):
     
         # initialize motion component of navigation
         self._motion = Motion()
+        self._sensors = Sensors()
         self._jerky = jerky
         self._walking_speed = min(abs(walking_speed), 1)
         self._logger = Logger("Navigation")
@@ -114,57 +116,66 @@ class Navigation(Motion):
             return 0
 
     def goToPosition(self, x, y):
-            """ Default behavior for navigation (currently, no obstacle avoidance).
+        """ Default behavior for navigation (currently, no obstacle avoidance).
+        
+        Args:
+            x (float): The x coordinate of the desired location (in meters from the origin).
+            y (float): The y coordinate of the desired location (in meters from the origin).
+        """
+        nav_val = self._getDestData(Point(x,y,0))
+        
+        # if we see a cliff or get picked up, stop
+        if self._sensors.cliff or self._sensors.wheeldrop:
+            self._motion.stop(now=True)
+    
+        # if we hit something or see something coming, stop
+        # for now, we're keeping obstacle avoidance simple
+        elif self._sensors.bump or self.sensors.obstacle:
+            self._motion.stopLinear(now=True)
+        
+        # otherwise, did we reach our waypoint?
+        elif nav_val is True or self._reached_goal is True:
+        
+            # we've reached a waypoint, but we may still need to stop
+            self._reached_goal = True
             
-            Args:
-                x (float): The x coordinate of the desired location (in meters from the origin).
-                y (float): The y coordinate of the desired location (in meters from the origin).
-            """
-            nav_val = self._getDestData(Point(x,y,0))
+            # give ourselves a moment to stop if we're not in jerky mode
+            if self._motion.walking or self._motion.turning:
+                self._motion.stop(now = self._jerky)
             
-            # did we reach our waypoint?
-            if nav_val is True or self._reached_goal is True:
-            
-                # we've reached a waypoint, but we may still need to stop
-                self._reached_goal = True
-                
-                # give ourselves a moment to stop if we're not in jerky mode
-                if self._motion.walking or self._motion.turning:
-                    self._motion.stop(now = self._jerky)
-                
-                # let the user know that we made it!
-                else:
-                    self._reached_goal = False
-                    return True
-            
-            # our goal is straight ahead
-            elif nav_val == 0:
-            
-                # if we're turning, we need to stop
-                if self._motion.turning:
-                    self._motion.stopRotation(now = True)
-            
-                # onwards we go at the desired pace
-                self._motion.walk(speed = self._walking_speed)
-            
-            # we need to turn to reach our goal
+            # let the user know that we made it!
             else:
-                
-                if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
-                    self._motion.stopLinear(now = self._jerky)
-
-                elif self._motion.starting:
-                    self._motion.walk(speed=self._walking_speed)
+                self._reached_goal = False
+                return True
+        
+        # our goal is straight ahead
+        elif nav_val == 0:
+        
+            # if we're turning, we need to stop
+            if self._motion.turning:
+                self._motion.stopRotation(now = True)
+        
+            # onwards we go at the desired pace
+            self._motion.walk(speed = self._walking_speed)
+        
+        # we need to turn to reach our goal
+        else:
             
-                # make sure we're turning in the correct direction, and stop the turn if we're not
-                if (nav_val <= 0) != (self._motion.turn_dir >= 0):
-                    self._motion.stopRotation(now = True)
-                
-                # perform our turn # with awareness how far off the target direction we are
-                self._motion.turn(nav_val < 0, abs(nav_val / self._HALF_PI)**2 + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
+            if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
+                self._motion.stopLinear(now = self._jerky)
 
-            # we're still moving towards our goal (or our stopping point)
-            return False
+            elif self._motion.starting:
+                self._motion.walk(speed=self._walking_speed)
+        
+            # make sure we're turning in the correct direction, and stop the turn if we're not
+            if (nav_val <= 0) != (self._motion.turn_dir >= 0):
+                self._motion.stopRotation(now = True)
+            
+            # perform our turn # with awareness how far off the target direction we are
+            self._motion.turn(nav_val < 0, abs(nav_val / self._HALF_PI)**2 + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
+
+        # we're still moving towards our goal (or our stopping point), or we've gotten trapped
+        return False
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log Turtlebot's arrival at a waypoint. """
