@@ -135,7 +135,6 @@ class Navigation(Motion):
             if self._motion.starting:
                 self._avoid_time = time()
             
-            self._motion.walk()
 #            self._motion.stopRotation(now = self._jerky)
 #            self._motion.walk(speed = self._walking_speed)
 #            self._logger.debug("avoiding")
@@ -183,7 +182,7 @@ class Navigation(Motion):
             #self._motion.turn(self._sensors.obstacle_dir > 0)
             self._motion.walk(speed = self._walking_speed)
             self._avoid_time = time()
-            
+
         else:
             return False
 
