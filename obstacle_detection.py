@@ -19,6 +19,7 @@ class ObstacleDetector():
     # obstacle detection constants
     _OBSTACLE_DIST_THRESH =  0.55   # distance threshold for obstacles to the Turtlebot
     _OBSTACLE_SAMPLE_WIDTH = 0.3    # slice of the robot's vision to check for obstacles
+    _WALL_SAMPLE_WIDTH = 0.4
 
     def __init__(self):
         self._logger = Logger("ObstacleDetector")
@@ -26,6 +27,8 @@ class ObstacleDetector():
         # initialize obstacle states and directions
         self.obstacle = False
         self.obstacle_dir = 0
+        self.wall = False
+        self.wall_dir = 0
     
         # intialize wall detection
 
@@ -69,14 +72,29 @@ class ObstacleDetector():
         Returns:
             True on success, False on failure.
         """
-        extraction = self._extractObstruction(depth_img, self._OBSTACLE_SAMPLE_WIDTH)
+        self.obstacle, self.obstacle_dir = self._extractObstruction(depth_img, self._OBSTACLE_SAMPLE_WIDTH)
         
-        if extraction is None:
-            self.obstacle = True
-            self.obstacle_dir = 0
+        if self.obstacle and self.obstacle_dir == 0:
             return False
-
-        self.obstacle, self.obstacle_dir = extraction
+        
+        return True
+        
+    def extractWall(self, depth_img):
+        """ If there is a wall, or very near obstacle, find it.
+        
+        Args:
+            depth_img (numpy matrix): The cv2 depth image that we want to detect obstacles on.
+            
+        Returns:
+            True on success, False on failure.
+        """
+        if self.obstacle:
+            self.wall, self.wall_dir = True, self.obstacle_dir
+        else:
+            self.wall, self.wall_dir = self.extractObstacle(depth_img, self._WALL_SAMPLE_WIDTH)
+        
+        if self.wall and self.wall_dir == 0:
+            return False
         
         return True
     
@@ -103,7 +121,7 @@ class ObstacleDetector():
         
         # if the operation failed (likely due to an all NaN slice), set obstacle state and return failure
         if min_index is None:
-            return None
+            return True, 0
         
         # if the closest thing in our slice is too close, trigger obstacle detection
         if sample[min_index] < self._OBSTACLE_DIST_THRESH:

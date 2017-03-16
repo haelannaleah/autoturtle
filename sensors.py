@@ -39,6 +39,8 @@ class Sensors():
         # subscribe to cliff sensor
         self.cliff = False
         self.cliff_sensor = 0
+        self.wall = False
+        self.wall_dir = 0
         rospy.Subscriber('mobile_base/events/cliff', CliffEvent, self._cliffCallback)
         
         # subscribe to depth image for obstacle dectection
@@ -93,10 +95,17 @@ class Sensors():
         # treat obstacle encounter like an event so as not to overwhelm the log
         elif self._obstacleDetector.obstacle and not self.obstacle:
             self._logKobuki("ObstacleDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
+            
+        elif self._obstacleDetector.wall and not self.wall:
+            self._logKobuki("WallDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
     
         # set obstacle state and direction to match the obstacle detector
         self.obstacle = self._obstacleDetector.obstacle
         self.obstacle_dir = self._obstacleDetector.obstacle_dir
+        
+        # ditto for walls
+        self.wall = self._obstacleDetector.obstacle
+        self.wall_dir = self._obstacleDetector.obstacle_dir
 
     def _wheelDropCallback(self, data):
         """ Handle wheel drops. """
