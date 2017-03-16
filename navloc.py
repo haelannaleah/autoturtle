@@ -96,7 +96,7 @@ if __name__ == "__main__":
             self.corner_counter = 0
         
             # set up the logger output file
-            self.test_name = "basic_line"
+            self.test_name = "angled_line"
         
             # set map location of the landmark
             landmarks = {0}
@@ -113,7 +113,6 @@ if __name__ == "__main__":
             self.navloc.csvLogEKF(self.test_name)
             self.navloc.csvLogMap(self.test_name)
             self.navloc.csvLogTransform(self.test_name)
-            #self.navloc.csvLogEstimated(self.test_name)
             self.navloc.csvLogRawTags(self.test_name)
             self.navloc.csvLogOdomTags(self.test_name)
 
