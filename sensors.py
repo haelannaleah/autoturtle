@@ -40,14 +40,15 @@ class Sensors():
         # subscribe to cliff sensor
         self.cliff = False
         self.cliff_sensor = 0
-        self.wall = False
-        self.wall_dir = 0
+        self._cliffs = [False] * 3
         rospy.Subscriber('mobile_base/events/cliff', CliffEvent, self._cliffCallback)
         
         # subscribe to depth image for obstacle dectection
         self.depth_img = None
         self.obstacle = False
         self.obstacle_dir = 0
+        self.wall = False
+        self.wall_dir = 0
         self._obstacleDetector = ObstacleDetector()
         self._bridge = CvBridge()
         rospy.Subscriber('/camera/depth/image', Image, self._depthCallback)
@@ -76,7 +77,10 @@ class Sensors():
         """ Handle cliffs. """
         
         # set cliff state to True if we encounter a cliff
-        self.cliff = bool(data.state == CliffEvent.CLIFF)
+        self._cliffs[data.sensor] = bool(data.state == CliffEvent.CLIFF)
+        
+        # set the cliff to true if any of the cliff are true
+        self.cliff = any(self._cliffs[data.sensor])
         
         # data comes in as 0 for left, 1 for center, 2 for right, but we want
         #   -1 if left sensor, 0 if middle sensor, 1 if right sensor.
