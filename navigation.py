@@ -45,7 +45,7 @@ class Navigation(Motion):
     _MIN_LINEAR_SPEED = .25
     
     # set avoidance time
-    _AVOID_TIME = .15
+    _AVOID_TIME = .1
     
     def __init__(self, jerky = False, walking_speed = 1):
     
@@ -154,7 +154,7 @@ class Navigation(Motion):
 #                self._motion.walk(speed = self._walking_speed)
 
         # if we're in avoidance mode, just go forward
-        elif self._avoid_time - time() < self._AVOID_TIME:
+        elif time() - self._avoid_time < self._AVOID_TIME:
             self._motion.stopRotation(now = self._jerky)
             self._motion.walk(speed = self._walking_speed)
             self._logger.debug("avoiding")
