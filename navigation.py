@@ -236,7 +236,8 @@ if __name__ == "__main__":
             """ The test currently being run. """
             #self.testCCsquare(.5)
             #self.testCsquare(.5)
-            self.testLine(1)
+            self.testLine(1.5)
+            self.csvLogEKF()
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
