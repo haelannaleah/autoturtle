@@ -170,7 +170,10 @@ class Navigation(Motion):
             self._avoid_time = time()
             
         elif self._sensors.wall:
-        
+            
+            if nav_val < 0 and self._sensors.wall_dir < 0:
+                self._motion.stopRotation(now = self._jerky)
+            
             self._motion.walk(speed = self._walking_speed)
             self._avoid_time = time()
             return False
