@@ -92,7 +92,7 @@ if __name__ == "__main__":
             # square test
             self.reached_corner = [False, False, False, False]
             self.cc_square = [(0,0), (1,0), (1,1), (0,1)]
-            self.c_square = [(0,0), (0,1), (1,1), (1,0)]
+            self.c_square = [(0,0), (1,0), (1,-1), (0, -1)]
             self.corner_counter = 0
         
             # set up the logger output file
