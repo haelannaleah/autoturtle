@@ -123,12 +123,9 @@ class Navigation(Motion):
     def _checkSensors(self, nav_val):
         """ Take stock of sensor data when deciding how to move. """
     
-        ret_val = False
-    
         # if we see a cliff or get picked up, stop
         if self._sensors.cliff or self._sensors.wheeldrop:
             self._motion.stop(now=True)
-            ret_val = True
     
         # if we hit something, stop
         elif self._sensors.bump:
@@ -137,7 +134,6 @@ class Navigation(Motion):
                 self._motion.stopLinear(now = True)
             else:
                 self._motion.turn(self._sensors.bumper > 0)
-            ret_val = True
         
         # no colliding with anything
         elif self._sensors.obstacle:
@@ -146,23 +142,25 @@ class Navigation(Motion):
                 self._motion.stopLinear()
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
-            ret_val = True
             
         elif self._sensors.wall:
             
             # if the wall is in the direction of our desired turn, don't make a turn
             if (nav_val < 0) == (self._sensors.wall_dir < 0):
-
                 self._avoid_time = time()
-                ret_val = True
+                self._motion.stopRotation(now = self._jerky)
+                self._motion.walk(speed = self._walking_speed)
         
+        # if we're in avoidance mode, just go forward
         elif elf._avoid_time - time() < self._AVOID_TIME:
             self._motion.stopRotation(now = self._jerky)
             self._motion.walk(speed = self._walking_speed)
+
         else:
             self._avoiding = False
+            return False
 
-        return ret_val
+        return True
 
     def goToPosition(self, x, y):
         """ Default behavior for navigation (currently, no obstacle avoidance).
