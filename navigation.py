@@ -241,7 +241,7 @@ if __name__ == "__main__":
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
-            self.filename += filename + ("_jerky" if self.jerky else "_smooth")
+            self.filename = filename + ("_jerky" if self.jerky else "_smooth")
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
@@ -249,8 +249,7 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if self.filename is None:
-                self.initFile("_line")
+            self.initFile("line")
             
             if not self.reached_corner[0]:
                 self.reached_corner[0] = self.navigation.goToPosition(0, 0)
