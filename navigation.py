@@ -158,6 +158,7 @@ class Navigation(Motion):
                 self._motion.stopLinear(now = True)
                 self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
             else:
+                self._motion.stopRotation(now = True)
                 self._bumped = False
                 self._avoid_time = time()
         
