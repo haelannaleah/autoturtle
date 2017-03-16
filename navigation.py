@@ -226,20 +226,23 @@ class Navigation(Motion):
         else:
             
             if not self._avoiding:
-            
-                differential_turn = abs(nav_val / self._HALF_PI)**2
+                
+                # don't allow ourselve to spin in circles
                 if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
                     self._motion.stopLinear(now = self._jerky)
+        
+                # make sure we're turning in the correct direction, and stop the turn if we're not
+                if (nav_val <= 0) != (self._motion.turn_dir >= 0):
+                    self._motion.stopRotation(now = True)
+        
+                # set the differential turn speed
+                differential_turn = abs(nav_val / self._HALF_PI)**2
 
             else:
                 differential_turn = 0
 
             if self._motion.starting:
                 self._motion.walk(speed=self._walking_speed)
-        
-            # make sure we're turning in the correct direction, and stop the turn if we're not
-            if (nav_val <= 0) != (self._motion.turn_dir >= 0):
-                self._motion.stopRotation(now = True)
             
             # perform our turn # with awareness how far off the target direction we are
             self._motion.turn(nav_val < 0,  differential_turn + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
