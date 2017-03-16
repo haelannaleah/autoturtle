@@ -140,20 +140,22 @@ class Navigation(Motion):
                 self._motion.turn(self._sensors.obstacle_dir > 0)
             return True
             
-        # if the wall is in the direction of our desired turn, don't make a turn
         elif self._sensors.wall:
         
+            # let the rest of NavLoc know we're in avoidance mode
+            self._avoiding = True
+            
+            # if the wall is in the direction of our desired turn, don't make a turn
             if (nav_val < 0) == (self._sensors.wall_dir < 0):
-                self._avoiding = True
+
                 self._motion.stopRotation(now = self._jerky)
                 self._motion.walk(speed = self._walking_speed)
-                self._logger.debug("they're the same")
                 return True
-            
+
+        # otherwise, no problems in sensor land
+        else:
             self._avoiding = False
-            
-            self._logger.debug("Not the same")
-        
+
         return False
 
     def goToPosition(self, x, y):
@@ -196,10 +198,16 @@ class Navigation(Motion):
         # we need to turn to reach our goal
         else:
             
-            if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN and not self._avoiding:
-                self._motion.stopLinear(now = self._jerky)
+            if not self._avoiding:
+            
+                differential_turn = abs(nav_val / self._HALF_PI)**2
+                if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
+                    self._motion.stopLinear(now = self._jerky)
+        
+            else:
+                differential_turn = 0
 
-            elif self._motion.starting:
+            if self._motion.starting:
                 self._motion.walk(speed=self._walking_speed)
         
             # make sure we're turning in the correct direction, and stop the turn if we're not
@@ -207,7 +215,7 @@ class Navigation(Motion):
                 self._motion.stopRotation(now = True)
             
             # perform our turn # with awareness how far off the target direction we are
-            self._motion.turn(nav_val < 0, abs(nav_val / self._HALF_PI)**2 + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
+            self._motion.turn(nav_val < 0,  + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
 
         # we're still moving towards our goal (or our stopping point), or we've gotten trapped
         return False
