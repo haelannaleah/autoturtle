@@ -180,6 +180,8 @@ class Navigation(Motion):
             
             if self._motion.starting:
                 self._avoid_time = time()
+            
+            self._motion.walk()
 #            self._motion.stopRotation(now = self._jerky)
 #            self._motion.walk(speed = self._walking_speed)
 #            self._logger.debug("avoiding")
