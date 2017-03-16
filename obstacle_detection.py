@@ -95,7 +95,7 @@ class ObstacleDetector():
             self.wall, self.wall_dir = True, self.obstacle_dir
 
         else:
-            wall, dir = self._extractObstuction(depth_img, self._WALL_SAMPLE_WIDTH)
+            wall, dir = self._extractObstruction(depth_img, self._WALL_SAMPLE_WIDTH)
             
             if wall and not self.wall or not wall:
                 self.wall, self.wall_dir = wall, dir

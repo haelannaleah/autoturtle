@@ -89,7 +89,9 @@ class Sensors():
         self.depth_img = self._bridge.imgmsg_to_cv2(data, 'passthrough')
 
         # detect obstacles using the ObstacleDetector
-        if self._obstacleDetector.extractObstacle(self.depth_img) is False or self._obstacleDetector.extractWall(self.depth_img):
+        if (self._obstacleDetector.extractObstacle(self.depth_img) is False
+            or self._obstacleDetector.extractWall(self.depth_img) is False):
+            
             self._logger.error("Encountered all NaN slice in depth image.")
     
         # treat obstacle encounter like an event so as not to overwhelm the log
