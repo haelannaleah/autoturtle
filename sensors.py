@@ -101,9 +101,6 @@ class Sensors():
         # ditto for wall dection
         elif self._obstacleDetector.wall and not self.wall:
             self._logKobuki("WallDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
-            
-        if self.wall and not self.obstacle:
-            self._logger.error("HUZZAH")
     
         # set obstacle state and direction to match the obstacle detector
         self.obstacle = self._obstacleDetector.obstacle
