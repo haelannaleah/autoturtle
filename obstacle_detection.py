@@ -93,13 +93,12 @@ class ObstacleDetector():
         """
         if self.obstacle:
             self.wall, self.wall_dir = True, self.obstacle_dir
-            self._log("obstacle!!")
+
         else:
             wall, dir = self.extractObstacle(depth_img, self._WALL_SAMPLE_WIDTH)
             
             if wall and not self.wall or not wall:
                 self.wall, self.wall_dir = wall, dir
-                self._logger.info("not obstacle")
         
         if self.wall and self.wall_dir == 0:
             return False
