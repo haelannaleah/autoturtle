@@ -180,6 +180,7 @@ class Navigation(Motion):
             #self._motion.turn(self._sensors.obstacle_dir > 0)
             self._motion.walk(speed = self._walking_speed)
             self._avoid_time = time()
+            return False
 
         elif self._avoiding:
             self._motion.walk(speed = self._walking_speed)
