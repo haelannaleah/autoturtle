@@ -45,6 +45,8 @@ class Sensors():
         self.depth_img = None
         self.obstacle = False
         self.obstacle_dir = 0
+        self.wall = False
+        self.wall_dir = 0
         self._obstacleDetector = ObstacleDetector()
         self._bridge = CvBridge()
         rospy.Subscriber('/camera/depth/image', Image, self._depthCallback)
@@ -91,12 +93,20 @@ class Sensors():
             self._logger.error("Encountered all NaN slice in depth image.")
     
         # treat obstacle encounter like an event so as not to overwhelm the log
-        elif self._obstacleDetector.obstacle and not self.obstacle:
-            self._logKobuki("ObstacleDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
+        else:
+            if self._obstacleDetector.obstacle and not self.obstacle:
+                self._logKobuki("ObstacleDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
+            
+            if self._obstacleDetector.wall and not self.wall:
+                self._logKobuki("ObstacleDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
     
         # set obstacle state and direction to match the obstacle detector
         self.obstacle = self._obstacleDetector.obstacle
         self.obstacle_dir = self._obstacleDetector.obstacle_dir
+        
+        # set the wall states as well
+        self.wall = self.self._obstacleDetector.wall
+        self.wall_dir = self._obstacleDetector.wall_dir
 
     def _wheelDropCallback(self, data):
         """ Handle wheel drops. """
