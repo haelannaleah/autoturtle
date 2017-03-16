@@ -208,13 +208,11 @@ if __name__ == "__main__":
             # tests to run:
             #   square with Motion module, minimal.launch
             #   square with Motion module, navigation launch
-            #   square with SafeMotion module, minimal launch
-            #   square with SafeMotion module, navigation launch
             # expect all to turn out the same, but need to sanity check
             #self.motion = Motion()
             
             # flag for a jerky stop
-            self.jerky = False
+            self.jerky = True
             
             # I'm a bit concerned about robot safety if we don't slow things down,
             # but I'm also worried it won't be an accurate test if we change the speed
@@ -230,7 +228,7 @@ if __name__ == "__main__":
             self.corner_counter = 0
         
             # set up the logger output file
-            self.filename = None
+            self.filename = "minimal"
         
             self.navigation = Navigation(self.jerky)
 
