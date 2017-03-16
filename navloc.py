@@ -100,7 +100,7 @@ if __name__ == "__main__":
         
             # set map location of the landmark
             landmarks = {0}
-            landmark_positions = {0:(2.25,1)}
+            landmark_positions = {0:(2.25,0)}
             landmark_orientations = {0:-pi/2}
         
             self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
