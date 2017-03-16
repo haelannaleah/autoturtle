@@ -71,7 +71,7 @@ class ObstacleDetector():
         """
         extraction = self._extractObstruction(depth_img, self._OBSTACLE_SAMPLE_WIDTH)
         
-        if self._extract() is None:
+        if self._extractObstruction() is None:
             self.obstacle = True
             self.obstacle_dir = 0
             return False
