@@ -139,7 +139,7 @@ class Navigation(Motion):
         # if the wall is in the direction of our desired turn, don't make a turn
         elif self._sensors.wall:
             if (nav_val < 0) == (self._sensors.wall_dir < 0):
-                self._motion.stopRotation(now = self.jerky)
+                self._motion.stopRotation(now = self._jerky)
                 self._motion.walk(speed = self._walking_speed)
                 self._logger.debug("they're the same")
                 return True
