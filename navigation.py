@@ -137,7 +137,6 @@ class Navigation(Motion):
         
         # no colliding with anything
         elif self._sensors.obstacle:
-            self._motion._avoid_time = time()
             if self._motion.walking:
                 self._motion.stopLinear()
             else:
