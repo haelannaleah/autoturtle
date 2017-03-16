@@ -92,35 +92,33 @@ if __name__ == "__main__":
             # square test
             self.reached_corner = [False, False, False, False]
             self.cc_square = [(0,0), (1,0), (1,1), (0,1)]
-            self.c_square = [(0,0), (0,1), (1,1), (1,0)]
+            self.c_square = [(0,0), (1,0), (1,-1), (0, -1)]
             self.corner_counter = 0
         
             # set up the logger output file
-            self.test_name = "debug"
+            self.test_name = None
         
             # set map location of the landmark
             landmarks = {0}
-            landmark_positions = {0:(-.75,0)}
-            landmark_orientations = {0:pi/2}
+            landmark_positions = {0:(2,0)}
+            landmark_orientations = {0:-pi/2}
         
             self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
 
         def main(self):
             """ The test currently being run. """
-            #self.testCCsquare(.5)
-            #self.testCsquare(.5)
-            self.testLine(1)
+            #self.testCCsquare(1)
+            self.testCsquare(1)
+            #self.testLine(1.5)
             self.navloc.csvLogEKF(self.test_name)
             self.navloc.csvLogMap(self.test_name)
             self.navloc.csvLogTransform(self.test_name)
-            #self.navloc.csvLogEstimated(self.test_name)
             self.navloc.csvLogRawTags(self.test_name)
             self.navloc.csvLogOdomTags(self.test_name)
 
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
             self.test_name = filename + ("jerky" if self.jerky else "smooth")
-            self.logger.csv(self.test_name, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
         
         def logArrival(self, name, x, y):
             self.logger.info("Arrived at " + str((x, y)) + " (map position is " +

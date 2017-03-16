@@ -128,10 +128,13 @@ class Navigation(Motion):
         if self._sensors.cliff or self._sensors.wheeldrop:
             self._motion.stop(now=True)
     
-        # if we hit something or see something coming, stop
-        # for now, we're keeping obstacle avoidance simple
-        elif self._sensors.bump or self._sensors.obstacle:
+        # if we hit something, stop
+        elif self._sensors.bump:
             self._motion.stopLinear(now=True)
+        
+        # for now, we're keeping obstacle avoidance simple
+        elif self._sensors.obstacle:
+            self._motion.stopLinear()
         
         # otherwise, did we reach our waypoint?
         elif nav_val is True or self._reached_goal is True:
@@ -208,13 +211,11 @@ if __name__ == "__main__":
             # tests to run:
             #   square with Motion module, minimal.launch
             #   square with Motion module, navigation launch
-            #   square with SafeMotion module, minimal launch
-            #   square with SafeMotion module, navigation launch
             # expect all to turn out the same, but need to sanity check
             #self.motion = Motion()
             
             # flag for a jerky stop
-            self.jerky = False
+            self.jerky = True
             
             # I'm a bit concerned about robot safety if we don't slow things down,
             # but I'm also worried it won't be an accurate test if we change the speed
@@ -226,7 +227,7 @@ if __name__ == "__main__":
             # square test
             self.reached_corner = [False, False, False, False]
             self.cc_square = [(0,0), (1,0), (1,1), (0,1)]
-            self.c_square = [(0,0), (0,1), (1,1), (1,0)]
+            self.c_square = [(0,0), (1,0), (1,-1), (0, -1)]
             self.corner_counter = 0
         
             # set up the logger output file
@@ -236,13 +237,14 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            #self.testCCsquare(.5)
-            #self.testCsquare(.5)
-            self.testLine(1)
+            self.testCCsquare(1)
+            #self.testCsquare(1)
+            #self.testLine(1.5)
+            self.navigation.csvLogEKF(self.filename)
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
-            self.filename = filename + ("jerky" if self.jerky else "smooth")
+            self.filename = filename + ("_jerky" if self.jerky else "_smooth")
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
@@ -250,8 +252,7 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if self.filename is None:
-                self.initFile("line")
+            self.initFile("line")
             
             if not self.reached_corner[0]:
                 self.reached_corner[0] = self.navigation.goToPosition(0, 0)
