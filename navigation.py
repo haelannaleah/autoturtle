@@ -137,17 +137,18 @@ class Navigation(Motion):
                 self._motion.turn(self._sensors.bumper > 0)
         
         # no colliding with anything
-        elif self._sensors.obstacle and self._prev_problem:
-            self._avoid_time = time()
-            if self._motion.walking:
-                self._motion.stopLinear()
-            else:
-                self._motion.turn(self._sensors.obstacle_dir > 0)
+        elif self._sensors.obstacle:
+            if self._prev_problem:
+                self._avoid_time = time()
+                if self._motion.walking:
+                    self._motion.stopLinear()
+                else:
+                    self._motion.turn(self._sensors.obstacle_dir > 0)
             
-        elif self._sensors.wall and self._prev_problem:
+        elif self._sensors.wall:
             
             # if the wall is in the direction of our desired turn, don't make a turn
-            if (nav_val < 0) == (self._sensors.wall_dir < 0):
+            if self._prev_problem and (nav_val < 0) == (self._sensors.wall_dir < 0):
                 self._avoid_time = time()
                 self._motion.stopRotation(now = self._jerky)
                 self._motion.walk(speed = self._walking_speed)
