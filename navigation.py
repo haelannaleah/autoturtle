@@ -44,6 +44,9 @@ class Navigation(Motion):
     _MAX_MOVING_TURN = pi / 6
     _MIN_LINEAR_SPEED = .25
     
+    # set avoidance time
+    _AVOID_TIME = .25
+    
     def __init__(self, jerky = False, walking_speed = 1):
     
         # initialize motion component of navigation
@@ -53,6 +56,7 @@ class Navigation(Motion):
         self._walking_speed = min(abs(walking_speed), 1)
         self._logger = Logger("Navigation")
         self._avoiding = False
+        self._avoid_time = float('inf')
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -118,11 +122,13 @@ class Navigation(Motion):
 
     def _checkSensors(self, nav_val):
         """ Take stock of sensor data when deciding how to move. """
-        
+    
+        ret_val = False
+    
         # if we see a cliff or get picked up, stop
         if self._sensors.cliff or self._sensors.wheeldrop:
             self._motion.stop(now=True)
-            return True
+            ret_val = True
     
         # if we hit something, stop
         elif self._sensors.bump:
@@ -130,7 +136,7 @@ class Navigation(Motion):
                 self._motion.stopLinear(now = True)
             else:
                 self._motion.turn(self._sensors.bumper > 0)
-            return True
+            ret_val = True
         
         # no colliding with anything
         elif self._sensors.obstacle:
@@ -138,25 +144,25 @@ class Navigation(Motion):
                 self._motion.stopLinear()
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
-            return True
+            ret_val = True
             
         elif self._sensors.wall:
-        
-            # let the rest of NavLoc know we're in avoidance mode
-            self._avoiding = True
             
             # if the wall is in the direction of our desired turn, don't make a turn
             if (nav_val < 0) == (self._sensors.wall_dir < 0):
 
+                self._avoid_time = time()
                 self._motion.stopRotation(now = self._jerky)
                 self._motion.walk(speed = self._walking_speed)
-                return True
+                ret_val = True
 
         # otherwise, no problems in sensor land
+        if self._avoid_time - time() < self._AVOID_TIME:
+            self._avoiding = True
         else:
             self._avoiding = False
 
-        return False
+        return ret_val
 
     def goToPosition(self, x, y):
         """ Default behavior for navigation (currently, no obstacle avoidance).
