@@ -228,7 +228,7 @@ if __name__ == "__main__":
             self.corner_counter = 0
         
             # set up the logger output file
-            self.filename = "minimal"
+            self.filename = None
         
             self.navigation = Navigation(self.jerky)
 
@@ -240,7 +240,7 @@ if __name__ == "__main__":
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
-            self.filename = filename + ("jerky" if self.jerky else "smooth")
+            self.filename += filename + ("_jerky" if self.jerky else "_smooth")
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
@@ -249,7 +249,7 @@ if __name__ == "__main__":
                 length (float): Length of the desired line (in meters).
             """
             if self.filename is None:
-                self.initFile("line")
+                self.initFile("_line")
             
             if not self.reached_corner[0]:
                 self.reached_corner[0] = self.navigation.goToPosition(0, 0)
