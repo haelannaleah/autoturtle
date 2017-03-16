@@ -34,6 +34,7 @@ class Sensors():
         # subscribe to bump sensor
         self.bump = False
         self.bumper = 0
+        self._bumpers = [False] * 3
         rospy.Subscriber('mobile_base/events/bumper', BumperEvent, self._bumperCallback)
 
         # subscribe to cliff sensor
@@ -58,8 +59,11 @@ class Sensors():
     def _bumperCallback(self, data):
         """ Handle bump events. """
         
-        # set bump state to True if the bumper is pressed
-        self.bump = bool(data.state == BumperEvent.PRESSED)
+        # record the bump state of the current bumper
+        self._bumpers[data.bumper] = bool(data.state == BumperEvent.PRESSED)
+        
+        # set bump state to True if any of the bumpers are pressed
+        self.bump = any(self._bumpers)
         
         # data comes in as 0 for left, 1 for center, 2 for right, but we want
         #   -1 if left bumper, 0 if middle bumper, 1 if right bumper
