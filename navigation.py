@@ -182,7 +182,7 @@ class Navigation(Motion):
             self._avoid_time = time()
 
         elif self._avoiding:
-            self._motion.walk(speed = walking_speed)
+            self._motion.walk(speed = self._walking_speed)
 
         else:
             return False
