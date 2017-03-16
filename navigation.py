@@ -45,7 +45,7 @@ class Navigation(Motion):
     _MIN_LINEAR_SPEED = .25
     
     # set avoidance time
-    _AVOID_TIME = .5
+    _AVOID_TIME = 2
     _BUMP_TIME = .5
     
     def __init__(self, jerky = False, walking_speed = 1):
@@ -228,7 +228,7 @@ class Navigation(Motion):
                 differential_turn = abs(nav_val / self._HALF_PI)**2
                 if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
                     self._motion.stopLinear(now = self._jerky)
-        
+
             else:
                 differential_turn = 0
 
