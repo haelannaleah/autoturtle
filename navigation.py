@@ -215,7 +215,7 @@ if __name__ == "__main__":
             #self.motion = Motion()
             
             # flag for a jerky stop
-            self.jerky = True
+            self.jerky = False
             
             # I'm a bit concerned about robot safety if we don't slow things down,
             # but I'm also worried it won't be an accurate test if we change the speed
