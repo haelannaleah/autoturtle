@@ -102,7 +102,7 @@ class Sensors():
         # ditto for wall detection
         elif self._obstacleDetector.wall and not self.wall:
             self._logKobuki("WallDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
-    
+
         # set obstacle state and direction to match the obstacle detector
         self.obstacle = self._obstacleDetector.obstacle
         self.obstacle_dir = self._obstacleDetector.obstacle_dir
@@ -110,6 +110,9 @@ class Sensors():
         # ditto for walls
         self.wall = self._obstacleDetector.obstacle
         self.wall_dir = self._obstacleDetector.obstacle_dir
+        
+        if self.wall and not self.obstacle:
+            print("yayayayaya")
 
     def _wheelDropCallback(self, data):
         """ Handle wheel drops. """
