@@ -115,6 +115,34 @@ class Navigation(Motion):
         else:
             return 0
 
+    def _checkSensors(self):
+        """ Take stock of sensor data when deciding how to move. """
+        
+        # if we see a cliff or get picked up, stop
+        if self._sensors.cliff or self._sensors.wheeldrop:
+            self._motion.stop(now=True)
+            return True
+    
+        # if we hit something, stop
+        elif self._sensors.bump:
+            self._motion.stopLinear(now=True)
+            return True
+        
+        # no colliding with anything
+        elif self._sensors.obstacle:
+            if self.walking:
+                self._motion.stopLinear()
+            else:
+                self._motion.turn(self._sensors.obstacle_dir > 0)
+            return True
+            
+        # if the wall is in the direction of our desired turn, don't make a turn
+        elif self._sensors.wall and (nav_val < 0) == (self._sensors.wall_dir < 0):
+                self.motion.walk(speed = self.walking_speed)
+                return True
+                
+        return False
+
     def goToPosition(self, x, y):
         """ Default behavior for navigation (currently, no obstacle avoidance).
         
@@ -124,20 +152,11 @@ class Navigation(Motion):
         """
         nav_val = self._getDestData(Point(x,y,0))
         
-        # if we see a cliff or get picked up, stop
-        if self._sensors.cliff or self._sensors.wheeldrop:
-            self._motion.stop(now=True)
-    
-        # if we hit something, stop
-        elif self._sensors.bump:
-            self._motion.stopLinear(now=True)
-        
-        # for now, we're keeping obstacle avoidance simple
-        elif self._sensors.obstacle:
-            self._motion.stopLinear()
+        if self._checkSensors():
+            return False
         
         # otherwise, did we reach our waypoint?
-        elif nav_val is True or self._reached_goal is True:
+        if nav_val is True or self._reached_goal is True:
         
             # we've reached a waypoint, but we may still need to stop
             self._reached_goal = True
