@@ -132,6 +132,7 @@ class Navigation(Motion):
     
         # if we hit something, stop
         elif self._sensors.bump:
+            self._motion._avoid_time = time()
             if self._motion.walking:
                 self._motion.stopLinear(now = True)
             else:
@@ -140,6 +141,7 @@ class Navigation(Motion):
         
         # no colliding with anything
         elif self._sensors.obstacle:
+            self._motion._avoid_time = time()
             if self._motion.walking:
                 self._motion.stopLinear()
             else:
@@ -152,13 +154,11 @@ class Navigation(Motion):
             if (nav_val < 0) == (self._sensors.wall_dir < 0):
 
                 self._avoid_time = time()
-                self._motion.stopRotation(now = self._jerky)
-                self._motion.walk(speed = self._walking_speed)
                 ret_val = True
-
-        # otherwise, no problems in sensor land
-        if self._avoid_time - time() < self._AVOID_TIME:
-            self._avoiding = True
+        
+        elif elf._avoid_time - time() < self._AVOID_TIME:
+            self._motion.stopRotation(now = self._jerky)
+            self._motion.walk(speed = self._walking_speed)
         else:
             self._avoiding = False
 
