@@ -132,7 +132,7 @@ class Navigation(Motion):
         elif self._sensors.bump:
             self._motion.stopLinear(now=True)
         
-        ##for now, we're keeping obstacle avoidance simple
+        # for now, we're keeping obstacle avoidance simple
         elif self._sensors.obstacle:
             self._motion.stopLinear()
         
