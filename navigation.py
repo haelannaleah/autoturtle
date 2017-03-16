@@ -60,6 +60,7 @@ class Navigation(Motion):
         self._avoid_time = 0
         
         self._bumped = False
+        self._bumper = 0
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -149,6 +150,7 @@ class Navigation(Motion):
             self._motion.stopLinear(now = True)
             self._motion._avoid_time = time()
             self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
+            self._bumper = self._sensors.bumper
             self._logger.debug("in bump")
 
         # if we've been bumped, turn away!
@@ -156,7 +158,7 @@ class Navigation(Motion):
             self._logger.debug("in bumped")
             if time() - self._avoid_time < self._BUMP_TIME:
                 self._motion.stopLinear(now = True)
-                self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
+                self._motion.turn(self._bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
             else:
                 self._motion.stopRotation(now = True)
                 self._bumped = False
