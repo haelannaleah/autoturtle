@@ -45,7 +45,7 @@ class Navigation(Motion):
     _MIN_LINEAR_SPEED = .25
     
     # set avoidance time
-    _AVOID_TIME = .1
+    _AVOID_TIME = .25
     
     def __init__(self, jerky = False, walking_speed = 1):
     
