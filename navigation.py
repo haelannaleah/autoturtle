@@ -165,7 +165,8 @@ class Navigation(Motion):
 #                self._motion.stopRotation(now = self._jerky)
 #                self._motion.walk(speed = self._walking_speed)
 
-            self._motion.turn(self._sensors.obstacle_dir > 0)
+            #self._motion.turn(self._sensors.obstacle_dir > 0)
+            self._motion.walk(speed = self._walking_speed)
             self._avoid_time = time()
 
         # if we're in avoidance mode, just go forward
