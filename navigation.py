@@ -52,6 +52,7 @@ class Navigation(Motion):
         self._jerky = jerky
         self._walking_speed = min(abs(walking_speed), 1)
         self._logger = Logger("Navigation")
+        self._avoiding = False
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -141,13 +142,18 @@ class Navigation(Motion):
             
         # if the wall is in the direction of our desired turn, don't make a turn
         elif self._sensors.wall:
+        
             if (nav_val < 0) == (self._sensors.wall_dir < 0):
+                self._avoiding = True
                 self._motion.stopRotation(now = self._jerky)
                 self._motion.walk(speed = self._walking_speed)
                 self._logger.debug("they're the same")
                 return True
+            
+            self._avoiding = False
+            
             self._logger.debug("Not the same")
-                
+        
         return False
 
     def goToPosition(self, x, y):
@@ -190,7 +196,7 @@ class Navigation(Motion):
         # we need to turn to reach our goal
         else:
             
-            if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
+            if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN and not self._avoiding:
                 self._motion.stopLinear(now = self._jerky)
 
             elif self._motion.starting:
