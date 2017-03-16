@@ -5,11 +5,11 @@ Author:
 """
 import tf
 import rospy
+import numpy as np
 
 from copy import deepcopy
 from geometry_msgs.msg import Pose, Point, Quaternion
 from math import sin, cos, pi
-from time import time
 
 from localization import Localization
 from logger import Logger
@@ -20,9 +20,9 @@ class NavLoc(Navigation, Localization):
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
         # create transformation object
-        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0, "angle_delta": 0}
-        self._raw_pose = Pose()
-        self._raw_angle = 0
+        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0}
+        self.map_pos = Point()
+        self.map_angle = 0
     
         # initialize what we're inheriting from
         Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
@@ -32,62 +32,43 @@ class NavLoc(Navigation, Localization):
         self._timer = float('inf')
 
         self._logger = Logger("NavLoc")
-    
-    def _estimatePose(self):
-        """ Override pose estimation to include pose calculation. """
-    
-        Localization._estimatePose(self)
-        
-        # if there is currently no estimated pose, nothing more to do here
-        if self.estimated_pose is None:
-            return
-        
-        # save current odometry position
-        ekf_pose = deepcopy(self._raw_pose)
-        ekf_angle = self._raw_angle
-        self._transform["ekf_pos"] = ekf_pose.position
-        self._transform["ekf_angle"] = ekf_angle
 
-        # save the estimated map position
-        self._transform["map_pos"] = self.estimated_pose.position
-        self._transform["map_angle"] = self.estimated_angle
+    def _getDestData(self, destination):
+        """ Move from current position to desired waypoint in the odomety frame.
+            
+        Args:
+            destination (geometry_msgs.msg.Point): A destination relative to the map origin, in meters.
         
-        # compute the difference between them
-        self._transform["angle_delta"] = self._transform["ekf_angle"] - self._transform["map_angle"]
-        
-        self._logger.debug(self.estimated_pose, var_name = "estimated position \n")
-        
+        Returns:
+            True if we are close to the desired location 
+            0 if the goal is straight ahead
+            The difference between the current angle and the desired angle if we are not on course.
+                A negative value indicates that the desired angle is that many radians to the left of 
+                the current orientation, positive indicates the desired angle is to the right.
+        """
+        return Navigation._getDestData(self, self.transformPoint(destination, "map", "odom"))
+    
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
         
-        # extract raw data
-        self._raw_pose = data.pose.pose
-        raw_q = self._raw_pose.orientation
-        self._raw_angle = tf.transformations.euler_from_quaternion([raw_q.x, raw_q.y, raw_q.z, raw_q.w])[-1]
-
-        # measure the amount that the robot has moved since we last saw a landmark
-        ekf_dx = self._raw_pose.position.x - self._transform["ekf_pos"].x
-        ekf_dy = self._raw_pose.position.y - self._transform["ekf_pos"].y
-        ekf_delta_angle = self._raw_angle - self._transform["ekf_angle"]
-
-        # transform from odom to the map frame
-        self.p = Point()
-        self.p.x = self._transform["map_pos"].x + ekf_dx * cos(self._transform["angle_delta"]) - ekf_dy * sin(self._transform["angle_delta"])
-        self.p.y = self._transform["map_pos"].y + ekf_dx * sin(self._transform["angle_delta"]) + ekf_dy * cos(self._transform["angle_delta"])
+        # get the ekf data
+        Navigation._ekfCallback(self, data)
         
-        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
-        #   extract the only non zero euler angle as the angle of rotation in the floor plane
-        self.angle = self._transform["map_angle"] + ekf_delta_angle
-        
-        # wrap angle, if necessary
-        if self.angle > pi:
-            self.angle -= self._TWO_PI
-        elif self.angle < -pi:
-            self.angle += self._TWO_PI
+        # compute map data
+        self.map_pos = self.transformPoint(self.p, "odom", "map")
+        self.map_angle = self.transformAngle(self.angle, "odom", "map")
 
-        # compute the quaternion
-        qx, qy, qz, qw = tf.transformations.quaternion_from_euler(0, 0, self.angle)
-        self.q = Quaternion(qx, qy, qz, qw)
+    def csvLogArrival(self, test_name, x, y, folder = "tests"):
+        """ Log the arrival of the robot at a waypoint. """
+        
+        self._logger.csv(test_name + "_waypoints", ["X_target", "Y_target", "X_map", "Y_map", "X_ekf", "Y_ekf"],
+                    [x, y, self.map_pos.x, self.map_pos.y, self.p.x, self.p.y],
+                    folder = folder)
+
+    def csvLogMap(self, test_name, folder = "tests"):
+        """ Log map position data. """
+         
+        self._logger.csv(test_name + "_mappose", ["X", "Y", "yaw"], [self.map_pos.x, self.map_pos.y, self.map_angle], folder = folder)
 
 if __name__ == "__main__":
     from tester import Tester
@@ -115,11 +96,12 @@ if __name__ == "__main__":
             self.corner_counter = 0
         
             # set up the logger output file
-            self.filename = None
+            self.test_name = "debug"
         
+            # set map location of the landmark
             landmarks = {0}
-            landmark_positions = {0:(1.75,0)}
-            landmark_orientations = {0:-pi/2}
+            landmark_positions = {0:(-.75,0)}
+            landmark_orientations = {0:pi/2}
         
             self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
 
@@ -128,16 +110,22 @@ if __name__ == "__main__":
             #self.testCCsquare(.5)
             #self.testCsquare(.5)
             self.testLine(1)
-        
+            self.navloc.csvLogEKF(self.test_name)
+            self.navloc.csvLogMap(self.test_name)
+            self.navloc.csvLogTransform(self.test_name)
+            #self.navloc.csvLogEstimated(self.test_name)
+            self.navloc.csvLogRawTags(self.test_name)
+            self.navloc.csvLogOdomTags(self.test_name)
+
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
-            self.filename = filename + ("jerky" if self.jerky else "smooth")
-            self.logger.csv(self.filename, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
+            self.test_name = filename + ("jerky" if self.jerky else "smooth")
+            self.logger.csv(self.test_name, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
         
         def logArrival(self, name, x, y):
-            self.logger.info("Reached " + str(name) + " at " + str((x,y)))
-            self.logger.info("Current pose: " + str((self.navloc.p.x, self.navloc.p.y)))
-            self.logger.csv(self.filename, [x, y, self.navloc.p.x, self.navloc.p.y])
+            self.logger.info("Arrived at " + str((x, y)) + " (map position is " +
+                str((self.navloc.map_pos.x, self.navloc.map_pos.y)) + ")")
+            self.navloc.csvLogArrival(self.test_name, x, y)
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
@@ -145,7 +133,7 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if self.filename is None:
+            if self.test_name is None:
                 self.initFile("line")
             
             if not self.reached_corner[0]:
@@ -163,7 +151,7 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if self.filename is None:
+            if self.test_name is None:
                 self.initFile("counterclockwise")
             
             self.testSquare(length, self.cc_square)
@@ -174,7 +162,7 @@ if __name__ == "__main__":
             Args:
                 length (float): Length of the desired line (in meters).
             """
-            if self.filename is None:
+            if self.test_name is None:
                 self.initFile("clockwise")
             
             self.testSquare(length, self.c_square)
