@@ -237,7 +237,7 @@ class Navigation(Motion):
                 self._motion.stopRotation(now = True)
             
             # perform our turn # with awareness how far off the target direction we are
-            self._motion.turn(nav_val < 0,  + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
+            self._motion.turn(nav_val < 0,  differential_turn + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
 
         # we're still moving towards our goal (or our stopping point), or we've gotten trapped
         return False
