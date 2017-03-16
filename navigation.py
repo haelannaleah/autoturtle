@@ -174,12 +174,12 @@ class Navigation(Motion):
             self._avoid_time = time()
             
         # if there's a wall, we need to get around it
-        elif self._sensors.wall:
+        elif self._sensors.wall and self._avoiding:
             self._logger.debug("in wall")
             
             if nav_val < 0 and self._sensors.wall_dir < 0:
                 self._motion.stopRotation(now = self._jerky)
-                self._avoid_time = time()
+                return True
         
             self._motion.walk(speed = self._walking_speed)
             return False
