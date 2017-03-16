@@ -96,7 +96,7 @@ if __name__ == "__main__":
             self.corner_counter = 0
         
             # set up the logger output file
-            self.test_name = "angled_line"
+            self.test_name = None
         
             # set map location of the landmark
             landmarks = {0}
@@ -119,7 +119,6 @@ if __name__ == "__main__":
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
             self.test_name = filename + ("jerky" if self.jerky else "smooth")
-            self.logger.csv(self.test_name, ["map_x", "map_y", "reported_x", "reported_y"], folder = "tests")
         
         def logArrival(self, name, x, y):
             self.logger.info("Arrived at " + str((x, y)) + " (map position is " +
