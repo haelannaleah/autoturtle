@@ -125,10 +125,8 @@ class Navigation(Motion):
 
     def _checkSensors(self, nav_val):
         """ Take stock of sensor data when deciding how to move. """
-        if self._avoiding:
-            self._logger.debug("avoiding")
         
-                # if we're in avoidance mode, just go forward
+        # if we're in avoidance mode, just go forward
         if time() - self._avoid_time < self._AVOID_TIME:
             self._avoiding = True
             
@@ -182,6 +180,9 @@ class Navigation(Motion):
             #self._motion.turn(self._sensors.obstacle_dir > 0)
             self._motion.walk(speed = self._walking_speed)
             self._avoid_time = time()
+
+        elif self._avoiding:
+            self._motion.walk(speed = walking_speed)
 
         else:
             return False
