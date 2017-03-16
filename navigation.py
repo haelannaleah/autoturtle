@@ -169,9 +169,11 @@ class Navigation(Motion):
             self._logger.debug("in obstacle")
             
             if self._motion.walking:
-                self._motion.stop()
-            else:
-                self._motion.turn(self._sensors.obstacle_dir > 0)
+                self._motion.stop_linear()
+            
+            if self._motion.turn_dir != self._sensors.obstacle_dir > 0
+            
+            self._motion.turn(self._sensors.obstacle_dir > 0)
             self._avoid_time = time()
             
         # if there's a wall, we need to get around it
@@ -241,10 +243,6 @@ class Navigation(Motion):
                 # don't allow ourselve to spin in circles
                 if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
                     self._motion.stopLinear(now = self._jerky)
-        
-                # make sure we're turning in the correct direction, and stop the turn if we're not
-                if (nav_val <= 0) != (self._motion.turn_dir >= 0):
-                    self._motion.stopRotation(now = True)
         
                 # set the differential turn speed
                 differential_turn = abs(nav_val / self._HALF_PI)**2
