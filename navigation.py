@@ -128,10 +128,13 @@ class Navigation(Motion):
         if self._sensors.cliff or self._sensors.wheeldrop:
             self._motion.stop(now=True)
     
-        # if we hit something or see something coming, stop
-        # for now, we're keeping obstacle avoidance simple
-        elif self._sensors.bump or self._sensors.obstacle:
+        # if we hit something, stop
+        elif self._sensors.bump:
             self._motion.stopLinear(now=True)
+        
+        ##for now, we're keeping obstacle avoidance simple
+        elif self._sensors.obstacle:
+            self._motion.stopLinear()
         
         # otherwise, did we reach our waypoint?
         elif nav_val is True or self._reached_goal is True:
