@@ -145,6 +145,8 @@ class Navigation(Motion):
                 else:
                     self._motion.turn(self._sensors.obstacle_dir > 0)
             
+            self._prev_problem = True
+            
         elif self._sensors.wall:
             
             # if the wall is in the direction of our desired turn, don't make a turn
@@ -152,6 +154,8 @@ class Navigation(Motion):
                 self._avoid_time = time()
                 self._motion.stopRotation(now = self._jerky)
                 self._motion.walk(speed = self._walking_speed)
+                
+            self._prev_problem = True
 
         # if we're in avoidance mode, just go forward
         elif self._avoid_time - time() < self._AVOID_TIME:
@@ -164,7 +168,6 @@ class Navigation(Motion):
             self._prev_problem = False
             return False
 
-        self._prev_problem = True
         return True
 
     def goToPosition(self, x, y):
