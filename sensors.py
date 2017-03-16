@@ -108,11 +108,8 @@ class Sensors():
         self.obstacle_dir = self._obstacleDetector.obstacle_dir
         
         # ditto for walls
-        self.wall = self._obstacleDetector.obstacle
-        self.wall_dir = self._obstacleDetector.obstacle_dir
-        
-        if self.wall and not self.obstacle:
-            print("yayayayaya")
+        self.wall = self._obstacleDetector.wall
+        self.wall_dir = self._obstacleDetector.wall_dir
 
     def _wheelDropCallback(self, data):
         """ Handle wheel drops. """
