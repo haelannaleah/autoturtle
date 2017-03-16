@@ -49,7 +49,7 @@ class SafeMotion(Motion):
         # if we hit something, stop
         elif self.sensors.bump:
             if self.walking:
-                Motion.stop_linear(self, now=True)
+                Motion.stopLinear(self, now=True)
             else:
                 self.avoiding = True
                 Motion.turn(self, self.sensors.bumper > 0)
@@ -57,7 +57,7 @@ class SafeMotion(Motion):
         # if we see something coming, avoid
         elif self.sensors.obstacle:
             if self.walking:
-                Motion.stop_linear(self)
+                Motion.stopLinear(self)
             else:
                 self.avoiding = True
                 Motion.turn(self, self.sensors.obstacle_dir > 0)
@@ -87,31 +87,31 @@ class SafeMotion(Motion):
 
         # if we hit something, stop now
         elif self.sensors.bump:
-            Motion.stop_linear(self, now=True)
+            Motion.stopLinear(self, now=True)
             
         # if we see something coming, stop gently
         elif self.sensors.obstacle:
-            Motion.stop_linear(self)
+            Motion.stopLinear(self)
         
         # otherwise, stay the course
         else:
             func(self, *args, **kwargs)
 
-    def stop_linear(self, now=False):
+    def stopLinear(self, now=False):
         """ Stop robot's linear motion, immediately if necessary. 
         
         Args:
             now (bool): Robot's forward motion stops immediately if true, else decelerates.
         """
-        self._safetyStop(Motion.stop_linear, now)
+        self._safetyStop(Motion.stopLinear, now)
 
-    def stop_rotation(self, now=False):
+    def stopRotation(self, now=False):
         """ Stop the robot rotation, immediately if necessary. 
         
         Args:
             now (bool): Robot's rotational motion stops immediately if true, else decelerates.
         """
-        self._safetyStop(Motion.stop_rotation, now)
+        self._safetyStop(Motion.stopRotation, now)
     
     def stop(self, now=False):
         """ Stop the robot, immediately if necessary.

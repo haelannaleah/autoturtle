@@ -98,6 +98,7 @@ if __name__ == "__main__":
             # set up the logger output file
             self.test_name = "debug"
         
+            # set map location of the landmark
             landmarks = {0}
             landmark_positions = {0:(-.75,0)}
             landmark_orientations = {0:pi/2}

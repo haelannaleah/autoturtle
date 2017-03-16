@@ -142,7 +142,7 @@ class Navigation(Motion):
             
                 # if we're turning, we need to stop
                 if self._motion.turning:
-                    self._motion.stop_rotation(now = True)
+                    self._motion.stopRotation(now = True)
             
                 # onwards we go at the desired pace
                 self._motion.walk(speed = self._walking_speed)
@@ -151,14 +151,14 @@ class Navigation(Motion):
             else:
                 
                 if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
-                    self._motion.stop_linear(now = self._jerky)
+                    self._motion.stopLinear(now = self._jerky)
 
                 elif self._motion.starting:
                     self._motion.walk(speed=self._walking_speed)
             
                 # make sure we're turning in the correct direction, and stop the turn if we're not
                 if (nav_val <= 0) != (self._motion.turn_dir >= 0):
-                    self._motion.stop_rotation(now = True)
+                    self._motion.stopRotation(now = True)
                 
                 # perform our turn # with awareness how far off the target direction we are
                 self._motion.turn(nav_val < 0, abs(nav_val / self._HALF_PI)**2 + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
