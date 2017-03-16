@@ -95,10 +95,11 @@ class Sensors():
             self._logger.error("Encountered all NaN slice in depth image.")
     
         # treat obstacle encounter like an event so as not to overwhelm the log
-        elif self._obstacleDetector.obstacle and not self.obstacle:
-            self._logKobuki("ObstacleDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
+        elif self._obstacleDetector.obstacle:
+            if not self.obstacle:
+                self._logKobuki("ObstacleDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
             
-        # ditto for wall dection
+        # ditto for wall detection
         elif self._obstacleDetector.wall and not self.wall:
             self._logKobuki("WallDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
     
