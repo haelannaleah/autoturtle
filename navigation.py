@@ -57,7 +57,7 @@ class Navigation(Motion):
         self._logger = Logger("Navigation")
         self._avoiding = False
         self._avoid_time = float('inf')
-        self._prev_problem
+        self._prev_problem = False
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
