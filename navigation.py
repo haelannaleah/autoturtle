@@ -152,7 +152,7 @@ class Navigation(Motion):
                 self._motion.walk(speed = self._walking_speed)
         
         # if we're in avoidance mode, just go forward
-        elif elf._avoid_time - time() < self._AVOID_TIME:
+        elif self._avoid_time - time() < self._AVOID_TIME:
             self._motion.stopRotation(now = self._jerky)
             self._motion.walk(speed = self._walking_speed)
 
