@@ -146,15 +146,14 @@ class Navigation(Motion):
         # if we hit something, stop
         elif self._sensors.bump:
             self._bumped = True
-            if self._motion.walking:
-                self._motion.stopLinear(now = True)
-            else:
-                self._motion._avoid_time = time()
-                self._motion.turn(self._sensors.bumper > 0)
+            self._motion.stopLinear(now = True)
+            self._motion._avoid_time = time()
+            self._motion.turn(self._sensors.bumper > 0)
 
         # if we've been bumped, turn away!
         elif self._bumped:
             if time() - self._avoid_time < self._BUMP_TIME:
+                self._motion.stopLinear(now = True)
                 self._motion.turn(self._sensors.bumper > 0)
             else:
                 self._bumped = False
