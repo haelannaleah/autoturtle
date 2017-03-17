@@ -158,8 +158,7 @@ class Navigation(Motion):
             self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
             
             # set the needed avoidance angle
-            bumper = self._sensors.bumper if self._sensors.bumper != 0 else choice([-1,1])
-            self._avoid_turn = self.angle + self._AVOID_TURN * bumper
+            self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
             self._logger.debug("in bump")
 
 #        # if we've been bumped, turn away!
@@ -194,8 +193,7 @@ class Navigation(Motion):
                 self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
                 
                 # set avoidance behavior
-                direction = self._sensors.wall_dir if self._sensors.wall_dir != 0 else choice([-1,1])
-                self._avoid_turn = self.angle + self._AVOID_TURN * direction
+                self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
                 self._avoid_target = None
             
             elif self._avoid_turn is not None:
