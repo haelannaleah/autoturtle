@@ -30,7 +30,8 @@ class ObstacleDetector():
         self.wall = False
         self.wall_dir = 0
     
-        # intialize wall detection
+        # reduce noise
+        self._prev_obstacle = False
 
     def _getBlurredDepthSlice(self, depth_img, min_height, max_height, min_width, max_width):
         """ Get a blurred slice of the image. 
@@ -74,9 +75,15 @@ class ObstacleDetector():
         """
         obstacle, dir = self._extractObstruction(depth_img, self._OBSTACLE_SAMPLE_WIDTH)
         
-        if obstacle and not self.obstacle or not obstacle:
+        # lock on to the obstacle direction of our choosing
+        # we're checking against prev to reduce noise
+        if (obstacle and not self.obstacle and self._prev_obstacle) or not obstacle:
             self.obstacle, self.obstacle_dir = obstacle, dir
         
+        # set the previous to this current
+        self._prev_obstacle = obstacle
+        
+        # error check
         if self.obstacle and self.obstacle_dir == 0:
             return False
         
