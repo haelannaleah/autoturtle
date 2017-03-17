@@ -5,7 +5,7 @@ Author:
 """
 from tf import TransformListener
 
-class tfTransformer(TransformListener):
+class tfListener(TransformListener):
 
     def _attemptLookup(self, transform_func, target_frame, object):
         """ Attempt a coordinate frame transformation.

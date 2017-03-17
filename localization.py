@@ -15,6 +15,7 @@ from time import time
 
 from floorplan import FloorPlan
 from logger import Logger
+from tf_transformer import tfListener
 
 class Localization():
     """ Handle landmark detection and global localization.
@@ -59,40 +60,10 @@ class Localization():
         self._prev_odom = [0,0,0,0,0,0,1]
     
         # listen for frame transformations
-        self._tf_listener = tf.TransformListener()
+        self._tf_listener = tfListener()
     
         # subscribe to raw tag data
         rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)
-    
-    def _attemptLookup(self, transform_func, target_frame, object):
-        """ Attempt a coordinate frame transformation.
-        
-        Args:
-            transform_func (tf.TransformListener() function): A transformation function from the tf module.
-            target_frame (string): The desired final coordinate frame.
-            object (PoseStamped, PointStamped, QuaternionStamped): A stamped object to be transformed.
-            
-        Returns:
-            An object transformed into the correct frame if successful, None otherwise.
-        """
-        try:
-            # attempt transformation
-            return transform_func(target_frame, object)
-        
-        except tf.ExtrapolationException as e:
-            # we're trying to get a transformation that's not current
-            self._logger.warn(e)
-            
-        except tf.LookupException as e:
-            # the transformations aren't being published
-            self._logger.error(str(e) + "Is the mobile base powered on? Has the Turtlebot been brought online?")
-        
-        except Exception as e:
-            # something else went wrong
-            self._logger.error(e)
-        
-        # the transformation failed
-        return None
     
     def transformPoint(self, position, from_frame, to_frame):
         """ Compute coordinate transformation.
@@ -289,8 +260,7 @@ class Localization():
             #   reported orientation)
             # this will get us the angle between the ARtag's x-axis and the robot base's x-axis
             header.frame_id = '/ar_marker_' + str(id)
-            orientation = self._attemptLookup(self._tf_listener.transformQuaternion, \
-                            target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
+            orientation = self._tf_listener.transformQuaternion(target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
             
             # make sure the look-up succeeded
             if orientation is None:
@@ -300,8 +270,7 @@ class Localization():
             #   frame to get the correct position (note that this step is necessary since we're getting a shallow
             #   copy of the header)
             header.frame_id = '/camera_rgb_optical_frame'
-            position = self._attemptLookup(self._tf_listener.transformPoint, \
-                         target_frame, PointStamped(header, self.tags[id].pose.position))
+            position = self._tf_listener.transformPoint(target_frame, PointStamped(header, self.tags[id].pose.position))
                          
             # make sure the look-up succeeded
             if position is None:
