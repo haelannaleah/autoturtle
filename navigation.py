@@ -204,6 +204,7 @@ class Navigation(Motion):
         
         # otherwise, did we reach our waypoint?
         if nav_val is True or self._reached_goal is True:
+            self._logger.debug("reached goal")
         
             # we've reached a waypoint, but we may still need to stop
             self._reached_goal = True
@@ -224,6 +225,7 @@ class Navigation(Motion):
         
         # our goal is straight ahead
         elif nav_val == 0:
+            self._logger.debug("straight ahead")
         
             # if we're turning, we need to stop
             if self._motion.turning:
@@ -234,6 +236,8 @@ class Navigation(Motion):
         
         # we need to turn to reach our goal
         else:
+    
+            self._logger.debug("turning")
     
             # make sure we're turning in the correct direction, and stop the turn if we're not
             if (nav_val <= 0) != (self._motion.turn_dir >= 0):
