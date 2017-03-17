@@ -167,6 +167,7 @@ class Navigation(Motion):
         # no colliding with anything
         elif self._sensors.obstacle:
             self._logger.debug("in obstacle")
+            
             if not self._avoiding:
                 self._motion.stopRotation(now = True)
             

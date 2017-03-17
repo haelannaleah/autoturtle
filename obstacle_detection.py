@@ -17,7 +17,7 @@ class ObstacleDetector():
         obstacle_dir (int): -1 if the obstacle is on the left, 1 if the obstacle is on the right.
     """
     # obstacle detection constants
-    _OBSTACLE_DIST_THRESH =  0.6    # distance threshold for obstacles to the Turtlebot
+    _OBSTACLE_DIST_THRESH =  0.7    # distance threshold for obstacles to the Turtlebot
     _OBSTACLE_SAMPLE_WIDTH = 0.3    # slice of the robot's vision to check for obstacles
     _WALL_SAMPLE_WIDTH = 0.4
 
@@ -31,7 +31,8 @@ class ObstacleDetector():
         self.wall_dir = 0
     
         # reduce noise
-        self._prev_obstacle = False
+        self._prev_obstacles = [False] * 5
+        self._prev_index = 0
 
     def _getBlurredDepthSlice(self, depth_img, min_height, max_height, min_width, max_width):
         """ Get a blurred slice of the image. 
@@ -77,11 +78,12 @@ class ObstacleDetector():
         
         # lock on to the obstacle direction of our choosing
         # we're checking against prev to reduce noise
-        if (obstacle and not self.obstacle and self._prev_obstacle) or not obstacle:
+        if (obstacle and not self.obstacle and any(self._prev_obstacles)) or not obstacle:
             self.obstacle, self.obstacle_dir = obstacle, dir
         
         # set the previous to this current
-        self._prev_obstacle = obstacle
+        self._prev_obstacles[self._prev_index] = obstacle
+        self._prev_index = (self._prev_index + 1) % len(self._prev_obstacles)
         
         # error check
         if self.obstacle and self.obstacle_dir == 0:
