@@ -9,6 +9,7 @@ import numpy as np
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion
 from math import atan2, pi, sqrt
+from random import choice
 from std_msgs.msg import Empty
 from time import time
 
@@ -170,8 +171,10 @@ class Navigation(Motion):
         # no colliding with anything
         elif self._sensors.obstacle:
             self._logger.debug("in obstacle")
-            if self._obstacle_dir == 0:
+            if self._obstacle_dir == 0 and self._sensors.obstacle_dir:
                 self._obstacle_dir = self._sensors.obstacle_dir
+            else:
+                self._obstacle_dir = choice[-1,1]
             
             if self._motion.walking:
                 self._motion.stopLinear()
