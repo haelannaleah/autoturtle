@@ -46,9 +46,8 @@ class Navigation(Motion):
     _MAX_MOVING_TURN = pi / 6
     _MIN_LINEAR_SPEED = .25
     
-    # set avoidance time
-    _AVOID_TIME = 2
-    _BUMP_AVOIDANCE = pi/6
+    # set avoidance data
+    _AVOID_TURN = pi/6
     _AVOID_DIST = 0.25
     
     def __init__(self, jerky = False, walking_speed = 1):
