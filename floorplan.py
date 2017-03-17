@@ -4,6 +4,7 @@ Author:
     Annaleah Ernst
 """
 import tf
+import numpy as np
 
 from copy import deepcopy
 from geometry_msgs.msg import Point, Pose, Quaternion
@@ -69,6 +70,10 @@ class FloorPlan():
         Returns: 
             A list of geometry_msg.msgs.Points representing the path on the map.
         """
+        # if there's nothing in the graph, then we just return the destination
+        if not self.graph:
+            return [destination]
+        
         # get the waypoints closest to the start and end
         start = self._getClosestWaypoint(cur_pose)
         end = self._getClosestWaypoint(destination)
@@ -104,7 +109,7 @@ class FloorPlan():
 
         # back out the actual path
         crawler = end
-        path = [destination]
+        path = [] if np.allclose([crawler.location.x, crawler.location.y], [destination.x, destination.y] else [destination]
 
         while True:
             # add the current point to the path at the beginning
