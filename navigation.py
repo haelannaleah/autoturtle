@@ -151,6 +151,7 @@ class Navigation(Motion):
     
         # if we hit something, stop
         elif self._sensors.bump:
+            self._bumped = True
         
             # stop if we hit something
             if self._motion.walking:
@@ -158,17 +159,15 @@ class Navigation(Motion):
 
             # turn away from what we hit
             self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
-            
-            self._bumped = True
-            
-            # set the needed avoidance angle
-            self._logger.debug("in bump")
 
         # if we've been bumped, turn away!
         elif self._bumped:
+        
+            # set the post bump turn
             if self._avoid_turn is None:
                 self._avoid_turn = self.angle + self._AVOID_BUMP_TURN * self._motion.turn_dir
-            
+        
+            # turn until we reach the appropriate bump angle
             if self._goToOrient(self.angle - self._wrapAngle(self._avoid_turn)):
                 self._avoid_turn = None
                 self._bumped = False
@@ -176,17 +175,24 @@ class Navigation(Motion):
 
         # no colliding with anything
         elif self._sensors.obstacle:
-            self._logger.debug("in obstacle")
             
+            # make sure that we turn away from the obstacle
             if not self._obstacle:
                 self._motion.stopRotation(now = True)
                 self._obstacle = True
                 self._avoiding = True
             
+            # stop so we don't hit anything
             if self._motion.walking:
                 self._motion.stopLinear()
+                
+            # turn away from the obstacle
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
+
+            # set avoidance behavior
+            self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
+            self._avoid_target = None
             
         # if there's a wall, we need to get around it
         elif self._avoiding:
@@ -194,25 +200,25 @@ class Navigation(Motion):
             # we're now in avoidance mode
             self._obstacle = False
             
-            if self._sensors.wall:
-                # turn away from the wall
-                self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
-                
-                # set avoidance behavior
-                self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
-                self._avoid_target = None
-            
+#            if self._sensors.wall:
+#                # turn away from the wall
+#                self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
+#                
+#                # set avoidance behavior
+#                self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
+#                self._avoid_target = None
+
             elif self._avoid_turn is not None:
                 # turn away from any obstacle
                 if self._goToOrient(self.angle - self._wrapAngle(self._avoid_turn)):
                     self._avoid_turn = None
         
             elif self._avoid_target is None:
-                # get the most recent transformation
+                # get the most recent transformation to set target in the odom frame
                 self._avoid_goto.header.stamp = rospy.Time(0)
                 self._avoid_target = self._tf_listener.transformPoint("/odom", self._avoid_goto)
                 
-            # try to get to our avoid position
+            # go to the avoidance way point
             else:
                 if self._goToPos(self._avoid_target.point.x, self._avoid_target.point.y):
                     self._avoiding = False
@@ -308,7 +314,7 @@ class Navigation(Motion):
             x (float): The x coordinate of the desired location (in meters from the origin).
             y (float): The y coordinate of the desired location (in meters from the origin).
         """
-        
+        # if we've encountered some sort of obstacle, we haven't even tried to get to the current position
         if self._checkSensors():
             return False
 
