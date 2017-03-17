@@ -15,8 +15,9 @@ from time import time
 
 from floorplan import FloorPlan
 from logger import Logger
+from tf_transformer import TfTransformer
 
-class Localization():
+class Localization(TfTransformer):
     """ Handle landmark detection and global localization.
     
     Args:
@@ -34,11 +35,8 @@ class Localization():
     Attributes:
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
             their raw form.
-        tags_base (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base frame.
-        self.estimated_pos (geometry_msgs.msg.Point or None): The estimated position of the robot based
-            on the visible tags. None if no tags visible.
-        self.estimated_angle (float or None): The estimated orientation of the robot based on visible tags. 
-            None if no tag visible.
+        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odometry frame.
+        floorplan (FloorPlan): The map of the current space as a floorplan.
     """
     _AR_FOV_LIMIT = 2.0 * pi / 15.0  # radians
     
@@ -59,83 +57,28 @@ class Localization():
         self._prev_odom = [0,0,0,0,0,0,1]
     
         # listen for frame transformations
-        self._tf_listener = tf.TransformListener()
+        TfTransformer.__init__(self)
     
         # subscribe to raw tag data
         rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)
     
-    def _attemptLookup(self, transform_func, target_frame, object):
-        """ Attempt a coordinate frame transformation.
+    def _tagCallback(self, data):
+        """ Extract and process tag data from the ar_pose_marker topic. """
+        if data.markers:
+            # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
+            #   I promise, its less scary than it looks...
+            self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
+            self.tags_odom = self._transformTags('/odom')
+            self._setTransform()
         
-        Args:
-            transform_func (tf.TransformListener() function): A transformation function from the tf module.
-            target_frame (string): The desired final coordinate frame.
-            object (PoseStamped, PointStamped, QuaternionStamped): A stamped object to be transformed.
-            
-        Returns:
-            An object transformed into the correct frame if successful, None otherwise.
-        """
-        try:
-            # attempt transformation
-            return transform_func(target_frame, object)
-        
-        except tf.ExtrapolationException as e:
-            # we're trying to get a transformation that's not current
-            self._logger.warn(e)
-            
-        except tf.LookupException as e:
-            # the transformations aren't being published
-            self._logger.error(str(e) + "Is the mobile base powered on? Has the Turtlebot been brought online?")
-        
-        except Exception as e:
-            # something else went wrong
-            self._logger.error(e)
-        
-        # the transformation failed
-        return None
-    
-    def transformPoint(self, position, from_frame, to_frame):
-        """ Compute coordinate transformation.
-        
-        Args:
-            position (geometry_msgs.msg.Point): A position in the from_frame.
-            from_frame (str, "map" or "odom") The frame that the incoming point is in.
-            to_frame (str, "map" or "odom") The frame that the final point will be in.
-        
-        Returns:
-            A geometry_msgs.msg.Point in the target frame.
-        """
-        from_pos = from_frame + "_pos"
-        to_pos = to_frame + "_pos"
-        
-        # the amount we've moved since we logged a transform point
-        dx = position.x - self._transform[from_pos].x
-        dy = position.y - self._transform[from_pos].y
-        
-        # the amount we've rotated since we've logged a transform point
-        delta = self._transform[to_frame + "_angle"] - self._transform[from_frame + "_angle"] #self._transform[from_frame + "_angle"] - self._transform[to_frame + "_angle"]
-    
-        # now, add this movement back in to last transform point in the desired frame
-        x = self._transform[to_pos].x + dx * cos(delta) - dy * sin(delta)
-        y = self._transform[to_pos].y + dx * sin(delta) + dy * cos(delta)
-    
-        return Point(x, y, 0)
-    
-    def transformAngle(self, angle, from_frame, to_frame):
-        """ Transform an angle from the from frame to the to frame. """
-        
-        # compute transformation
-        transformed_angle = self._transform[to_frame + "_angle"] + angle - self._transform[from_frame + "_angle"]
-        
-        # wrap angle, if necessary
-        if transformed_angle > pi:
-            transformed_angle -= self._TWO_PI
-        elif transformed_angle < -pi:
-            transformed_angle += self._TWO_PI
-        
-        return transformed_angle
+        else:
+            # we don't see any tags, so empty things out
+            self.tags = {}
+            self.tags_odom = {}
     
     def _setTransform(self):
+        """ Set the transformation between the odom frame and the map frame based on current tag info. """
+    
         # attempt to get the id of the closest landmark
         try:
             t = self.tags
@@ -164,85 +107,6 @@ class Localization():
             self._logger.warn("Noisy tag signal. Ignoring.")
 
         self._prev_odom = cur_odom
-    
-#    def _estimatePose(self):
-#        """ Estimate current position based on proximity to landmarks. """
-#        
-#        # attempt to get the id of the closest landmark
-#        try:
-#            t = self.tags_base
-#            
-#            # compute the closest (viable) tag by looking for the smallest distance squared from the robot base
-#            #   among tags that also appear in landmarks
-#            dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.y**2, id) for id in t if id in self.floorplan.landmarks)
-#        
-#        # the argument to min was an empty list; we don't see any familiar landmarks
-#        except (TypeError, ValueError) as e:
-#            self.estimated_pos = None
-#            self.estimated_angle = None
-#            return
-#        
-#        # extract the closest tag and corresponding landmark
-#        closest = self.tags_base[closest_id].pose
-#        map = self.floorplan.landmarks[closest_id]
-#        
-#        # compute the value of the radius between the robot base and the ARtag
-#        r = sqrt(dist2)
-#        
-#        # Note: in the following section, names of angles correspond to symbols in graph
-#        #   <TODO include graph number>
-#        # get the angle between the ARtag's x-axis and the map's x-axis
-#        alpha = map.angle
-#        
-#        # get the angle between the ARtag's x-axis and the robot's x-axis (between 0 and -pi)
-#        q = closest.orientation
-#        beta = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])[-1]
-#        
-#        # get the angle between the robot's x-axis and the vector from the robot base to the tag
-#        gamma = atan2(closest.position.y, closest.position.x)
-#
-#        # compute the angle between the x-axis in the robot frame and the x-axis in the map frame
-#        delta = alpha - beta
-#
-#        # now compute the angle between the map x-axis and the vector to the AR tag
-#        theta = delta + gamma
-#        
-#        # compute the robot position in the map frame
-#        x = map.pose.position.x - r * cos(theta)
-#        y = map.pose.position.y - r * sin(theta)
-#        
-#        # plug this into an estimated pose in the map frame
-#        self.estimated_pos = Point(x,y,0)
-#        self.estimated_angle = delta
-#            
-#        # make sure that we are getting reasonable
-#        if np.allclose([x, y, delta], self._prev_est, atol = 0.1, rtol = 0.05):
-#            
-#            # plug this into an estimated pose in the map frame
-#            self.estimated_pos = Point(x,y,0)
-#            self.estimated_angle = delta
-#
-#        # otherwise, we need to reset estimation
-#        else:
-#            self.estimated_pos = None
-#            self.estimated_angle = None
-#
-#        # update the previous so that we can continue sanity checking
-#        self._prev_est = [x, y, delta]
-
-    def _tagCallback(self, data):
-        """ Extract and process tag data from the ar_pose_marker topic. """
-        if data.markers:
-            # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
-            #   I promise, its less scary than it looks...
-            self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self.tags_odom = self._transformTags('/odom')
-            self._setTransform()
-        
-        else:
-            # we don't see any tags, so empty things out
-            self.tags = {}
-            self.tags_odom = {}
 
     def _transformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
@@ -289,8 +153,7 @@ class Localization():
             #   reported orientation)
             # this will get us the angle between the ARtag's x-axis and the robot base's x-axis
             header.frame_id = '/ar_marker_' + str(id)
-            orientation = self._attemptLookup(self._tf_listener.transformQuaternion, \
-                            target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
+            orientation = self._tf_listener.transformQuaternion(target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
             
             # make sure the look-up succeeded
             if orientation is None:
@@ -300,8 +163,7 @@ class Localization():
             #   frame to get the correct position (note that this step is necessary since we're getting a shallow
             #   copy of the header)
             header.frame_id = '/camera_rgb_optical_frame'
-            position = self._attemptLookup(self._tf_listener.transformPoint, \
-                         target_frame, PointStamped(header, self.tags[id].pose.position))
+            position = self._tf_listener.transformPoint(target_frame, PointStamped(header, self.tags[id].pose.position))
                          
             # make sure the look-up succeeded
             if position is None:
@@ -311,7 +173,48 @@ class Localization():
             transformed[id] = PoseStamped(position.header, Pose(position.point, orientation.quaternion))
             
         return transformed
+    
+    def transformPoint(self, position, from_frame, to_frame):
+        """ Compute coordinate transformation.
         
+        Args:
+            position (geometry_msgs.msg.Point): A position in the from_frame.
+            from_frame (str, "map" or "odom") The frame that the incoming point is in.
+            to_frame (str, "map" or "odom") The frame that the final point will be in.
+        
+        Returns:
+            A geometry_msgs.msg.Point in the target frame.
+        """
+        from_pos = from_frame + "_pos"
+        to_pos = to_frame + "_pos"
+        
+        # the amount we've moved since we logged a transform point
+        dx = position.x - self._transform[from_pos].x
+        dy = position.y - self._transform[from_pos].y
+        
+        # the amount we've rotated since we've logged a transform point
+        delta = self._transform[to_frame + "_angle"] - self._transform[from_frame + "_angle"] #self._transform[from_frame + "_angle"] - self._transform[to_frame + "_angle"]
+    
+        # now, add this movement back in to last transform point in the desired frame
+        x = self._transform[to_pos].x + dx * cos(delta) - dy * sin(delta)
+        y = self._transform[to_pos].y + dx * sin(delta) + dy * cos(delta)
+    
+        return Point(x, y, 0)
+    
+    def transformAngle(self, angle, from_frame, to_frame):
+        """ Transform an angle from the from frame to the to frame. """
+        
+        # compute transformation
+        transformed_angle = self._transform[to_frame + "_angle"] + angle - self._transform[from_frame + "_angle"]
+        
+        # wrap angle, if necessary
+        if transformed_angle > pi:
+            transformed_angle -= self._TWO_PI
+        elif transformed_angle < -pi:
+            transformed_angle += self._TWO_PI
+        
+        return transformed_angle
+    
     def _csvPose(self, landmark_pose):
         """ Convert pose object into csv data. """
         
@@ -350,6 +253,8 @@ class Localization():
                     folder = folder)
 
     def shutdown(self):
+        """ Shutdown localization. """
+        
         self._logger.shutdown()
 
 if __name__ == "__main__":

@@ -34,17 +34,21 @@ class Sensors():
         # subscribe to bump sensor
         self.bump = False
         self.bumper = 0
+        self._bumpers = [False] * 3
         rospy.Subscriber('mobile_base/events/bumper', BumperEvent, self._bumperCallback)
 
         # subscribe to cliff sensor
         self.cliff = False
         self.cliff_sensor = 0
+        self._cliffs = [False] * 3
         rospy.Subscriber('mobile_base/events/cliff', CliffEvent, self._cliffCallback)
         
         # subscribe to depth image for obstacle dectection
         self.depth_img = None
         self.obstacle = False
         self.obstacle_dir = 0
+        self.wall = False
+        self.wall_dir = 0
         self._obstacleDetector = ObstacleDetector()
         self._bridge = CvBridge()
         rospy.Subscriber('/camera/depth/image', Image, self._depthCallback)
@@ -56,8 +60,11 @@ class Sensors():
     def _bumperCallback(self, data):
         """ Handle bump events. """
         
-        # set bump state to True if the bumper is pressed
-        self.bump = bool(data.state == BumperEvent.PRESSED)
+        # record the bump state of the current bumper
+        self._bumpers[data.bumper] = bool(data.state == BumperEvent.PRESSED)
+        
+        # set bump state to True if any of the bumpers are pressed
+        self.bump = any(self._bumpers)
         
         # data comes in as 0 for left, 1 for center, 2 for right, but we want
         #   -1 if left bumper, 0 if middle bumper, 1 if right bumper
@@ -70,7 +77,10 @@ class Sensors():
         """ Handle cliffs. """
         
         # set cliff state to True if we encounter a cliff
-        self.cliff = bool(data.state == CliffEvent.CLIFF)
+        self._cliffs[data.sensor] = bool(data.state == CliffEvent.CLIFF)
+        
+        # set the cliff to true if any of the cliff are true
+        self.cliff = any(self._cliffs[data.sensor])
         
         # data comes in as 0 for left, 1 for center, 2 for right, but we want
         #   -1 if left sensor, 0 if middle sensor, 1 if right sensor.
@@ -87,16 +97,27 @@ class Sensors():
         self.depth_img = self._bridge.imgmsg_to_cv2(data, 'passthrough')
 
         # detect obstacles using the ObstacleDetector
-        if self._obstacleDetector.extractObstacle(self.depth_img) is False:
+        if (self._obstacleDetector.extractObstacle(self.depth_img) is False
+            or self._obstacleDetector.extractWall(self.depth_img) is False):
+            
             self._logger.error("Encountered all NaN slice in depth image.")
     
         # treat obstacle encounter like an event so as not to overwhelm the log
-        elif self._obstacleDetector.obstacle and not self.obstacle:
-            self._logKobuki("ObstacleDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
-    
+        elif self._obstacleDetector.obstacle:
+            if not self.obstacle:
+                self._logKobuki("ObstacleDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
+            
+        # ditto for wall detection
+        elif self._obstacleDetector.wall and not self.wall:
+            self._logKobuki("WallDetector", self._obstacleDetector.obstacle_dir < 0, ["RIGHT", "LEFT"])
+
         # set obstacle state and direction to match the obstacle detector
         self.obstacle = self._obstacleDetector.obstacle
         self.obstacle_dir = self._obstacleDetector.obstacle_dir
+        
+        # ditto for walls
+        self.wall = self._obstacleDetector.wall
+        self.wall_dir = self._obstacleDetector.wall_dir
 
     def _wheelDropCallback(self, data):
         """ Handle wheel drops. """

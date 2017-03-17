@@ -16,37 +16,53 @@ from logger import Logger
 from navigation import Navigation
 
 class NavLoc(Navigation, Localization):
+    """ Navigate and localize on a map.
+    
+    Args:
+        point_ids (set): Unique identifier for each waypoint in the graph.
+        locations (dict): Point_ids mapped to tuples representing locations.
+        neighbors (dict): Point_ids mapped to lists containing other point_ids representing 
+            the current node's neighbors.
+        landmark_ids (set): Unique identifier for each landmark in the graph.
+        landmark_positions (dict): Map AprilTag landmark ids to their absolute
+            position on the floorplan.
+        landmark_angles (dict): Map AprilTag landmark ids to their absolute
+            position on the floorplan. This specifies the angle of rotation of the landmark in the 
+            xy plane; ie, how much has its horizontal vector deviated from the x axis.
+        jerky (bool, optional): If true, robot will not decelerate, but stop abruptly.
+            Defaults to False.
+        walking_speed (float, optional): Percentage of maximum speed, magnitude between 0 and 1.
+                Values with magnitude greater than 1 will be ignored.
+    
+    Attributes:
+        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
+            their raw form.
+        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odometry frame.
+        floorplan (FloorPlan): The map of the current space as a floorplan.
+        p (geometry_msgs.msg.Point): The position of the robot in the ekf odometry frame according to
+            the robot_pose_ekf package.
+        q (geometry_msgs.msg.Quaternion): The orientation of the robot in the ekf odometry frame
+            according the the robot_pose_ekf package.
+        angle (float): The angle (in radians) that the robot is from 0 in the ekf odometry frame. 
+            Between -pi and pi
+        map_pos (geometry_msgs.msg.Point): The position of the robot in the map frame.
+        map_angle (float): The angle (in radians) of the robot in the map frame.
+    """
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
-        # create transformation object
-        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0}
+        # create map position
         self.map_pos = Point()
         self.map_angle = 0
+        
+        # create a path variable so that we can navigate via waypoints
+        self._path = None
     
         # initialize what we're inheriting from
-        Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
         Localization.__init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
-        
-        # create a timer to slow down the amount that we pay attention to landmarks
-        self._timer = float('inf')
+        Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
 
         self._logger = Logger("NavLoc")
-
-    def _getDestData(self, destination):
-        """ Move from current position to desired waypoint in the odomety frame.
-            
-        Args:
-            destination (geometry_msgs.msg.Point): A destination relative to the map origin, in meters.
-        
-        Returns:
-            True if we are close to the desired location 
-            0 if the goal is straight ahead
-            The difference between the current angle and the desired angle if we are not on course.
-                A negative value indicates that the desired angle is that many radians to the left of 
-                the current orientation, positive indicates the desired angle is to the right.
-        """
-        return Navigation._getDestData(self, self.transformPoint(destination, "map", "odom"))
     
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
@@ -57,6 +73,20 @@ class NavLoc(Navigation, Localization):
         # compute map data
         self.map_pos = self.transformPoint(self.p, "odom", "map")
         self.map_angle = self.transformAngle(self.angle, "odom", "map")
+    
+    def goToOrientation(self, angle):
+        """ Go to orientation in the map frame. """
+        return Navigation.goToOrientation(self, self.transformAngle(angle, "map", "odom"))
+    
+    def goToDestViaWaypoints(self, x, y):
+        """ Go the target pos via waypoints from the floorplan. """
+        pass
+        # TODO
+    
+    def goToPosition(self, x, y):
+        """ Go to position x, y, in the map frame"""
+        transformed_point = self.transformPoint(Point(x, y, 0), "map", "odom")
+        return Navigation.goToPosition(self, transformed_point.x, transformed_point.y)
 
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log the arrival of the robot at a waypoint. """
@@ -108,8 +138,8 @@ if __name__ == "__main__":
         def main(self):
             """ The test currently being run. """
             #self.testCCsquare(1)
-            self.testCsquare(1)
-            #self.testLine(1.5)
+            #self.testCsquare(1)
+            self.testLine(1.5)
             self.navloc.csvLogEKF(self.test_name)
             self.navloc.csvLogMap(self.test_name)
             self.navloc.csvLogTransform(self.test_name)
