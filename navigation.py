@@ -63,6 +63,7 @@ class Navigation(Motion):
         # set up obstacle avoidance
         self._avoiding = False
         self._obstacle = False
+        self._bumped = False
         
         # we're going to send the turtlebot to a point a quarter meter ahead of itself
         self._avoid_goto = PointStamped()
@@ -158,21 +159,20 @@ class Navigation(Motion):
             # turn away from what we hit
             self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
             
+            self._bumped = True
+            
             # set the needed avoidance angle
-            bumper = self._sensors.bumper if self._sensors.bumper != 0 else choice([-1,1])
-            self._avoid_turn = self.angle + self._AVOID_BUMP_TURN * bumper
             self._logger.debug("in bump")
 
-#        # if we've been bumped, turn away!
-#        elif self._bumped:
-#            if self._avoid_turn is None:
-#                bumper = self._sensors.bumper if self._sensors.bumper != 0 else choice([-1,1])
-#                self._bump_turn = self.angle + self._BUMP_AVOIDANCE * bumper
-#            
-#            if self._goToOrient(self.angle - self._wrapAngle(self._bump_turn)):
-#                self._bump_turn = None
-#                self._bumped = False
-#                self._avoiding = True
+        # if we've been bumped, turn away!
+        elif self._bumped:
+            if self._avoid_turn is None:
+                self._avoid_turn = self.angle + self._AVOID_BUMP_TURN * self._motion.turn_dir
+            
+            if self._goToOrient(self.angle - self._wrapAngle(self._bump_turn)):
+                self._bump_turn = None
+                self._bumped = False
+                self._avoiding = True
 
         # no colliding with anything
         elif self._sensors.obstacle:
