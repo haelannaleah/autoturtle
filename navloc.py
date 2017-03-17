@@ -80,6 +80,7 @@ class NavLoc(Navigation, Localization):
     
     def goToDestViaWaypoints(self, x, y):
         """ Go the target pos via waypoints from the floorplan. """
+        self._logger.debug(self.floorplan.getShortestPath(self.map_pos, Point(x,y0)), var_name="shortest_path")
         pass
         # TODO
     
