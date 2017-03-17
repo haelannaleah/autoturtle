@@ -174,7 +174,7 @@ class Navigation(Motion):
             if self._obstacle_dir == 0 and self._sensors.obstacle_dir:
                 self._obstacle_dir = self._sensors.obstacle_dir
             else:
-                self._obstacle_dir = choice[-1,1]
+                self._obstacle_dir = choice([-1,1])
             
             if self._motion.walking:
                 self._motion.stopLinear()
