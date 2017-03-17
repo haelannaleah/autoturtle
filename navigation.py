@@ -195,7 +195,7 @@ class Navigation(Motion):
                 
             # try to get to our avoid position
             else:
-                if self._goToPos(self._avoid_target):
+                if self._goToPos(self._avoid_target.point.x, self._avoid_target.point.y):
                     self._avoiding = False
                     self._avoid_target = None
                     return False
