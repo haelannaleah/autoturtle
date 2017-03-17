@@ -5,6 +5,20 @@ Author:
 """
 from tf import TransformListener
 
+class TfTransformer():
+    """ Create a generic listening class.
+    
+    This guarentees that if multiple classes in the same program need a transformer, when only one of them 
+        creates a listener, all the calls are to the correct name.
+    """
+    def __init__(self):
+        # create a class listener
+        try:
+            self._tf_listener = tfListener()
+        except:
+            # we already have a listener (perhaps something else in the program is inheriting)
+            pass
+
 class tfListener(TransformListener):
 
     def _attemptLookup(self, transform_func, target_frame, object):

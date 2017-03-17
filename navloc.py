@@ -19,8 +19,7 @@ class NavLoc(Navigation, Localization):
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         
-        # create transformation object
-        self._transform = {"map_pos": Point(0,0,0), "map_angle": 0, "ekf_pos": Point(0,0,0), "ekf_angle": 0}
+        # create map position
         self.map_pos = Point()
         self.map_angle = 0
     

@@ -15,9 +15,9 @@ from time import time
 
 from floorplan import FloorPlan
 from logger import Logger
-from tf_transformer import tfListener
+from tf_transformer import TfTransformer
 
-class Localization():
+class Localization(TfTransformer):
     """ Handle landmark detection and global localization.
     
     Args:
@@ -60,7 +60,7 @@ class Localization():
         self._prev_odom = [0,0,0,0,0,0,1]
     
         # listen for frame transformations
-        self._tf_listener = tfListener()
+        TfTransformer.__init__(self)
     
         # subscribe to raw tag data
         rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)

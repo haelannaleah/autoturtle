@@ -16,9 +16,9 @@ from time import time
 from logger import Logger
 from motion import Motion
 from sensors import Sensors
-from tf_transformer import tfListener
+from tf_transformer import TfTransformer
 
-class Navigation(Motion):
+class Navigation(Motion, TfTransformer):
     """ Local navigation.
     
     Args:
@@ -71,7 +71,9 @@ class Navigation(Motion):
         self._avoid_goto.point.x = self._AVOID_DIST
         self._avoid_target = None
         self._avoid_turn = None
-        self._tf_listener = tfListener()
+        
+        # listen for frame transformations
+        TfTransformer.__init__(self)
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
