@@ -24,8 +24,8 @@ class NavLoc(Navigation, Localization):
         self.map_angle = 0
     
         # initialize what we're inheriting from
-        Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
         Localization.__init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
+        Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
 
         self._logger = Logger("NavLoc")
     
