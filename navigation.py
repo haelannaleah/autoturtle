@@ -103,16 +103,6 @@ class Navigation(Motion, TfTransformer):
         #   extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w])[-1]
 
-    def _wrapAngle(self, angle):
-        """ Set the turn angle to behave as the angle that is the minimum distance from our current pose.
-        
-        Note:
-            The closest equivalent angle may be slightly greater than pi or slightly less than -pi; we want
-                angles at pi and -pi to behave as if they are right next to each other, so we may need to wrap
-                around by adding or subtracting two pi.
-        """
-        return min([angle, angle + self._TWO_PI, angle - self._TWO_PI], key = lambda a: abs(a - self.angle))
-
     def _getDestData(self, dest_x, dest_y):
         """ Move from current position to desired waypoint in the odomety frame.
             
@@ -193,32 +183,37 @@ class Navigation(Motion, TfTransformer):
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
             
-        # if there's a wall, we need to get around it
+        # otherwise, we go into avoidance mode
         elif self._avoiding:
             
-            # we're now in avoidance mode
+            # if we encounter a new obstacle, we want to turn in the right way
             self._obstacle = False
             
+            # if we see a wall while we're avoiding, we should deal with it
             if self._sensors.wall:
+            
                 # turn away from the wall
                 self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
                 
                 # set avoidance behavior
                 self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
                 self._avoid_target = None
-
+            
             elif self._avoid_turn is not None:
-                # turn away from any obstacle
+            
+                # turn in the prescribed avoidance direction
                 if self._goToOrient(self.angle - self._wrapAngle(self._avoid_turn)):
                     self._avoid_turn = None
         
             elif self._avoid_target is None:
+            
                 # get the most recent transformation to set target in the odom frame
                 self._avoid_goto.header.stamp = rospy.Time(0)
                 self._avoid_target = self._tf_listener.transformPoint("/odom", self._avoid_goto)
-                
-            # go to the avoidance way point
+            
             else:
+            
+                # go to the avoidance way point
                 if self._goToPos(self._avoid_target.point.x, self._avoid_target.point.y):
                     self._avoiding = False
                     self._avoid_target = None
@@ -291,6 +286,16 @@ class Navigation(Motion, TfTransformer):
 
         # we're still moving towards our goal (or our stopping point), or we've gotten trapped
         return False
+        
+    def _wrapAngle(self, angle):
+        """ Set the turn angle to behave as the angle that is the minimum distance from our current pose.
+        
+        Note:
+            The closest equivalent angle may be slightly greater than pi or slightly less than -pi; we want
+                angles at pi and -pi to behave as if they are right next to each other, so we may need to wrap
+                around by adding or subtracting two pi.
+        """
+        return min([angle, angle + self._TWO_PI, angle - self._TWO_PI], key = lambda a: abs(a - self.angle))
         
     def goToOrientation(self, angle):
         """ Go to orientation in the odometry frame. """
