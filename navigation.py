@@ -331,12 +331,13 @@ if __name__ == "__main__":
             if not self.reached_corner[0]:
                 self.reached_corner[0] = self.navigation.goToPosition(0, 0)
                 if self.reached_corner[0]:
-                    self.logger.debug("logging")
+                    self.logger.debug("reached corner 0")
                     self.navigation.csvLogArrival(self.filename, 0, 0)
         
             elif self.navigation.goToPosition(length, 0):
                 self.reached_corner[0] = False
                 self.navigation.csvLogArrival(self.filename, length, 0)
+                self.logger.debug("reached corner 1")
     
         def testCCsquare(self, length):
             """ Test a counter clockwise square. 
