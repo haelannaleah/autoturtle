@@ -59,7 +59,6 @@ class Navigation(Motion):
         self._logger = Logger("Navigation")
         self._avoiding = False
         self._avoid_time = 0
-        self._obstacle_dir = 0
         
         self._bumped = False
 
@@ -134,10 +133,7 @@ class Navigation(Motion):
             
             if self._motion.starting:
                 self._avoid_time = time()
-            
-#            self._motion.stopRotation(now = self._jerky)
-#            self._motion.walk(speed = self._walking_speed)
-#            self._logger.debug("avoiding")
+    
         else:
             self._avoiding = False
     
@@ -171,22 +167,19 @@ class Navigation(Motion):
         # no colliding with anything
         elif self._sensors.obstacle:
             self._logger.debug("in obstacle")
-            
-            if self._obstacle_dir == 0 and self._sensors.obstacle_dir != 0:
-                self._obstacle_dir = self._sensors.obstacle_dir
-            else:
-                self._obstacle_dir = choice([-1,1])
+            if not self._avoiding:
+                self._motion.stopRotation(now = True)
             
             if self._motion.walking:
                 self._motion.stopLinear()
             
-            self._motion.turn(self._obstacle_dir > 0)
+            self._motion.turn(self._sensors.obstacle_dir > 0)
             self._avoid_time = time()
             
         # if there's a wall, we need to get around it
         elif self._sensors.wall and self._avoiding:
             self._logger.debug("in wall")
-            self._motion.turn(self._obstacle_dir > 0, speed = self._MIN_MOVING_TURN_SPEED)
+            self._motion.turn(self._sensors.wall_dir > 0, speed = self._MIN_MOVING_TURN_SPEED)
             self._motion.walk(speed = self._walking_speed)
 
         else:
