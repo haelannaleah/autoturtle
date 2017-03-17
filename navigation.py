@@ -182,7 +182,7 @@ class Navigation(Motion):
         elif self._avoiding:
             if self._sensors.wall:
                 # make sure the wall is in the right direction
-                if (nav_val <= 0) != (self._sensors.wall_dir > 0):
+                if (nav_val > 0) != (self._sensors.wall_dir > 0):
                     self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
                 else:
                     self._avoid_time = 0
