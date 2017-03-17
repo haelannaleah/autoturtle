@@ -47,7 +47,8 @@ class Navigation(Motion):
     _MIN_LINEAR_SPEED = .25
     
     # set avoidance data
-    _AVOID_TURN = pi/6
+    _AVOID_BUMP_TURN = pi/6
+    _AVOID_TURN = .2
     _AVOID_DIST = 0.25
     
     def __init__(self, jerky = False, walking_speed = 1):
@@ -158,7 +159,8 @@ class Navigation(Motion):
             self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
             
             # set the needed avoidance angle
-            self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
+            bumper = self._sensors.bumper if self._sensors.bumper != 0 else choice([-1,1])
+            self._avoid_turn = self.angle + self._AVOID_BUMP_TURN * bumper
             self._logger.debug("in bump")
 
 #        # if we've been bumped, turn away!
@@ -176,10 +178,10 @@ class Navigation(Motion):
         elif self._sensors.obstacle:
             self._logger.debug("in obstacle")
             
-            self._avoiding = True
-            
             if not self._obstacle:
                 self._motion.stopRotation(now = True)
+                self._obstacle = True
+                self._avoiding = True
             
             if self._motion.walking:
                 self._motion.stopLinear()
@@ -188,7 +190,10 @@ class Navigation(Motion):
             
         # if there's a wall, we need to get around it
         elif self._avoiding:
+            
+            # we're now in avoidance mode
             self._obstacle = False
+            
             if self._sensors.wall:
                 # turn away from the wall
                 self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
