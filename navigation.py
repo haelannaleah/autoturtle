@@ -46,7 +46,7 @@ class Navigation(Motion):
     _MIN_LINEAR_SPEED = .25
     
     # set avoidance time
-    _AVOID_TIME = 2
+    _AVOID_TIME = 1
     _BUMP_TIME = 1
     
     def __init__(self, jerky = False, walking_speed = 1):
@@ -182,6 +182,7 @@ class Navigation(Motion):
         elif self._avoiding:
             if self._sensors.wall:
                 self._motion.turn(self._sensors.wall_dir > 0, speed = self._MIN_MOVING_TURN_SPEED)
+                self._avoid_time = time()
             
             self._logger.debug("in wall")
             self._motion.walk(speed = self._walking_speed)
