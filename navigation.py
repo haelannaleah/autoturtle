@@ -63,7 +63,7 @@ class Navigation(Motion):
         # set up obstacle avoidance
         self._avoiding = False
         self._bumped = False
-        self._bump_turn
+        self._bump_turn = None
         
         # we're going to send the turtlebot to a point a quarter meter ahead of itself
         self._avoid_goto = PointStamped()
