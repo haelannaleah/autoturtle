@@ -62,6 +62,10 @@ class FloorPlan():
     def getShortestPath(self, cur_pose, destination):
         """ Compute the shortest path from the current position to the destination (Djikstra's). 
         
+        Note:
+            The shortest path algorithm will only return to points actually on the map. If the map is empty, 
+                it will return the destination provided.
+        
         Args:
             cur_pose (geometry_msg.msgs.Point): The current position of the robot with respect to the map origin.
             destination (geometry_msg.msgs.Point): The position of the desired destination with resepect to the 
@@ -107,9 +111,9 @@ class FloorPlan():
                     dist2[neighbor] = test_dist2
                     prev[neighbor] = closest_id
 
-        # back out the actual path
+        # back out the actual path of waypoints in the graph
         crawler = end
-        path = [] if np.allclose([crawler.location.x, crawler.location.y], [destination.x, destination.y] else [destination]
+        path = []
 
         while True:
             # add the current point to the path at the beginning
