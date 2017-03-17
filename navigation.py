@@ -7,7 +7,7 @@ import rospy
 import tf
 import numpy as np
 
-from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion
+from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion, PointStamped
 from math import atan2, pi, sqrt
 from random import choice
 from std_msgs.msg import Empty
@@ -16,6 +16,7 @@ from time import time
 from logger import Logger
 from motion import Motion
 from sensors import Sensors
+from tf_transformer import tfTransformer
 
 class Navigation(Motion):
     """ Local navigation.
@@ -47,7 +48,7 @@ class Navigation(Motion):
     
     # set avoidance time
     _AVOID_TIME = 2
-    _BUMP_TIME = 1
+    _BUMP_AVOIDANCE = pi/6
     
     def __init__(self, jerky = False, walking_speed = 1):
     
@@ -57,10 +58,15 @@ class Navigation(Motion):
         self._jerky = jerky
         self._walking_speed = min(abs(walking_speed), 1)
         self._logger = Logger("Navigation")
-        self._avoiding = False
-        self._avoid_time = 0
         
+        # set up obstacle avoidance
+        self._avoiding = False
         self._bumped = False
+        self._avoid_goto = PointStamped()
+        self._avoid_goto.header.frame_id = "/base_footprint"
+        self._avoid_goto.point.x = .25
+        self._avoid_target = None
+        self._transformer = tfTransformer()
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
@@ -90,6 +96,16 @@ class Navigation(Motion):
         #   extract the only non zero euler angle as the angle of rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w])[-1]
 
+    def _wrapAngle(self, angle):
+        """ Set the turn angle to behave as the angle that is the minimum distance from our current pose.
+        
+        Note:
+            The closest equivalent angle may be slightly greater than pi or slightly less than -pi; we want
+                angles at pi and -pi to behave as if they are right next to each other, so we may need to wrap
+                around by adding or subtracting two pi.
+        """
+        return min([angle, angle + self._TWO_PI, angle - self._TWO_PI], key = lambda a: abs(a - self.angle))
+
     def _getDestData(self, destination):
         """ Move from current position to desired waypoint in the odomety frame.
             
@@ -107,10 +123,7 @@ class Navigation(Motion):
         turn = atan2(destination.y - self.p.y, destination.x - self.p.x)
         
         # set the turn angle to behave as the angle that is the minimum distance from our current pose
-        #   the closest equivalent angle may be slightly greater than pi or slightly less than -pi; we want
-        #   angles at pi and -pi to behave as if they are right next to each other, so we may need to wrap
-        #   around by adding or subtractive two pi
-        turn_angle = min([turn, turn + self._TWO_PI, turn - self._TWO_PI], key = lambda t: abs(t - self.angle))
+        turn_angle = self._wrapAngle(turn)
 
         # we're (pretty) near our final location
         if np.allclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.05):
@@ -126,16 +139,6 @@ class Navigation(Motion):
 
     def _checkSensors(self, nav_val):
         """ Take stock of sensor data when deciding how to move. """
-        
-        # if we're in avoidance mode, just go forward
-        if time() - self._avoid_time < self._AVOID_TIME:
-            self._avoiding = True
-            
-            if self._motion.starting:
-                self._avoid_time = time()
-    
-        else:
-            self._avoiding = False
     
         # if we see a cliff or get picked up, stop
         if self._sensors.cliff or self._sensors.wheeldrop:
@@ -147,22 +150,21 @@ class Navigation(Motion):
             self._bumped = True
             if self._motion.walking:
                 self._motion.stopLinear(now = True)
-            
-            self._motion._avoid_time = time()
+
             self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
             self._bumper = self._sensors.bumper
             self._logger.debug("in bump")
 
         # if we've been bumped, turn away!
         elif self._bumped:
-            self._logger.debug("in bumped")
-            if time() - self._avoid_time < self._BUMP_TIME:
-                self._motion.stopLinear(now = True)
-                self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
-            else:
-                self._motion.stopRotation(now = True)
+            if self._bump_turn is None:
+                bumper = self._sensors.bumper if self._sensors.bumper != 0 else choice([-1,1])
+                self._bump_turn = self.angle + self._BUMP_AVOIDANCE * bumper
+            
+            if self._goToOrient(self.angle - self._wrapAngle(self._bump_turn)):
+                self._bump_turn = None
                 self._bumped = False
-                self._avoid_time = time()
+                self._avoiding = True
         
         # no colliding with anything
         elif self._sensors.obstacle:
@@ -170,45 +172,79 @@ class Navigation(Motion):
             
             if not self._avoiding:
                 self._motion.stopRotation(now = True)
+                self._avoiding = True
             
             if self._motion.walking:
                 self._motion.stopLinear()
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
             
-            self._avoid_time = time()
-            
         # if there's a wall, we need to get around it
         elif self._avoiding:
         
             if self._sensors.wall:
                 # make sure the wall is in the right direction
-                if (nav_val < 0) != (self._sensors.wall_dir > 0):
-                    self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
-                else:
-                    self._avoid_time = 0
+                self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
+                self._logger.debug("in wall")
+                self._avoid_target = None
+        
+            elif self._avoid_target is None:
+                # get the most recent transformation
+                self._avoid_goto.header.stamp = rospy.Time(0)
+                self._avoid_target = self._transformer.transformPoint("/odom", self._avoid_goto)
+                
+            # try to get to our avoid position
             else:
-                self._motion.stopRotation()
-            
-            self._logger.debug("in wall")
-            self._motion.walk(speed = self._walking_speed)
-
+                if self._goToPos(self._avoid_target):
+                    self._avoiding = False
+                    self._avoid_target = None
+                    return False
         else:
             return False
 
         return True
 
-    def goToPosition(self, x, y):
-        """ Default behavior for navigation (currently, no obstacle avoidance).
+    def goToOrientation(self, angle):
+        """ Set orientation in the odometry frame. """
         
-        Args:
-            x (float): The x coordinate of the desired location (in meters from the origin).
-            y (float): The y coordinate of the desired location (in meters from the origin).
-        """
+        # get the closest equivalent angle to our current pose
+        turn_angle = self._wrapAngle(angle)
+    
+        return self._goToOrient(self.angle-turn_angle)
+    
+    def _goToOrient(self, turn_delta):
+        """ Turn in the direction of the turn delta. """
+        
+        self._logger.debug("turning")
+        
+        # our orientation has gotten off and we need to adjust
+        if np.isclose(turn_delta, 0, atol=0.05):
+            return True
+    
+        # make sure we're turning in the correct direction, and stop the turn if we're not
+        if (turn_delta <= 0) != (self._motion.turn_dir >= 0):
+            self._motion.stopRotation(now = True)
+
+        # don't allow ourselve to spin in circles
+        if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
+            self._motion.stopLinear(now = self._jerky)
+        
+        # don't awkwardly stall at a low speed
+        if self._motion.starting:
+            self._motion.walk(speed=self._walking_speed)
+        
+        # set the differential turn speed
+        differential_turn = (turn_delta / self._HALF_PI)**2
+        
+        # perform our turn # with awareness how far off the target direction we are
+        self._motion.turn(turn_delta < 0,  differential_turn + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
+
+        return False
+
+    def _goToPos(self, x, y):
+        """ Go to a position in the odometry frame. """
+        
         nav_val = self._getDestData(Point(x,y,0))
-        
-        if self._checkSensors(nav_val):
-            return False
         
         # otherwise, did we reach our waypoint?
         if nav_val is True or self._reached_goal is True:
@@ -241,26 +277,24 @@ class Navigation(Motion):
         else:
     
             self._logger.debug("turning")
-    
-            # make sure we're turning in the correct direction, and stop the turn if we're not
-            if (nav_val <= 0) != (self._motion.turn_dir >= 0):
-                self._motion.stopRotation(now = True)
-    
-            # set the differential turn speed
-            differential_turn = abs(nav_val / self._HALF_PI)**2
-
-            # don't allow ourselve to spin in circles
-            if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
-                self._motion.stopLinear(now = self._jerky)
-            
-            elif self._motion.starting:
-                self._motion.walk(speed=self._walking_speed)
-            
-            # perform our turn # with awareness how far off the target direction we are
-            self._motion.turn(nav_val < 0,  differential_turn + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
+            self._goToOrient(nav_val)
 
         # we're still moving towards our goal (or our stopping point), or we've gotten trapped
         return False
+
+    def goToPosition(self, x, y):
+        """ Default behavior for navigation.
+        
+        Args:
+            x (float): The x coordinate of the desired location (in meters from the origin).
+            y (float): The y coordinate of the desired location (in meters from the origin).
+        """
+        
+        if self._checkSensors():
+            return False
+
+        return self._goToPos(x,y)
+
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log Turtlebot's arrival at a waypoint. """
