@@ -54,6 +54,9 @@ class NavLoc(Navigation, Localization):
         # create map position
         self.map_pos = Point()
         self.map_angle = 0
+        
+        # create a path variable so that we can navigate via waypoints
+        self._path = None
     
         # initialize what we're inheriting from
         Localization.__init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
@@ -75,7 +78,7 @@ class NavLoc(Navigation, Localization):
         """ Go to orientation in the map frame. """
         return Navigation.goToOrientation(self, self.transformAngle(angle, "map", "odom"))
     
-    def goToPositionViaWaypoints(self, x, y):
+    def goToDestViaWaypoints(self, x, y):
         """ Go the target pos via waypoints from the floorplan. """
         pass
         # TODO
