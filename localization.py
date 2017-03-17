@@ -68,7 +68,7 @@ class Localization(TfTransformer):
             # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
             #   I promise, its less scary than it looks...
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self.tags_odom = self._transformTags('/odom')
+            self.tags_odom = self._tfTransformTags('/odom')
             self._setTransform()
         
         else:
@@ -108,7 +108,7 @@ class Localization(TfTransformer):
 
         self._prev_odom = cur_odom
 
-    def _transformTags(self, target_frame):
+    def _tfTransformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
         
         Args:
