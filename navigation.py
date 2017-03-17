@@ -208,7 +208,7 @@ class Navigation(Motion):
 #                self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
 #                self._avoid_target = None
 
-            elif self._avoid_turn is not None:
+            if self._avoid_turn is not None:
                 # turn away from any obstacle
                 if self._goToOrient(self.angle - self._wrapAngle(self._avoid_turn)):
                     self._avoid_turn = None
