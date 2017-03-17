@@ -121,10 +121,14 @@ class FloorPlan():
 
             # we've reached our start position
             if prev[crawler] is None:
-                return path
+                break
 
             # otherwise, keep crawling backwards
             crawler = prev[crawler]
+
+        # make sure we don't backtrack to get to the destination; if its more optimal, skip a waypoint
+        if self._dist2(cur_pose, destination) < self._dist2(path[0], destination) and len(path) > 0:
+            return path[1:]
 
 class Landmark():
     """ A wrapper for constructing landmark information.
