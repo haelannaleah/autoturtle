@@ -49,6 +49,7 @@ class Navigation(Motion):
     # set avoidance time
     _AVOID_TIME = 2
     _BUMP_AVOIDANCE = pi/6
+    _AVOID_DIST = 0.25
     
     def __init__(self, jerky = False, walking_speed = 1):
     
@@ -62,9 +63,12 @@ class Navigation(Motion):
         # set up obstacle avoidance
         self._avoiding = False
         self._bumped = False
+        self._bump_turn
+        
+        # we're going to send the turtlebot to a point a quarter meter ahead of itself
         self._avoid_goto = PointStamped()
         self._avoid_goto.header.frame_id = "/base_footprint"
-        self._avoid_goto.point.x = .25
+        self._avoid_goto.point.x = self._AVOID_DIST
         self._avoid_target = None
         self._transformer = tfTransformer()
 
