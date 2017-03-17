@@ -266,20 +266,8 @@ class Navigation(Motion):
         nav_val = self._getDestData(Point(x,y,0))
         
         # otherwise, did we reach our waypoint?
-        if nav_val is True or self._reached_goal is True:
-            self._logger.debug("reached goal")
-        
-            # we've reached a waypoint, but we may still need to stop
-            self._reached_goal = True
-            
-            # give ourselves a moment to stop if we're not in jerky mode
-            if self._motion.walking or self._motion.turning:
-                self._motion.stop(now = self._jerky)
-            
-            # let the user know that we made it!
-            else:
-                self._reached_goal = False
-                return True
+        if nav_val is True:
+            return True
         
         # our goal is straight ahead
         elif nav_val == 0:
@@ -311,8 +299,26 @@ class Navigation(Motion):
         
         if self._checkSensors():
             return False
-
-        return self._goToPos(x,y)
+        
+        # otherwise, did we reach our waypoint?
+        if self._reached_goal is True:
+            self._logger.debug("reached goal")
+            
+            # give ourselves a moment to stop if we're not in jerky mode
+            if self._motion.walking or self._motion.turning:
+                self._motion.stop(now = self._jerky)
+            
+            # let the user know that we made it!
+            else:
+                self._reached_goal = False
+                return True
+        
+        reached_pos = self._goToPos(x,y)
+        
+        if not self._reached_goal:
+            self._reached_goal = reached_pos
+        
+        return False
 
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
