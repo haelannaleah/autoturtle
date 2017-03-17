@@ -226,7 +226,7 @@ class Navigation(Motion):
             self._motion.stopRotation(now = True)
 
         # don't allow ourselve to spin in circles
-        if self._motion.walking and abs(nav_val) > self._MAX_MOVING_TURN:
+        if self._motion.walking and abs(turn_delta) > self._MAX_MOVING_TURN:
             self._motion.stopLinear(now = self._jerky)
         
         # don't awkwardly stall at a low speed
