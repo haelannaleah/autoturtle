@@ -231,10 +231,8 @@ class Navigation(Motion, TfTransformer):
     def _goToOrient(self, turn_delta):
         """ Turn in the direction of the turn delta. """
         
-        self._logger.debug("turning")
-        
-        # our orientation has gotten off and we need to adjust
         if np.isclose(turn_delta, 0, atol=0.05):
+            # we're facing the direction we're supposed to
             return True
     
         # make sure we're turning in the correct direction, and stop the turn if we're not
@@ -252,7 +250,7 @@ class Navigation(Motion, TfTransformer):
         # set the differential turn speed
         differential_turn = (turn_delta / self._HALF_PI)**2
         
-        # perform our turn # with awareness how far off the target direction we are
+        # perform our turn with awareness how far off the target direction we are
         self._motion.turn(turn_delta < 0,  differential_turn + (self._MIN_MOVING_TURN_SPEED if self._motion.walking else self._MIN_STATIONARY_TURN_SPEED))
 
         return False
@@ -264,7 +262,6 @@ class Navigation(Motion, TfTransformer):
         
         # otherwise, did we reach our waypoint?
         if nav_val is True or self._reached_goal is True:
-            self._logger.debug("reached goal")
         
             # we've reached a waypoint, but we may still need to stop
             self._reached_goal = True
@@ -280,7 +277,6 @@ class Navigation(Motion, TfTransformer):
         
         # our goal is straight ahead
         elif nav_val == 0:
-            self._logger.debug("straight ahead")
         
             # if we're turning, we need to stop
             if self._motion.turning:
@@ -291,8 +287,6 @@ class Navigation(Motion, TfTransformer):
         
         # we need to turn to reach our goal
         else:
-    
-            self._logger.debug("turning")
             self._goToOrient(nav_val)
 
         # we're still moving towards our goal (or our stopping point), or we've gotten trapped
