@@ -43,6 +43,11 @@ class NavLoc(Navigation, Localization):
         """ Go to orientation in the map frame. """
         return Navigation.goToOrientation(self, self.transformAngle(angle, "map", "odom"))
     
+    def goToPositionViaWaypoints(self, x, y):
+        """ Go the target pos via waypoints from the floorplan. """
+        pass
+        # TODO
+    
     def goToPosition(self, x, y):
         """ Go to position x, y, in the map frame"""
         transformed_point = self.transformPoint(Point(x, y, 0), "map", "odom")
@@ -98,8 +103,8 @@ if __name__ == "__main__":
         def main(self):
             """ The test currently being run. """
             #self.testCCsquare(1)
-            self.testCsquare(1)
-            #self.testLine(1.5)
+            #self.testCsquare(1)
+            self.testLine(1.5)
             self.navloc.csvLogEKF(self.test_name)
             self.navloc.csvLogMap(self.test_name)
             self.navloc.csvLogTransform(self.test_name)
