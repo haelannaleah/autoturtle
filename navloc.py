@@ -16,6 +16,38 @@ from logger import Logger
 from navigation import Navigation
 
 class NavLoc(Navigation, Localization):
+    """ Navigate and localize on a map.
+    
+    Args:
+        point_ids (set): Unique identifier for each waypoint in the graph.
+        locations (dict): Point_ids mapped to tuples representing locations.
+        neighbors (dict): Point_ids mapped to lists containing other point_ids representing 
+            the current node's neighbors.
+        landmark_ids (set): Unique identifier for each landmark in the graph.
+        landmark_positions (dict): Map AprilTag landmark ids to their absolute
+            position on the floorplan.
+        landmark_angles (dict): Map AprilTag landmark ids to their absolute
+            position on the floorplan. This specifies the angle of rotation of the landmark in the 
+            xy plane; ie, how much has its horizontal vector deviated from the x axis.
+        jerky (bool, optional): If true, robot will not decelerate, but stop abruptly.
+            Defaults to False.
+        walking_speed (float, optional): Percentage of maximum speed, magnitude between 0 and 1.
+                Values with magnitude greater than 1 will be ignored.
+    
+    Attributes:
+        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
+            their raw form.
+        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odometry frame.
+        floorplan (FloorPlan): The map of the current space as a floorplan.
+        p (geometry_msgs.msg.Point): The position of the robot in the ekf odometry frame according to
+            the robot_pose_ekf package.
+        q (geometry_msgs.msg.Quaternion): The orientation of the robot in the ekf odometry frame
+            according the the robot_pose_ekf package.
+        angle (float): The angle (in radians) that the robot is from 0 in the ekf odometry frame. 
+            Between -pi and pi
+        map_pos (geometry_msgs.msg.Point): The position of the robot in the map frame.
+        map_angle (float): The angle (in radians) of the robot in the map frame.
+    """
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles, jerky = False, walking_speed = 1):
         

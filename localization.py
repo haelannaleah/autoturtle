@@ -35,11 +35,8 @@ class Localization(TfTransformer):
     Attributes:
         tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
             their raw form.
-        tags_base (geometry_msgs.msg.PoseStamped dict): Same as above, but in the robot base frame.
-        self.estimated_pos (geometry_msgs.msg.Point or None): The estimated position of the robot based
-            on the visible tags. None if no tags visible.
-        self.estimated_angle (float or None): The estimated orientation of the robot based on visible tags. 
-            None if no tag visible.
+        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odometry frame.
+        floorplan (FloorPlan): The map of the current space as a floorplan.
     """
     _AR_FOV_LIMIT = 2.0 * pi / 15.0  # radians
     
