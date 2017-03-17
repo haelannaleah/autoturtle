@@ -189,10 +189,6 @@ class Navigation(Motion):
             # turn away from the obstacle
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
-
-            # set avoidance behavior
-            self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
-            self._avoid_target = None
             
         # if there's a wall, we need to get around it
         elif self._avoiding:
@@ -200,15 +196,15 @@ class Navigation(Motion):
             # we're now in avoidance mode
             self._obstacle = False
             
-#            if self._sensors.wall:
-#                # turn away from the wall
-#                self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
-#                
-#                # set avoidance behavior
-#                self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
-#                self._avoid_target = None
+            if self._sensors.wall:
+                # turn away from the wall
+                self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
+                
+                # set avoidance behavior
+                self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
+                self._avoid_target = None
 
-            if self._avoid_turn is not None:
+            elif self._avoid_turn is not None:
                 # turn away from any obstacle
                 if self._goToOrient(self.angle - self._wrapAngle(self._avoid_turn)):
                     self._avoid_turn = None
