@@ -171,7 +171,8 @@ class Navigation(Motion):
         # no colliding with anything
         elif self._sensors.obstacle:
             self._logger.debug("in obstacle")
-            if self._obstacle_dir == 0 and self._sensors.obstacle_dir:
+            
+            if self._obstacle_dir == 0 and self._sensors.obstacle_dir != 0:
                 self._obstacle_dir = self._sensors.obstacle_dir
             else:
                 self._obstacle_dir = choice([-1,1])
