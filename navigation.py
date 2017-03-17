@@ -169,8 +169,8 @@ class Navigation(Motion):
             if self._avoid_turn is None:
                 self._avoid_turn = self.angle + self._AVOID_BUMP_TURN * self._motion.turn_dir
             
-            if self._goToOrient(self.angle - self._wrapAngle(self._bump_turn)):
-                self._bump_turn = None
+            if self._goToOrient(self.angle - self._wrapAngle(self._avoid_turn)):
+                self._avoid_turn = None
                 self._bumped = False
                 self._avoiding = True
 
