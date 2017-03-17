@@ -179,9 +179,9 @@ class Navigation(Motion):
             
             if self._motion.walking:
                 self._motion.stopLinear()
-            else:
-                self._motion.turn(self._obstacle_dir > 0)
-                self._avoid_time = time()
+            
+            self._motion.turn(self._obstacle_dir > 0)
+            self._avoid_time = time()
             
         # if there's a wall, we need to get around it
         elif self._sensors.wall and self._avoiding:
