@@ -61,7 +61,7 @@ class Navigation(Motion):
         
         # set up obstacle avoidance
         self._avoiding = False
-        self._bumped = False
+        self._obstacle = False
         
         # we're going to send the turtlebot to a point a quarter meter ahead of itself
         self._avoid_goto = PointStamped()
@@ -176,9 +176,10 @@ class Navigation(Motion):
         elif self._sensors.obstacle:
             self._logger.debug("in obstacle")
             
-            if not self._avoiding:
+            self._avoiding = True
+            
+            if not self._obstacle:
                 self._motion.stopRotation(now = True)
-                self._avoiding = True
             
             if self._motion.walking:
                 self._motion.stopLinear()
@@ -187,7 +188,7 @@ class Navigation(Motion):
             
         # if there's a wall, we need to get around it
         elif self._avoiding:
-        
+            self._obstacle = False
             if self._sensors.wall:
                 # turn away from the wall
                 self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
