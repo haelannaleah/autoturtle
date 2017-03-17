@@ -74,15 +74,44 @@ class NavLoc(Navigation, Localization):
         self.map_pos = self.transformPoint(self.p, "odom", "map")
         self.map_angle = self.transformAngle(self.angle, "odom", "map")
     
+    def _handleObstacle(self):
+        """ Handle obstacle and reset path if necessary. """
+        
+        if Navigation._handleObstacle(self):
+            self._path = None
+            return True
+            
+        return False
+    
     def goToOrientation(self, angle):
         """ Go to orientation in the map frame. """
         return Navigation.goToOrientation(self, self.transformAngle(angle, "map", "odom"))
     
-    def goToDestViaWaypoints(self, x, y):
-        """ Go the target pos via waypoints from the floorplan. """
-        self._logger.debug(self.floorplan.getShortestPath(self.map_pos, Point(x,y,0)), var_name="shortest_path")
-        pass
-        # TODO
+    def takePathToDest(self, x, y):
+        """ Go the target pos via waypoints from the floorplan. 
+        
+        Args:
+            x (float): The destination x coord in the map frame.
+            y (float): The destination y coord in the map frame.
+        """
+        
+        # we currently aren't on a mission, or we've been interrupted
+        if self._path is None:
+            self.floorplan.getShortestPath(self.map_pos, Point(x,y,0)
+        
+        # we've arrived a waypoint on our path to destination
+        if self.goToPosition(path[0].x, path[0].y):
+            self._logger.info("Arrived at waypoint " + str((x, y)) + " (map position is " +
+                str((self.map_pos.x, self.map_pos.y)) + ")")
+            path.pop(0)
+            
+        # we've cleared out the traversal path, so we've reached our goal
+        if not self._path:
+            self._path = None
+            return True
+        
+        # we're still on our way to the destination
+        return False
     
     def goToPosition(self, x, y):
         """ Go to position x, y, in the map frame"""
@@ -156,6 +185,10 @@ if __name__ == "__main__":
             self.logger.info("Arrived at " + str((x, y)) + " (map position is " +
                 str((self.navloc.map_pos.x, self.navloc.map_pos.y)) + ")")
             self.navloc.csvLogArrival(self.test_name, x, y)
+            
+        def testPath(self, x, y):
+            # TODO: create map
+            pass
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
