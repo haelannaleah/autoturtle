@@ -41,11 +41,11 @@ class NavLoc(Navigation, Localization):
     
     def goToOrientation(self, angle):
         """ Go to orientation in the map frame. """
-        Navigation.goToOrientation(self, self.transformAngle(angle))
+        Navigation.goToOrientation(self, self.transformAngle(angle, "map", "odom"))
     
     def goToPosition(self, x, y):
         """ Go to position x, y, in the map frame"""
-        transformed_point = self.transformPoint("map", "odom")
+        transformed_point = self.transformPoint(Point(x, y, 0), "map", "odom")
         Navigation.goToPosition(self, transformed_point.x, transformed_point.y)
 
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
