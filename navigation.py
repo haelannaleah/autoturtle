@@ -63,13 +63,13 @@ class Navigation(Motion):
         # set up obstacle avoidance
         self._avoiding = False
         self._bumped = False
-        self._bump_turn = None
         
         # we're going to send the turtlebot to a point a quarter meter ahead of itself
         self._avoid_goto = PointStamped()
         self._avoid_goto.header.frame_id = "/base_footprint"
         self._avoid_goto.point.x = self._AVOID_DIST
         self._avoid_target = None
+        self._avoid_turn = None
         self._transformer = tfTransformer()
 
         # subscibe to the robot_pose_ekf odometry information
@@ -151,25 +151,29 @@ class Navigation(Motion):
         # if we hit something, stop
         elif self._sensors.bump:
         
-            self._bumped = True
+            # stop if we hit something
             if self._motion.walking:
                 self._motion.stopLinear(now = True)
 
+            # turn away from what we hit
             self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
-            self._bumper = self._sensors.bumper
+            
+            # set the needed avoidance angle
+            bumper = self._sensors.bumper if self._sensors.bumper != 0 else choice([-1,1])
+            self._avoid_turn = self.angle + self._AVOID_TURN * bumper
             self._logger.debug("in bump")
 
-        # if we've been bumped, turn away!
-        elif self._bumped:
-            if self._bump_turn is None:
-                bumper = self._sensors.bumper if self._sensors.bumper != 0 else choice([-1,1])
-                self._bump_turn = self.angle + self._BUMP_AVOIDANCE * bumper
-            
-            if self._goToOrient(self.angle - self._wrapAngle(self._bump_turn)):
-                self._bump_turn = None
-                self._bumped = False
-                self._avoiding = True
-        
+#        # if we've been bumped, turn away!
+#        elif self._bumped:
+#            if self._avoid_turn is None:
+#                bumper = self._sensors.bumper if self._sensors.bumper != 0 else choice([-1,1])
+#                self._bump_turn = self.angle + self._BUMP_AVOIDANCE * bumper
+#            
+#            if self._goToOrient(self.angle - self._wrapAngle(self._bump_turn)):
+#                self._bump_turn = None
+#                self._bumped = False
+#                self._avoiding = True
+
         # no colliding with anything
         elif self._sensors.obstacle:
             self._logger.debug("in obstacle")
@@ -187,10 +191,18 @@ class Navigation(Motion):
         elif self._avoiding:
         
             if self._sensors.wall:
-                # make sure the wall is in the right direction
+                # turn away from the wall
                 self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
-                self._logger.debug("in wall")
+                
+                # set avoidance behavior
+                direction = self._sensors.wall_dir if self._sensors.wall_dir != 0 else choice([-1,1])
+                self._avoid_turn = self.angle + self._AVOID_TURN * direction
                 self._avoid_target = None
+            
+            elif self._avoid_turn is not None:
+                # turn away from any obstacle
+                if self._goToOrient(self.angle - self._wrapAngle(self._avoid_turn)):
+                    self._avoid_turn = None
         
             elif self._avoid_target is None:
                 # get the most recent transformation
