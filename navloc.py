@@ -27,26 +27,8 @@ class NavLoc(Navigation, Localization):
         # initialize what we're inheriting from
         Navigation.__init__(self, jerky = jerky, walking_speed = walking_speed)
         Localization.__init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles)
-        
-        # create a timer to slow down the amount that we pay attention to landmarks
-        self._timer = float('inf')
 
         self._logger = Logger("NavLoc")
-
-    def _getDestData(self, destination):
-        """ Move from current position to desired waypoint in the odomety frame.
-            
-        Args:
-            destination (geometry_msgs.msg.Point): A destination relative to the map origin, in meters.
-        
-        Returns:
-            True if we are close to the desired location 
-            0 if the goal is straight ahead
-            The difference between the current angle and the desired angle if we are not on course.
-                A negative value indicates that the desired angle is that many radians to the left of 
-                the current orientation, positive indicates the desired angle is to the right.
-        """
-        return Navigation._getDestData(self, self.transformPoint(destination, "map", "odom"))
     
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
@@ -57,6 +39,15 @@ class NavLoc(Navigation, Localization):
         # compute map data
         self.map_pos = self.transformPoint(self.p, "odom", "map")
         self.map_angle = self.transformAngle(self.angle, "odom", "map")
+    
+    def goToOrientation(self, angle):
+        """ Go to orientation in the map frame. """
+        Navigation.goToOrientation(self, self.transformAngle(angle))
+    
+    def goToPosition(self, x, y):
+        """ Go to position x, y, in the map frame"""
+        transformed_point = self.transformPoint("map", "odom")
+        Navigation.goToPosition(self, transformed_point.x, transformed_point.y)
 
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log the arrival of the robot at a waypoint. """

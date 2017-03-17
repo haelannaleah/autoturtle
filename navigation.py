@@ -47,7 +47,7 @@ class Navigation(Motion):
     _MIN_LINEAR_SPEED = .25
     
     # set avoidance data
-    _AVOID_BUMP_TURN = pi/6
+    _AVOID_BUMP_TURN = pi / 6
     _AVOID_TURN = .2
     _AVOID_DIST = 0.25
     
@@ -111,11 +111,12 @@ class Navigation(Motion):
         """
         return min([angle, angle + self._TWO_PI, angle - self._TWO_PI], key = lambda a: abs(a - self.angle))
 
-    def _getDestData(self, destination):
+    def _getDestData(self, dest_x, dest_y):
         """ Move from current position to desired waypoint in the odomety frame.
             
         Args:
-            destination (geometry_msgs.msg.Point): A destination relative to the origin, in meters.
+            dest_x: Distance from the x origin in meters.
+            dest_y: Distance from the y origin in meters.
         
         Returns:
             True if we are close to the desired location 
@@ -125,13 +126,13 @@ class Navigation(Motion):
                 the current orientation, positive indicates the desired angle is to the right.
         """
         # take the angle between our position and destination in the ekf odom_combined frame
-        turn = atan2(destination.y - self.p.y, destination.x - self.p.x)
+        turn = atan2(dest_y - self.p.y, dest_x - self.p.x)
         
         # set the turn angle to behave as the angle that is the minimum distance from our current pose
         turn_angle = self._wrapAngle(turn)
 
         # we're (pretty) near our final location
-        if np.allclose([self.p.x, self.p.y], [destination.x, destination.y], atol=.05):
+        if np.allclose([self.p.x, self.p.y], [dest_x, dest_y], atol=.05):
             return True
         
         # our orientation has gotten off and we need to adjust
@@ -142,7 +143,7 @@ class Navigation(Motion):
         else:
             return 0
 
-    def _checkSensors(self):
+    def _handleObstacle(self):
         """ Take stock of sensor data when deciding how to move. """
     
         # if we see a cliff or get picked up, stop
@@ -224,14 +225,6 @@ class Navigation(Motion):
             return False
 
         return True
-
-    def goToOrientation(self, angle):
-        """ Set orientation in the odometry frame. """
-        
-        # get the closest equivalent angle to our current pose
-        turn_angle = self._wrapAngle(angle)
-    
-        return self._goToOrient(self.angle-turn_angle)
     
     def _goToOrient(self, turn_delta):
         """ Turn in the direction of the turn delta. """
@@ -265,7 +258,7 @@ class Navigation(Motion):
     def _goToPos(self, x, y):
         """ Go to a position in the odometry frame. """
         
-        nav_val = self._getDestData(Point(x,y,0))
+        nav_val = self._getDestData(x, y)
         
         # otherwise, did we reach our waypoint?
         if nav_val is True or self._reached_goal is True:
@@ -302,20 +295,27 @@ class Navigation(Motion):
 
         # we're still moving towards our goal (or our stopping point), or we've gotten trapped
         return False
+        
+    def goToOrientation(self, angle):
+        """ Go to orientation in the odometry frame. """
+        
+        # get the closest equivalent angle to our current pose
+        turn_angle = self._wrapAngle(angle)
+    
+        return self._goToOrient(self.angle-turn_angle)
 
     def goToPosition(self, x, y):
-        """ Default behavior for navigation.
+        """ Go to waypoint in the odometry frame.
         
         Args:
             x (float): The x coordinate of the desired location (in meters from the origin).
             y (float): The y coordinate of the desired location (in meters from the origin).
         """
         # if we've encountered some sort of obstacle, we haven't even tried to get to the current position
-        if self._checkSensors():
+        if self._handleObstacle():
             return False
 
         return self._goToPos(x,y)
-
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log Turtlebot's arrival at a waypoint. """
