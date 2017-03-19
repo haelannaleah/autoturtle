@@ -17,7 +17,7 @@ class ObstacleDetector():
         obstacle_dir (int): -1 if the obstacle is on the left, 1 if the obstacle is on the right.
     """
     # obstacle detection constants
-    _OBSTACLE_DIST_THRESH =  0.7    # distance threshold for obstacles to the Turtlebot
+    _OBSTACLE_DIST_THRESH =  0.6    # distance threshold for obstacles to the Turtlebot
     _OBSTACLE_SAMPLE_WIDTH = 0.3    # slice of the robot's vision to check for obstacles
     _WALL_SAMPLE_WIDTH = 0.4
 
