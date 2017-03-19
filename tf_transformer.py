@@ -53,8 +53,8 @@ class tfListener(tf.TransformListener):
 
     def transformQuaternion(self, target_frame, stamped_object):
         """ Transform stamped object from the frame in its header to the target frame. """
-        return self._attemptLookup(TransformListener.transformQuaternion, target_frame, stamped_object)
+        return self._attemptLookup(tf.TransformListener.transformQuaternion, target_frame, stamped_object)
 
     def transformPoint(self, target_frame, stamped_object):
         """ Transform stamped object from the frame in its header to the target frame. """
-        return self._attemptLookup(TransformListener.transformPoint, target_frame, stamped_object)
+        return self._attemptLookup(tf.TransformListener.transformPoint, target_frame, stamped_object)
