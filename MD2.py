@@ -4,6 +4,8 @@ Author:
     Annaleah Ernst
 """
 
+from math import pi
+
 points = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U'}
 
 locations = { 'A' : (-2.1336, -20.1168),
@@ -66,6 +68,12 @@ rooms = {253 : 'A',
     }
 
 # of the form {tag_id : map_location}
-landmarks = {1 : (-2.4384, 11.8872),
+landmarks = {1, 2}
+
+landmark_pos = {1 : (-2.4384, 11.8872),
     2 : (-2.4384, 7.9248)
+    }
+
+landmark_orient = {1 : pi / 2.0,
+    2 : pi / 2.0
     }

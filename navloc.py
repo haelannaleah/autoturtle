@@ -131,6 +131,7 @@ class NavLoc(Navigation, Localization):
         self._logger.csv(test_name + "_mappose", ["X", "Y", "yaw"], [self.map_pos.x, self.map_pos.y, self.map_angle], folder = folder)
 
 if __name__ == "__main__":
+    import MD2
     from tester import Tester
     from math import pi
     
@@ -158,12 +159,17 @@ if __name__ == "__main__":
             # set up the logger output file
             self.test_name = None
         
-            # set map location of the landmark
-            landmarks = {0}
-            landmark_positions = {0:(2,0)}
-            landmark_orientations = {0:-pi/2}
+            # set up points on map
+            point_ids = MD2.points #{}
+            locations = MD2.locations #{}
+            neighbors = MD2.neighbors #{}
         
-            self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
+            # set map location of the landmark
+            landmarks = MD2.landmarks #{0}
+            landmark_positions = MD2.#{0:(2,0)}
+            landmark_orientations = #{0:-pi/2}
+        
+            self.navloc = NavLoc(point_ids, locations, neighbors,landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
 
         def main(self):
             """ The test currently being run. """
