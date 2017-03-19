@@ -174,27 +174,27 @@ class Navigation(Motion, TfTransformer):
         # no colliding with anything
         elif self._sensors.obstacle:
             
-            # make sure that we turn away from the obstacle
-            if not self._obstacle:
-                self._motion.stopRotation(now = True)
-                self._obstacle = True
-                self._avoiding = True
-            
             # stop so we don't hit anything
             if self._motion.walking:
                 self._motion.stopLinear()
-                
-            # turn away from the obstacle if necessary
-            elif turn_delta == 0 or (self._sensors.obstacle_dir > 0 == turn_delta < 0):
-                self._motion.turn(self._sensors.obstacle_dir > 0)
-                self._logger.debug("turning away")
-            
-            # if the way we need to turn aligns with the way the robot wants to turn, we let it play out
-            else:
+        
+            # we're already turning in the right direction to not hit anything
+            elif turn_delta != 0 and (self._sensors.obstacle_dir > 0 == turn_delta < 0):
                 self._logger.debug("different turn")
                 self._obstacle = False
                 self._avoiding = False
                 return False
+                
+            # make sure that we turn away from the obstacle
+            elif not self._obstacle:
+                self._motion.stopRotation(now = True)
+                self._obstacle = True
+                self._avoiding = True
+                
+            # turn away from the obstacle if necessary
+            else:
+                self._motion.turn(self._sensors.obstacle_dir > 0)
+                self._logger.debug("turning away")
             
         # otherwise, we go into avoidance mode
         elif self._avoiding:
