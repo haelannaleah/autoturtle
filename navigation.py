@@ -323,7 +323,7 @@ class Navigation(Motion, TfTransformer):
         # if we've encountered some sort of obstacle, we haven't even tried to get to the current position
         turn_delta = self._getDestData(x, y)
         
-        if self._handleObstacle():
+        if self._handleObstacle(turn_delta):
             return False
 
         return self._goToPos(turn_delta)
