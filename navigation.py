@@ -376,8 +376,8 @@ if __name__ == "__main__":
         def main(self):
             """ The test currently being run. """
             #self.testCCsquare(1)
-            #self.testCsquare(1)
-            self.testLine(1.5)
+            self.testCsquare(1)
+            #self.testLine(1.5)
             self.navigation.csvLogEKF(self.filename)
         
         def initFile(self, filename):
