@@ -4,7 +4,6 @@ Author:
     Annaleah Ernst
 """
 import tf
-from logger import Logger
 
 class TfTransformer():
     """ Create a generic listening class.
@@ -21,8 +20,6 @@ class TfTransformer():
             pass
 
 class tfListener(tf.TransformListener):
-    def __init__(self):
-        self._logger = Logger("TfListener")
 
     def _attemptLookup(self, transform_func, target_frame, object):
         """ Attempt a coordinate frame transformation.
@@ -36,21 +33,23 @@ class tfListener(tf.TransformListener):
             An object transformed into the correct frame if successful, None otherwise.
         """
         try:
-            # attempt transformation
-            return transform_func(self, target_frame, object)
-        
-        except tf.ExtrapolationException as e:
-            # we're trying to get a transformation that's not current
-            self._logger.warn(e)
+            try:
+                # attempt transformation
+                return transform_func(self, target_frame, object)
             
-        except tf.LookupException as e:
-            # the transformations aren't being published
-            self._logger.error(str(e) + "Is the mobile base powered on? Has the Turtlebot been brought online?")
-        
-        except Exception as e:
-            # something else went wrong
-            self._logger.error(e)
-        
+            except tf.ExtrapolationException as e:
+                # we're trying to get a transformation that's not current
+                self._logger.warn(e)
+                
+            except tf.LookupException as e:
+                # the transformations aren't being published
+                self._logger.error(str(e) + "Is the mobile base powered on? Has the Turtlebot been brought online?")
+            
+            except Exception as e:
+                # something else went wrong
+                self._logger.error(e)
+        except:
+            pass
         # the transformation failed
         return None
 
