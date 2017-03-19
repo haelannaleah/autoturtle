@@ -98,7 +98,6 @@ class NavLoc(Navigation, Localization):
         # we currently aren't on a mission, or we've been interrupted
         if self._path is None:
             self._path = self.floorplan.getShortestPath(self.map_pos, Point(x,y,0))
-            self._logger.debug(self._path)
         
         # we've arrived a waypoint on our path to destination
         if self.goToPosition(self._path[0].x, self._path[0].y):
