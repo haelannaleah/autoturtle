@@ -183,8 +183,8 @@ class Navigation(Motion, TfTransformer):
             if self._motion.walking:
                 self._motion.stopLinear()
                 
-            # turn away from the obstacle
-            elif (self._sensors.obstacle_dir > 0 != turn_delta < 0):
+            # turn away from the obstacle if necessary
+            elif turn_delta == 0 or (self._sensors.obstacle_dir > 0 != turn_delta < 0):
                 self._motion.turn(self._sensors.obstacle_dir > 0)
             
             # if the way we need to turn aligns with the way the robot wants to turn, we let it play out
@@ -260,11 +260,11 @@ class Navigation(Motion, TfTransformer):
 
         return False
 
-    def _goToPos(self, nav_val):
+    def _goToPos(self, turn_delta):
         """ Go to a position in the odometry frame. """
         
         # otherwise, did we reach our waypoint?
-        if nav_val is True or self._reached_goal is True:
+        if turn_delta is True or self._reached_goal is True:
         
             # we've reached a waypoint, but we may still need to stop
             self._reached_goal = True
@@ -279,7 +279,7 @@ class Navigation(Motion, TfTransformer):
                 return True
         
         # our goal is straight ahead
-        elif nav_val == 0:
+        elif turn_delta == 0:
         
             # if we're turning, we need to stop
             if self._motion.turning:
@@ -290,7 +290,7 @@ class Navigation(Motion, TfTransformer):
         
         # we need to turn to reach our goal
         else:
-            self._goToOrient(nav_val)
+            self._goToOrient(turn_delta)
 
         # we're still moving towards our goal (or our stopping point), or we've gotten trapped
         return False
@@ -311,7 +311,7 @@ class Navigation(Motion, TfTransformer):
         # get the closest equivalent angle to our current pose
         turn_angle = self._wrapAngle(angle)
     
-        return self._goToOrient(self.angle-turn_angle)
+        return self._goToOrient(self.angle - turn_angle)
 
     def goToPosition(self, x, y):
         """ Go to waypoint in the odometry frame.
@@ -321,12 +321,12 @@ class Navigation(Motion, TfTransformer):
             y (float): The y coordinate of the desired location (in meters from the origin).
         """
         # if we've encountered some sort of obstacle, we haven't even tried to get to the current position
-        nav_val = self._getDestData(x, y)
+        turn_delta = self._getDestData(x, y)
         
-        if self._handleObstacle(nav_val):
+        if self._handleObstacle(turn_delta):
             return False
 
-        return self._goToPos(nav_val)
+        return self._goToPos(turn_delta)
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log Turtlebot's arrival at a waypoint. """
