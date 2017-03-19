@@ -172,7 +172,7 @@ if __name__ == "__main__":
             self.navloc = NavLoc(point_ids, locations, neighbors,landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
         
             # set the destinations
-            destinations = [self.navloc.floorplan.graph['T'], self.navloc.floorplan.graph['R']]
+            self.destination = [self.navloc.floorplan.graph['T'], self.navloc.floorplan.graph['R']]
 
         def main(self):
             """ The test currently being run. """
