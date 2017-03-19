@@ -135,7 +135,7 @@ class Navigation(Motion, TfTransformer):
         else:
             return 0
 
-    def _handleObstacle(self):
+    def _handleObstacle(self, turn_delta):
         """ Take stock of sensor data when deciding how to move. """
     
         # if we see a cliff or get picked up, stop
@@ -165,6 +165,10 @@ class Navigation(Motion, TfTransformer):
                 self._avoid_turn = None
                 self._bumped = False
                 self._avoiding = True
+        
+        # if we've just reached a goal, no reason to stop and turn unnecessarily
+        elif self._reached_goal and self.stopping:
+            return False
 
         # no colliding with anything
         elif self._sensors.obstacle:
@@ -180,8 +184,14 @@ class Navigation(Motion, TfTransformer):
                 self._motion.stopLinear()
                 
             # turn away from the obstacle
-            else:
+            elif (self._sensors.obstacle_dir > 0 != turn_delta < 0):
                 self._motion.turn(self._sensors.obstacle_dir > 0)
+            
+            # if the way we need to turn aligns with the way the robot wants to turn, we let it play out
+            else:
+                self._obstacle = False
+                self._avoiding = False
+                return False
             
         # otherwise, we go into avoidance mode
         elif self._avoiding:
@@ -214,7 +224,7 @@ class Navigation(Motion, TfTransformer):
             else:
             
                 # go to the avoidance way point
-                if self._goToPos(self._avoid_target.point.x, self._avoid_target.point.y):
+                if self._goToPos(self._getDestData(self._avoid_target.point.x, self._avoid_target.point.y)):
                     self._avoiding = False
                     self._avoid_target = None
                     return False
@@ -250,10 +260,8 @@ class Navigation(Motion, TfTransformer):
 
         return False
 
-    def _goToPos(self, x, y):
+    def _goToPos(self, nav_val):
         """ Go to a position in the odometry frame. """
-        
-        nav_val = self._getDestData(x, y)
         
         # otherwise, did we reach our waypoint?
         if nav_val is True or self._reached_goal is True:
@@ -313,10 +321,12 @@ class Navigation(Motion, TfTransformer):
             y (float): The y coordinate of the desired location (in meters from the origin).
         """
         # if we've encountered some sort of obstacle, we haven't even tried to get to the current position
-        if self._handleObstacle():
+        nav_val = self._getDestData(x, y)
+        
+        if self._handleObstacle(nav_val):
             return False
 
-        return self._goToPos(x,y)
+        return self._goToPos(nav_val)
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log Turtlebot's arrival at a waypoint. """
