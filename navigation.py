@@ -53,6 +53,9 @@ class Navigation(Motion, TfTransformer):
     
     def __init__(self, jerky = False, walking_speed = 1):
     
+        # listen for frame transformations
+        TfTransformer.__init__(self)
+    
         # initialize motion component of navigation
         self._motion = Motion()
         self._sensors = Sensors()
@@ -71,9 +74,6 @@ class Navigation(Motion, TfTransformer):
         self._avoid_goto.point.x = self._AVOID_DIST
         self._avoid_target = None
         self._avoid_turn = None
-        
-        # listen for frame transformations
-        TfTransformer.__init__(self)
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None

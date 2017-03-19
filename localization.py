@@ -41,8 +41,9 @@ class Localization(TfTransformer):
     _AR_FOV_LIMIT = 2.0 * pi / 15.0  # radians
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
-        # set up logger and csv logging
-        self._logger = Logger("Localization")
+        
+        # listen for frame transformations
+        TfTransformer.__init__(self)
         
         # store raw tag data, data in the odom frame, and data in the base frame
         self.tags = {}
@@ -55,9 +56,9 @@ class Localization(TfTransformer):
         
         # smooth data by selectively sampling
         self._prev_odom = [0,0,0,0,0,0,1]
-    
-        # listen for frame transformations
-        TfTransformer.__init__(self)
+        
+        # set up logger and csv logging
+        self._logger = Logger("Localization")
     
         # subscribe to raw tag data
         rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)
