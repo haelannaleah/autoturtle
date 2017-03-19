@@ -160,14 +160,14 @@ if __name__ == "__main__":
             self.test_name = None
         
             # set up points on map
-            point_ids = MD2.points #{}
-            locations = MD2.locations #{}
-            neighbors = MD2.neighbors #{}
+            point_ids ={} # MD2.points
+            locations = {}# MD2.locations
+            neighbors = {}#MD2.neighbors
         
             # set map location of the landmark
-            landmarks = MD2.landmarks #{0}
-            landmark_positions = MD2.landmark_pos #{0:(2,0)}
-            landmark_orientations = MD2.landmark_orient #{0:-pi/2}
+            landmarks = {}#MD2.landmarks
+            landmark_positions = {}#MD2.landmark_pos
+            landmark_orientations = {}#MD2.landmark_orient
         
             self.navloc = NavLoc(point_ids, locations, neighbors,landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
         
