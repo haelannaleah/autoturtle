@@ -102,7 +102,7 @@ class NavLoc(Navigation, Localization):
         # we've arrived a waypoint on our path to destination
         if self.goToPosition(self._path[0].x, self._path[0].y):
             self._logger.info("Arrived at waypoint " + str((self._path.x, self._path.y)) + " (map position is " +
-                str((self.map_pos.x, self.map_pos.y)) + ")")
+                str(self.map_pos) + ")")
             path.pop(0)
             
         # we've cleared out the traversal path, so we've reached our goal
