@@ -193,7 +193,7 @@ class Navigation(Motion, TfTransformer):
                 self._avoiding = False
                 return False
             
-        # otherwise, we go into avoidance mode
+        # otherwise, we go into avoidance mode 
         elif self._avoiding:
             
             # if we encounter a new obstacle, we want to turn in the right way
