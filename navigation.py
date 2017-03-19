@@ -180,7 +180,7 @@ class Navigation(Motion, TfTransformer):
         
             # we're already turning in the right direction to not hit anything
             elif turn_delta != 0 and (self._sensors.obstacle_dir > 0 == turn_delta < 0):
-                self._logger.debug("different turn")
+                self._logger.debug("same turn")
                 self._obstacle = False
                 self._avoiding = False
                 return False
@@ -190,6 +190,7 @@ class Navigation(Motion, TfTransformer):
                 self._motion.stopRotation(now = True)
                 self._obstacle = True
                 self._avoiding = True
+                self._logger.debug(obstacling)
                 
             # turn away from the obstacle if necessary
             else:
