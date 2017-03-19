@@ -168,6 +168,7 @@ class Navigation(Motion, TfTransformer):
         
         # if we've just reached a goal, no reason to stop and turn unnecessarily
         elif self._reached_goal and self._motion.stopping:
+            self._logger.debug("in stop")
             return False
 
         # no colliding with anything
@@ -186,9 +187,11 @@ class Navigation(Motion, TfTransformer):
             # turn away from the obstacle if necessary
             elif turn_delta == 0 or (self._sensors.obstacle_dir > 0 != turn_delta < 0):
                 self._motion.turn(self._sensors.obstacle_dir > 0)
+                self._logger.debug("turning away")
             
             # if the way we need to turn aligns with the way the robot wants to turn, we let it play out
             else:
+                self._logger.debug("different turn")
                 self._obstacle = False
                 self._avoiding = False
                 return False
