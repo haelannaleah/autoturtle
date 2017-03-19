@@ -10,6 +10,7 @@ import numpy as np
 from copy import deepcopy
 from geometry_msgs.msg import Pose, Point, Quaternion
 from math import sin, cos, pi
+from time import time()
 
 from localization import Localization
 from logger import Logger
@@ -64,6 +65,11 @@ class NavLoc(Navigation, Localization):
 
         self._logger = Logger("NavLoc")
     
+        # give ourselves a second to see if there's a nearby AR tag
+        timer = time()
+        while time() - timer < 0.5:
+            pass
+    
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
         
@@ -73,12 +79,6 @@ class NavLoc(Navigation, Localization):
         # compute map data
         self.map_pos = self.transformPoint(self.p, "odom", "map")
         self.map_angle = self.transformAngle(self.angle, "odom", "map")
-    
-    def _setTransform(self):
-        """ Set the transform between odom and map and reset path so as to use the most recent info. """
-        
-        Localization._setTransform(self)
-        self._path = None
     
     def _handleObstacle(self, turn_delta):
         """ Handle obstacle and reset path if necessary. """
