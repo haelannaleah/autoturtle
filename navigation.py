@@ -193,7 +193,7 @@ class Navigation(Motion, TfTransformer):
                 self._avoiding = False
                 return False
             
-        # otherwise, we go into avoidance mode 
+        # otherwise, we go into avoidance mode
         elif self._avoiding:
             
             # if we encounter a new obstacle, we want to turn in the right way
@@ -323,7 +323,7 @@ class Navigation(Motion, TfTransformer):
         # if we've encountered some sort of obstacle, we haven't even tried to get to the current position
         turn_delta = self._getDestData(x, y)
         
-        if self._handleObstacle(turn_delta):
+        if self._handleObstacle():
             return False
 
         return self._goToPos(turn_delta)
