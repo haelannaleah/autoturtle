@@ -130,6 +130,8 @@ class FloorPlan():
         if self._dist2(cur_pose, destination) < self._dist2(path[0], destination) and len(path) > 0:
             return path[1:]
 
+        return path
+
 class Landmark():
     """ A wrapper for constructing landmark information.
     
