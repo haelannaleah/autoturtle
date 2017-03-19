@@ -3,7 +3,7 @@
 Author:
     Annaleah Ernst
 """
-from tf import TransformListener
+import tf
 
 class TfTransformer():
     """ Create a generic listening class.
@@ -19,7 +19,7 @@ class TfTransformer():
             # we already have a listener (perhaps something else in the program is inheriting)
             pass
 
-class tfListener(TransformListener):
+class tfListener(tf.TransformListener):
 
     def _attemptLookup(self, transform_func, target_frame, object):
         """ Attempt a coordinate frame transformation.
