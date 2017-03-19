@@ -80,7 +80,7 @@ class Sensors():
         self._cliffs[data.sensor] = bool(data.state == CliffEvent.CLIFF)
         
         # set the cliff to true if any of the cliff are true
-        self.cliff = any(self._cliffs[data.sensor])
+        self.cliff = any(self._cliffs)
         
         # data comes in as 0 for left, 1 for center, 2 for right, but we want
         #   -1 if left sensor, 0 if middle sensor, 1 if right sensor.
