@@ -167,7 +167,7 @@ class Navigation(Motion, TfTransformer):
                 self._avoiding = True
         
         # if we've just reached a goal, no reason to stop and turn unnecessarily
-        elif self._reached_goal and self.stopping:
+        elif self._reached_goal and self._motion.stopping:
             return False
 
         # no colliding with anything
