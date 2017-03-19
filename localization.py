@@ -278,7 +278,6 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            self.localization.csvLogEstimated(self.csvtestname)
             self.localization.csvLogRawTags(self.csvtestname)
         
         def screenLog(self, landmark, id):
