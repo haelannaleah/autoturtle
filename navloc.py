@@ -114,7 +114,6 @@ class NavLoc(Navigation, Localization):
         # we've cleared out the traversal path, so we've reached our goal
         if self._path == []:
             self._path = None
-            self._logger.debug("no path!")
             return True
         
         # we're still on our way to the destination
