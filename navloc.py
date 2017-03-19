@@ -74,10 +74,10 @@ class NavLoc(Navigation, Localization):
         self.map_pos = self.transformPoint(self.p, "odom", "map")
         self.map_angle = self.transformAngle(self.angle, "odom", "map")
     
-    def _handleObstacle(self):
+    def _handleObstacle(self, turn_delta):
         """ Handle obstacle and reset path if necessary. """
         
-        if Navigation._handleObstacle(self):
+        if Navigation._handleObstacle(self, turn_delta):
             self._path = None
             return True
             
