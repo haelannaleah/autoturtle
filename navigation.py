@@ -67,6 +67,7 @@ class Navigation(Motion, TfTransformer):
         self._avoiding = False
         self._obstacle = False
         self._bumped = False
+        self._bumper = 0
         
         # we're going to send the turtlebot to a point a quarter meter ahead of itself
         self._avoid_goto = PointStamped()
@@ -144,14 +145,16 @@ class Navigation(Motion, TfTransformer):
     
         # if we hit something, stop
         elif self._sensors.bump:
-            self._bumped = True
+            if not self._bumped:
+                self._bumped = True
+                self._bumper = self._sensors.bumper
         
             # stop if we hit something
             if self._motion.walking:
                 self._motion.stopLinear(now = True)
 
             # turn away from what we hit
-            self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
+            self._motion.turn(self._bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
 
         # if we've been bumped, turn away!
         elif self._bumped:
