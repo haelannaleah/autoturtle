@@ -185,7 +185,7 @@ class Navigation(Motion, TfTransformer):
                 self._motion.stopLinear()
                 
             # turn away from the obstacle if necessary
-            elif turn_delta == 0 or (self._sensors.obstacle_dir > 0 != turn_delta < 0):
+            elif turn_delta == 0 or (self._sensors.obstacle_dir > 0 == turn_delta < 0):
                 self._motion.turn(self._sensors.obstacle_dir > 0)
                 self._logger.debug("turning away")
             
