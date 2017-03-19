@@ -203,7 +203,7 @@ if __name__ == "__main__":
                 if self.reached_corner[0]:
                     self.logArrival("office 1", self.destination[0].x, self.destination[0].y)
             elif self.navloc.takePathToDest(self.destination[1].x, self.destination[1].y):
-                self.reached_corner[0]
+                self.reached_corner[0] = False
                 self.logArrival("office 2", self.destination[1].x, self.destination[1].y)
         
         def testLine(self, length):
