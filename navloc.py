@@ -112,7 +112,7 @@ class NavLoc(Navigation, Localization):
             self._path.pop(0)
             
         # we've cleared out the traversal path, so we've reached our goal
-        if not self._path:
+        if self._path == []:
             self._path = None
             self._logger.debug("no path!")
             return True
