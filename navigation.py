@@ -179,7 +179,7 @@ class Navigation(Motion, TfTransformer):
                 self._motion.stopLinear()
         
             # we're already turning in the right direction to not hit anything
-            elif turn_delta != 0 and (self._sensors.obstacle_dir > 0 == turn_delta < 0) and :
+            elif turn_delta != 0 and (self._sensors.obstacle_dir > 0 == turn_delta < 0):
                 self._logger.debug("same turn")
                 self._obstacle = False
                 self._avoiding = False
