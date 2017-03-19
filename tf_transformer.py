@@ -4,6 +4,7 @@ Author:
     Annaleah Ernst
 """
 import tf
+from logger impot Logger
 
 class TfTransformer():
     """ Create a generic listening class.
@@ -20,6 +21,8 @@ class TfTransformer():
             pass
 
 class tfListener(tf.TransformListener):
+    def __init__(self):
+        self._logger = Logger("TfListener")
 
     def _attemptLookup(self, transform_func, target_frame, object):
         """ Attempt a coordinate frame transformation.
