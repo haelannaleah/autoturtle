@@ -135,7 +135,7 @@ class Navigation(Motion, TfTransformer):
         else:
             return 0
 
-    def _handleObstacle(self, turn_delta):
+    def _handleObstacle(self):
         """ Take stock of sensor data when deciding how to move. """
     
         # if we see a cliff or get picked up, stop
@@ -168,7 +168,6 @@ class Navigation(Motion, TfTransformer):
         
         # if we've just reached a goal, no reason to stop and turn unnecessarily
         elif self._reached_goal and self._motion.stopping:
-            self._logger.debug("in stop")
             return False
 
         # no colliding with anything
@@ -177,13 +176,6 @@ class Navigation(Motion, TfTransformer):
             # stop so we don't hit anything
             if self._motion.walking:
                 self._motion.stopLinear()
-        
-            # we're already turning in the right direction to not hit anything
-            elif turn_delta != 0 and (self._sensors.obstacle_dir > 0 == turn_delta < 0):
-                self._logger.debug("same turn")
-                self._obstacle = False
-                self._avoiding = False
-                return False
                 
             # make sure that we turn away from the obstacle
             elif not self._obstacle:
@@ -325,12 +317,11 @@ class Navigation(Motion, TfTransformer):
             y (float): The y coordinate of the desired location (in meters from the origin).
         """
         # if we've encountered some sort of obstacle, we haven't even tried to get to the current position
-        turn_delta = self._getDestData(x, y)
         
-        if self._handleObstacle(turn_delta):
+        if self._handleObstacle():
             return False
 
-        return self._goToPos(turn_delta)
+        return self._goToPos(self._getDestData(x, y))
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log Turtlebot's arrival at a waypoint. """
