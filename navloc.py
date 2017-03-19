@@ -158,7 +158,7 @@ if __name__ == "__main__":
             self.corner_counter = 0
         
             # set up the logger output file
-            self.test_name = None
+            self.test_name = "path"
         
             # set up points on map
             point_ids = MD2.points
@@ -193,7 +193,6 @@ if __name__ == "__main__":
             self.test_name = filename + ("jerky" if self.jerky else "smooth")
         
         def logArrival(self, name, x, y):
-            self.test_name = "path"
             self.logger.info("Arrived at " + str((x, y)) + " (map position is " +
                 str((self.navloc.map_pos.x, self.navloc.map_pos.y)) + ")")
             self.navloc.csvLogArrival(self.test_name, x, y)
