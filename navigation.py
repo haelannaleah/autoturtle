@@ -185,12 +185,10 @@ class Navigation(Motion, TfTransformer):
                 self._motion.stopRotation(now = True)
                 self._obstacle = True
                 self._avoiding = True
-                self._logger.debug("obstacling")
                 
             # turn away from the obstacle if necessary
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
-                self._logger.debug("turning away")
             
         # otherwise, we go into avoidance mode
         elif self._avoiding:
