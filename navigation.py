@@ -258,7 +258,7 @@ class Navigation(Motion, TfTransformer):
 
         return False
 
-    def _goToPos(self, turn_delta):
+    def _goToPos(self, turn_delta, dest_x, dest_y):
         """ Go to a position in the odometry frame. """
         
         # otherwise, did we reach our waypoint?
@@ -266,7 +266,7 @@ class Navigation(Motion, TfTransformer):
         
             # we've reached a waypoint, but we may still need to stop
             # make sure our arrival wasn't a glitch
-            self._reached_goal = True
+            self._reached_goal = bool(abs(self.p.x - dest_x) < 1 and abs(self.p.y - dest_y) < 1)
             
             # give ourselves a moment to stop if we're not in jerky mode
             if self._motion.walking or self._motion.turning:
@@ -326,7 +326,7 @@ class Navigation(Motion, TfTransformer):
         if self._handleObstacle():
             return False
 
-        return self._goToPos(self._target_turn_delta)
+        return self._goToPos(self._target_turn_delta, x, y)
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log Turtlebot's arrival at a waypoint. """
