@@ -359,7 +359,7 @@ if __name__ == "__main__":
             #self.motion = Motion()
             
             # flag for a jerky stop
-            self.jerky = True
+            self.jerky = False
             
             # I'm a bit concerned about robot safety if we don't slow things down,
             # but I'm also worried it won't be an accurate test if we change the speed
@@ -382,8 +382,8 @@ if __name__ == "__main__":
         def main(self):
             """ The test currently being run. """
             #self.testCCsquare(1)
-            self.testCsquare(1)
-            #self.testLine(1.5)
+            #self.testCsquare(1)
+            self.testLine(1.5)
             self.navigation.csvLogEKF(self.filename)
         
         def initFile(self, filename):
