@@ -266,7 +266,7 @@ class Navigation(Motion, TfTransformer):
         
             # we've reached a waypoint, but we may still need to stop
             # make sure our arrival wasn't a glitch
-            self._reached_goal = bool(abs(self.p.x - dest_x) < 1 and abs(self.p.y - dest_y) < 1)
+            self._reached_goal = True
             
             # give ourselves a moment to stop if we're not in jerky mode
             if self._motion.walking or self._motion.turning:
