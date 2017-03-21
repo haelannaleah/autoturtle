@@ -105,8 +105,6 @@ class NavLoc(Navigation, Localization):
         if self._path is None:
             self._path = self.floorplan.getShortestPath(self.map_pos, Point(x,y,0))
         
-        self._logger.debug("Approaching " + str((self._path[0].x, self._path[0].y)))
-        
         # we've arrived a waypoint on our path to destination
         if self.goToPosition(self._path[0].x, self._path[0].y):
             self._logger.info("Arrived at waypoint " + str((self._path[0].x, self._path[0].y)) + " (map position is " +
