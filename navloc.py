@@ -10,6 +10,7 @@ import numpy as np
 from copy import deepcopy
 from geometry_msgs.msg import Pose, Point, Quaternion
 from math import sin, cos, pi
+from time import time
 
 from localization import Localization
 from logger import Logger
@@ -64,6 +65,11 @@ class NavLoc(Navigation, Localization):
 
         self._logger = Logger("NavLoc")
     
+        # give ourselves a second to see if there's a nearby AR tag
+        timer = time()
+        while time() - timer < 0.75:
+            pass
+    
     def _ekfCallback(self, data):
         """ Process robot_pose_ekf data. """
         
@@ -74,14 +80,47 @@ class NavLoc(Navigation, Localization):
         self.map_pos = self.transformPoint(self.p, "odom", "map")
         self.map_angle = self.transformAngle(self.angle, "odom", "map")
     
+    def _handleObstacle(self):
+        """ Handle obstacle and reset path if necessary. """
+        
+        if Navigation._handleObstacle(self):
+            self._path = None
+            return True
+            
+        return False
+    
     def goToOrientation(self, angle):
         """ Go to orientation in the map frame. """
         return Navigation.goToOrientation(self, self.transformAngle(angle, "map", "odom"))
     
-    def goToDestViaWaypoints(self, x, y):
-        """ Go the target pos via waypoints from the floorplan. """
-        pass
-        # TODO
+    def takePathToDest(self, x, y):
+        """ Go the target pos via waypoints from the floorplan. 
+        
+        Args:
+            x (float): The destination x coord in the map frame.
+            y (float): The destination y coord in the map frame.
+        """
+        
+        # we currently aren't on a mission, or we've been interrupted
+        if self._path is None:
+            self._path = self.floorplan.getShortestPath(self.map_pos, Point(x,y,0))
+        
+        # we've arrived a waypoint on our path to destination
+        if self.goToPosition(self._path[0].x, self._path[0].y):
+        
+            # verify that nothing crazy happened before popping the map point
+            if np.allclose([self._path[0].x, self._path[0].y], [self.map_pos.x, self.map_pos.y], atol = .1, rtol = .1):
+                self._logger.info("Arrived at waypoint " + str((self._path[0].x, self._path[0].y)) + " (map position is " +
+                str((self.map_pos.x, self.map_pos.y)) + ")")
+                self._path.pop(0)
+            
+        # we've cleared out the traversal path, so we've reached our goal
+        if self._path == []:
+            self._path = None
+            return True
+        
+        # we're still on our way to the destination
+        return False
     
     def goToPosition(self, x, y):
         """ Go to position x, y, in the map frame"""
@@ -101,6 +140,7 @@ class NavLoc(Navigation, Localization):
         self._logger.csv(test_name + "_mappose", ["X", "Y", "yaw"], [self.map_pos.x, self.map_pos.y, self.map_angle], folder = folder)
 
 if __name__ == "__main__":
+    import MD2
     from tester import Tester
     from math import pi
     
@@ -126,25 +166,35 @@ if __name__ == "__main__":
             self.corner_counter = 0
         
             # set up the logger output file
-            self.test_name = None
+            self.test_name = "path"
+        
+            # set up points on map
+            point_ids = MD2.points
+            locations = MD2.locations
+            neighbors = MD2.neighbors
         
             # set map location of the landmark
-            landmarks = {0}
-            landmark_positions = {0:(2,0)}
-            landmark_orientations = {0:-pi/2}
+            landmarks = MD2.landmarks
+            landmark_positions = MD2.landmark_pos
+            landmark_orientations = MD2.landmark_orient
         
-            self.navloc = NavLoc({},{},{},landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
+            self.navloc = NavLoc(point_ids, locations, neighbors,landmarks, landmark_positions, landmark_orientations, jerky = self.jerky, walking_speed = self.walking_speed)
+        
+            # set the destinations
+            self.destination = [self.navloc.floorplan.graph['T'].location, self.navloc.floorplan.graph['R'].location]
 
         def main(self):
             """ The test currently being run. """
             #self.testCCsquare(1)
             #self.testCsquare(1)
-            self.testLine(1.5)
+            #self.testLine(1.5)
+            self.testPath()
             self.navloc.csvLogEKF(self.test_name)
             self.navloc.csvLogMap(self.test_name)
             self.navloc.csvLogTransform(self.test_name)
             self.navloc.csvLogRawTags(self.test_name)
             self.navloc.csvLogOdomTags(self.test_name)
+            #self.navloc.takePathToDest(1.5,0)
 
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
@@ -154,6 +204,17 @@ if __name__ == "__main__":
             self.logger.info("Arrived at " + str((x, y)) + " (map position is " +
                 str((self.navloc.map_pos.x, self.navloc.map_pos.y)) + ")")
             self.navloc.csvLogArrival(self.test_name, x, y)
+            
+        def testPath(self):
+            """ Attempt to navigation between two offices"""
+            if not self.reached_corner[0]:
+                self.reached_corner[0] = self.navloc.takePathToDest(self.destination[0].x, self.destination[0].y)
+                if self.reached_corner[0]:
+                    self.logArrival("office 1", self.destination[0].x, self.destination[0].y)
+                    
+            elif self.navloc.takePathToDest(self.destination[1].x, self.destination[1].y):
+                self.reached_corner[0] = False
+                self.logArrival("office 2", self.destination[1].x, self.destination[1].y)
         
         def testLine(self, length):
             """ Test behavior with a simple line. 

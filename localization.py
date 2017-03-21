@@ -41,8 +41,9 @@ class Localization(TfTransformer):
     _AR_FOV_LIMIT = 2.0 * pi / 15.0  # radians
     
     def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
-        # set up logger and csv logging
-        self._logger = Logger("Localization")
+        
+        # listen for frame transformations
+        TfTransformer.__init__(self)
         
         # store raw tag data, data in the odom frame, and data in the base frame
         self.tags = {}
@@ -55,9 +56,9 @@ class Localization(TfTransformer):
         
         # smooth data by selectively sampling
         self._prev_odom = [0,0,0,0,0,0,1]
-    
-        # listen for frame transformations
-        TfTransformer.__init__(self)
+        
+        # set up logger and csv logging
+        self._logger = Logger("Localization")
     
         # subscribe to raw tag data
         rospy.Subscriber('/ar_pose_marker', AlvarMarkers, self._tagCallback, queue_size=1)
@@ -68,7 +69,7 @@ class Localization(TfTransformer):
             # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
             #   I promise, its less scary than it looks...
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self.tags_odom = self._transformTags('/odom')
+            self.tags_odom = self._tfTransformTags('/odom')
             self._setTransform()
         
         else:
@@ -108,7 +109,7 @@ class Localization(TfTransformer):
 
         self._prev_odom = cur_odom
 
-    def _transformTags(self, target_frame):
+    def _tfTransformTags(self, target_frame):
         """ Convert all of the visible tags to target frame.
         
         Args:
@@ -278,7 +279,6 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run main tests. """
-            self.localization.csvLogEstimated(self.csvtestname)
             self.localization.csvLogRawTags(self.csvtestname)
         
         def screenLog(self, landmark, id):

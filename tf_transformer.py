@@ -3,7 +3,7 @@
 Author:
     Annaleah Ernst
 """
-from tf import TransformListener
+import tf
 
 class TfTransformer():
     """ Create a generic listening class.
@@ -19,7 +19,7 @@ class TfTransformer():
             # we already have a listener (perhaps something else in the program is inheriting)
             pass
 
-class tfListener(TransformListener):
+class tfListener(tf.TransformListener):
 
     def _attemptLookup(self, transform_func, target_frame, object):
         """ Attempt a coordinate frame transformation.
@@ -33,28 +33,30 @@ class tfListener(TransformListener):
             An object transformed into the correct frame if successful, None otherwise.
         """
         try:
-            # attempt transformation
-            return transform_func(self, target_frame, object)
-        
-        except tf.ExtrapolationException as e:
-            # we're trying to get a transformation that's not current
-            self._logger.warn(e)
+            try:
+                # attempt transformation
+                return transform_func(self, target_frame, object)
             
-        except tf.LookupException as e:
-            # the transformations aren't being published
-            self._logger.error(str(e) + "Is the mobile base powered on? Has the Turtlebot been brought online?")
-        
-        except Exception as e:
-            # something else went wrong
-            self._logger.error(e)
-        
+            except tf.ExtrapolationException as e:
+                # we're trying to get a transformation that's not current
+                self._logger.warn(e)
+                
+            except tf.LookupException as e:
+                # the transformations aren't being published
+                self._logger.error(str(e) + "Is the mobile base powered on? Has the Turtlebot been brought online?")
+            
+            except Exception as e:
+                # something else went wrong
+                self._logger.error(e)
+        except:
+            pass
         # the transformation failed
         return None
 
     def transformQuaternion(self, target_frame, stamped_object):
         """ Transform stamped object from the frame in its header to the target frame. """
-        return self._attemptLookup(TransformListener.transformQuaternion, target_frame, stamped_object)
+        return self._attemptLookup(tf.TransformListener.transformQuaternion, target_frame, stamped_object)
 
     def transformPoint(self, target_frame, stamped_object):
         """ Transform stamped object from the frame in its header to the target frame. """
-        return self._attemptLookup(TransformListener.transformPoint, target_frame, stamped_object)
+        return self._attemptLookup(tf.TransformListener.transformPoint, target_frame, stamped_object)

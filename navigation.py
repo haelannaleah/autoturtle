@@ -53,6 +53,9 @@ class Navigation(Motion, TfTransformer):
     
     def __init__(self, jerky = False, walking_speed = 1):
     
+        # listen for frame transformations
+        TfTransformer.__init__(self)
+    
         # initialize motion component of navigation
         self._motion = Motion()
         self._sensors = Sensors()
@@ -64,6 +67,7 @@ class Navigation(Motion, TfTransformer):
         self._avoiding = False
         self._obstacle = False
         self._bumped = False
+        self._bumper = 0
         
         # we're going to send the turtlebot to a point a quarter meter ahead of itself
         self._avoid_goto = PointStamped()
@@ -71,14 +75,12 @@ class Navigation(Motion, TfTransformer):
         self._avoid_goto.point.x = self._AVOID_DIST
         self._avoid_target = None
         self._avoid_turn = None
-        
-        # listen for frame transformations
-        TfTransformer.__init__(self)
 
         # subscibe to the robot_pose_ekf odometry information
         self.p = None
         self.q = None
         self.angle = 0
+        self._target_turn_delta = 0
         rospy.Subscriber('/robot_pose_ekf/odom_combined', PoseWithCovarianceStamped, self._ekfCallback)
         
         # set up navigation to destination data
@@ -144,14 +146,16 @@ class Navigation(Motion, TfTransformer):
     
         # if we hit something, stop
         elif self._sensors.bump:
-            self._bumped = True
+            if not self._bumped:
+                self._bumped = True
+                self._bumper = self._sensors.bumper
         
             # stop if we hit something
             if self._motion.walking:
                 self._motion.stopLinear(now = True)
 
             # turn away from what we hit
-            self._motion.turn(self._sensors.bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
+            self._motion.turn(self._bumper > 0, speed = self._MIN_STATIONARY_TURN_SPEED)
 
         # if we've been bumped, turn away!
         elif self._bumped:
@@ -165,21 +169,25 @@ class Navigation(Motion, TfTransformer):
                 self._avoid_turn = None
                 self._bumped = False
                 self._avoiding = True
+        
+        # if we've just reached a goal, no reason to stop and turn unnecessarily
+        elif self._reached_goal and self._motion.stopping:
+            return False
 
         # no colliding with anything
         elif self._sensors.obstacle:
-            
-            # make sure that we turn away from the obstacle
-            if not self._obstacle:
-                self._motion.stopRotation(now = True)
-                self._obstacle = True
-                self._avoiding = True
             
             # stop so we don't hit anything
             if self._motion.walking:
                 self._motion.stopLinear()
                 
-            # turn away from the obstacle
+            # make sure that we turn away from the obstacle
+            elif not self._obstacle:
+                self._motion.stopRotation(now = True)
+                self._obstacle = True
+                self._avoiding = True
+                
+            # turn away from the obstacle if necessary
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
             
@@ -214,7 +222,7 @@ class Navigation(Motion, TfTransformer):
             else:
             
                 # go to the avoidance way point
-                if self._goToPos(self._avoid_target.point.x, self._avoid_target.point.y):
+                if self._goToPos(self._getDestData(self._avoid_target.point.x, self._avoid_target.point.y)):
                     self._avoiding = False
                     self._avoid_target = None
                     return False
@@ -250,13 +258,11 @@ class Navigation(Motion, TfTransformer):
 
         return False
 
-    def _goToPos(self, x, y):
+    def _goToPos(self, turn_delta):
         """ Go to a position in the odometry frame. """
         
-        nav_val = self._getDestData(x, y)
-        
         # otherwise, did we reach our waypoint?
-        if nav_val is True or self._reached_goal is True:
+        if turn_delta is True or self._reached_goal is True:
         
             # we've reached a waypoint, but we may still need to stop
             self._reached_goal = True
@@ -271,7 +277,7 @@ class Navigation(Motion, TfTransformer):
                 return True
         
         # our goal is straight ahead
-        elif nav_val == 0:
+        elif turn_delta == 0:
         
             # if we're turning, we need to stop
             if self._motion.turning:
@@ -282,7 +288,7 @@ class Navigation(Motion, TfTransformer):
         
         # we need to turn to reach our goal
         else:
-            self._goToOrient(nav_val)
+            self._goToOrient(turn_delta)
 
         # we're still moving towards our goal (or our stopping point), or we've gotten trapped
         return False
@@ -303,7 +309,7 @@ class Navigation(Motion, TfTransformer):
         # get the closest equivalent angle to our current pose
         turn_angle = self._wrapAngle(angle)
     
-        return self._goToOrient(self.angle-turn_angle)
+        return self._goToOrient(self.angle - turn_angle)
 
     def goToPosition(self, x, y):
         """ Go to waypoint in the odometry frame.
@@ -313,10 +319,13 @@ class Navigation(Motion, TfTransformer):
             y (float): The y coordinate of the desired location (in meters from the origin).
         """
         # if we've encountered some sort of obstacle, we haven't even tried to get to the current position
+        
+        self._target_turn_delta = self._getDestData(x, y)
+        
         if self._handleObstacle():
             return False
 
-        return self._goToPos(x,y)
+        return self._goToPos(self._target_turn_delta)
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log Turtlebot's arrival at a waypoint. """
@@ -378,7 +387,7 @@ if __name__ == "__main__":
             #self.testCCsquare(1)
             #self.testCsquare(1)
             self.testLine(1.5)
-            #self.navigation.csvLogEKF(self.filename)
+            self.navigation.csvLogEKF(self.filename)
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
