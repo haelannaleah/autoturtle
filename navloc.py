@@ -105,6 +105,8 @@ class NavLoc(Navigation, Localization):
         if self._path is None:
             self._path = self.floorplan.getShortestPath(self.map_pos, Point(x,y,0))
         
+        self._logger.debug("Approaching " + str((self._path[0].x, self._path[0].y)))
+        
         # we've arrived a waypoint on our path to destination
         if self.goToPosition(self._path[0].x, self._path[0].y):
             self._logger.info("Arrived at waypoint " + str((self._path[0].x, self._path[0].y)) + " (map position is " +
@@ -205,7 +207,6 @@ if __name__ == "__main__":
         def testPath(self):
             """ Attempt to navigation between two offices"""
             if not self.reached_corner[0]:
-                self.logger.info("approaching office 1")
                 self.reached_corner[0] = self.navloc.takePathToDest(self.destination[0].x, self.destination[0].y)
                 if self.reached_corner[0]:
                     self.logArrival("office 1", self.destination[0].x, self.destination[0].y)
@@ -213,11 +214,6 @@ if __name__ == "__main__":
             elif self.navloc.takePathToDest(self.destination[1].x, self.destination[1].y):
                 self.reached_corner[0] = False
                 self.logArrival("office 2", self.destination[1].x, self.destination[1].y)
-            else:
-                self.logger.info("approaching office 2")
-    
-            self.logger.info(" (map position is " +
-                str((self.navloc.map_pos.x, self.navloc.map_pos.y)) + ")")
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
