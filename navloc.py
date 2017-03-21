@@ -107,6 +107,8 @@ class NavLoc(Navigation, Localization):
         
         # we've arrived a waypoint on our path to destination
         if self.goToPosition(self._path[0].x, self._path[0].y):
+        
+            # verify that nothing crazy happened before popping the map point
             if np.allclose([self._path[0].x, self._path[0].y], [self.map_pos.x, self.map_pos.y], atol = .1, rtol = .1):
                 self._logger.info("Arrived at waypoint " + str((self._path[0].x, self._path[0].y)) + " (map position is " +
                 str((self.map_pos.x, self.map_pos.y)) + ")")
