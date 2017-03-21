@@ -67,7 +67,7 @@ class NavLoc(Navigation, Localization):
     
         # give ourselves a second to see if there's a nearby AR tag
         timer = time()
-        while time() - timer < 0.5:
+        while time() - timer < 0.75:
             pass
     
     def _ekfCallback(self, data):
