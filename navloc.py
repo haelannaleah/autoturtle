@@ -212,6 +212,9 @@ if __name__ == "__main__":
             elif self.navloc.takePathToDest(self.destination[1].x, self.destination[1].y):
                 self.reached_corner[0] = False
                 self.logArrival("office 2", self.destination[1].x, self.destination[1].y)
+    
+            self.logger.info(" (map position is " +
+                str((self.navloc.map_pos.x, self.navloc.map_pos.y)) + ")")
         
         def testLine(self, length):
             """ Test behavior with a simple line. 
