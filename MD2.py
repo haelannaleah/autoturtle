@@ -82,5 +82,5 @@ landmark_pos = {1 : (-2.4384, 12.4968),
 
 landmark_orient = {1 : pi / 2.0,
     2 : pi / 2.0,
-    4 : -pi / 2.0
+    4 : pi / 2.0
     }
