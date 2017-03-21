@@ -126,8 +126,8 @@ class Logger:
         """ Close any open logging files. """
         for tname in self._open_files:
             # remove current test from dictionary and close it
-            openfile = self._open_files.pop(tname)
-            openfile["file"].close()
+            opentest = self._open_files.pop(tname)
+            opentest["file"].close()
 
 if __name__ == "__main__":
     from tester import Tester
