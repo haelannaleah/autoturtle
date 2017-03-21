@@ -80,6 +80,7 @@ class Navigation(Motion, TfTransformer):
         self.p = None
         self.q = None
         self.angle = 0
+        self._target_turn_delta = 0
         rospy.Subscriber('/robot_pose_ekf/odom_combined', PoseWithCovarianceStamped, self._ekfCallback)
         
         # set up navigation to destination data
@@ -319,10 +320,12 @@ class Navigation(Motion, TfTransformer):
         """
         # if we've encountered some sort of obstacle, we haven't even tried to get to the current position
         
+        self._target_turn_delta = self._getDestData(x, y)
+        
         if self._handleObstacle():
             return False
 
-        return self._goToPos(self._getDestData(x, y))
+        return self._goToPos(self._target_turn_delta)
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
         """ Log Turtlebot's arrival at a waypoint. """
