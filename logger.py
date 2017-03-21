@@ -129,7 +129,9 @@ class Logger:
     def shutdown(self):
         """ Close any open logging files. """
         for tname in self._open_files:
-            self._open_files[tname]["file"].close()
+            # remove current test from dictionary and close it
+            openfile = self._open_files.pop(tname)
+            openfile["file"].close()
 
 if __name__ == "__main__":
     from tester import Tester
