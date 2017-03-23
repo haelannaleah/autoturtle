@@ -127,7 +127,7 @@ class FloorPlan():
             crawler = prev[crawler]
 
         # make sure we don't backtrack to get to the destination; if its more optimal, skip a waypoint
-        if len(path) > 0 and self._dist2(cur_pose, destination) < self._dist2(path[0], destination):
+        if len(path) > 1 and self._dist2(cur_pose, destination) < self._dist2(path[0], destination):
             return path[1:]
 
         return path
