@@ -155,7 +155,7 @@ class Motion():
         self.turning = True
         
         # set turn direction if it is unset
-        if self.turn_dir == 0:
+        if self.turn_dir is 0:
             self.turn_dir = self._TURN_LEFT if direction else self._TURN_RIGHT
 
         # compute the target speed based on user input (don't let them exceed 1)

@@ -4,7 +4,6 @@ Author:
     Annaleah Ernst
 """
 import tf
-import numpy as np
 
 from copy import deepcopy
 from geometry_msgs.msg import Point, Pose, Quaternion
@@ -62,10 +61,6 @@ class FloorPlan():
     def getShortestPath(self, cur_pose, destination):
         """ Compute the shortest path from the current position to the destination (Djikstra's). 
         
-        Note:
-            The shortest path algorithm will only return to points actually on the map. If the map is empty, 
-                it will return the destination provided.
-        
         Args:
             cur_pose (geometry_msg.msgs.Point): The current position of the robot with respect to the map origin.
             destination (geometry_msg.msgs.Point): The position of the desired destination with resepect to the 
@@ -74,10 +69,6 @@ class FloorPlan():
         Returns: 
             A list of geometry_msg.msgs.Points representing the path on the map.
         """
-        # if there's nothing in the graph, then we just return the destination
-        if not self.graph:
-            return [destination]
-        
         # get the waypoints closest to the start and end
         start = self._getClosestWaypoint(cur_pose)
         end = self._getClosestWaypoint(destination)
@@ -111,9 +102,9 @@ class FloorPlan():
                     dist2[neighbor] = test_dist2
                     prev[neighbor] = closest_id
 
-        # back out the actual path of waypoints in the graph
+        # back out the actual path
         crawler = end
-        path = []
+        path = [destination]
 
         while True:
             # add the current point to the path at the beginning
@@ -121,16 +112,10 @@ class FloorPlan():
 
             # we've reached our start position
             if prev[crawler] is None:
-                break
+                return path
 
             # otherwise, keep crawling backwards
             crawler = prev[crawler]
-
-        # make sure we don't backtrack to get to the destination; if its more optimal, skip a waypoint
-        if len(path) > 1 and self._dist2(cur_pose, destination) < self._dist2(path[0], destination):
-            return path[1:]
-
-        return path
 
 class Landmark():
     """ A wrapper for constructing landmark information.
