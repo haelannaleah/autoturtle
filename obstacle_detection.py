@@ -17,8 +17,9 @@ class ObstacleDetector():
         obstacle_dir (int): -1 if the obstacle is on the left, 1 if the obstacle is on the right.
     """
     # obstacle detection constants
-    _OBSTACLE_DIST_THRESH =  0.55   # distance threshold for obstacles to the Turtlebot
+    _OBSTACLE_DIST_THRESH =  0.7    # distance threshold for obstacles to the Turtlebot
     _OBSTACLE_SAMPLE_WIDTH = 0.3    # slice of the robot's vision to check for obstacles
+    _WALL_SAMPLE_WIDTH = 0.4
 
     def __init__(self):
         self._logger = Logger("ObstacleDetector")
@@ -26,8 +27,12 @@ class ObstacleDetector():
         # initialize obstacle states and directions
         self.obstacle = False
         self.obstacle_dir = 0
+        self.wall = False
+        self.wall_dir = 0
     
-        # intialize wall detection
+        # reduce noise
+        self._prev_obstacles = [False] * 5
+        self._prev_index = 0
 
     def _getBlurredDepthSlice(self, depth_img, min_height, max_height, min_width, max_width):
         """ Get a blurred slice of the image. 
@@ -69,14 +74,43 @@ class ObstacleDetector():
         Returns:
             True on success, False on failure.
         """
-        extraction = self._extractObstruction(depth_img, self._OBSTACLE_SAMPLE_WIDTH)
+        obstacle, dir = self._extractObstruction(depth_img, self._OBSTACLE_SAMPLE_WIDTH)
         
-        if extraction is None:
-            self.obstacle = True
-            self.obstacle_dir = 0
+        # lock on to the obstacle direction of our choosing
+        # we're checking against prev to reduce noise
+        if (obstacle and not self.obstacle and any(self._prev_obstacles)) or not obstacle:
+            self.obstacle, self.obstacle_dir = obstacle, dir
+        
+        # set the previous to this current
+        self._prev_obstacles[self._prev_index] = obstacle
+        self._prev_index = (self._prev_index + 1) % len(self._prev_obstacles)
+        
+        # error check
+        if self.obstacle and self.obstacle_dir == 0:
             return False
+        
+        return True
+        
+    def extractWall(self, depth_img):
+        """ If there is a wall, or very near obstacle, find it.
+        
+        Args:
+            depth_img (numpy matrix): The cv2 depth image that we want to detect obstacles on.
+            
+        Returns:
+            True on success, False on failure.
+        """
+        if self.obstacle:
+            self.wall, self.wall_dir = True, self.obstacle_dir
 
-        self.obstacle, self.obstacle_dir = extraction
+        else:
+            wall, dir = self._extractObstruction(depth_img, self._WALL_SAMPLE_WIDTH)
+            
+            if wall and not self.wall or not wall:
+                self.wall, self.wall_dir = wall, dir
+        
+        if self.wall and self.wall_dir == 0:
+            return False
         
         return True
     
@@ -103,7 +137,7 @@ class ObstacleDetector():
         
         # if the operation failed (likely due to an all NaN slice), set obstacle state and return failure
         if min_index is None:
-            return None
+            return True, 0
         
         # if the closest thing in our slice is too close, trigger obstacle detection
         if sample[min_index] < self._OBSTACLE_DIST_THRESH:
@@ -112,8 +146,7 @@ class ObstacleDetector():
             #   if we don't do this, then the obstacle direction is allowed to fluctuate and the robot
             #   behaves irratically; here we are fixing the direction to be the inital trigger for the
             #   current obstacle state
-            if not self.obstacle:
-                return (True, -1 if min_index[1] < w_center else 1)
+            return (True, -1 if min_index[1] < w_center else 1)
         
         # otherwise, return no obstruction
         return False, 0
