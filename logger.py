@@ -97,10 +97,6 @@ class Logger:
                 csv writer to trigger a new line written. Larger tolerance will mean more time in between
                 lines written to output files. By default, this tolerance is mostly in place to root out
                 identical lines, since these indicate that the data has not renewed.
-        
-        Note:
-            When called on fname for the first time, Logger will assume that the row contains column 
-                variable names for the following rows.
         """
         # if we haven't been writing to this already, open it up
         if tname not in self._open_files:
@@ -129,7 +125,9 @@ class Logger:
     def shutdown(self):
         """ Close any open logging files. """
         for tname in self._open_files:
-            self._open_files[tname]["file"].close()
+            # remove current test from dictionary and close it
+            opentest = self._open_files.pop(tname)
+            opentest["file"].close()
 
 if __name__ == "__main__":
     from tester import Tester
