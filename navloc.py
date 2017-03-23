@@ -104,6 +104,7 @@ class NavLoc(Navigation, Localization):
         # we currently aren't on a mission, or we've been interrupted
         if self._path is None:
             self._path = self.floorplan.getShortestPath(self.map_pos, Point(x,y,0))
+            self._logger.debug("Navigating to " +str((self._path[0].x, self._path[0].y)))
         
         # we've arrived a waypoint on our path to destination
         if self.goToPosition(self._path[0].x, self._path[0].y):
@@ -113,9 +114,11 @@ class NavLoc(Navigation, Localization):
                 self._logger.info("Arrived at waypoint " + str((self._path[0].x, self._path[0].y)) + " (map position is " +
                 str((self.map_pos.x, self.map_pos.y)) + ")")
                 self._path.pop(0)
+                if len(self._path) != 0:
+                    self._logger.debug("Navigating to " +str((self._path[0].x, self._path[0].y)))
             
         # we've cleared out the traversal path, so we've reached our goal
-        if self._path == []:
+        if len(self._path) == 0:
             self._path = None
             return True
         
