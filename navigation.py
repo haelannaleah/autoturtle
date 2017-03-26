@@ -43,12 +43,12 @@ class Navigation(Motion, TfTransformer):
     # create thresholds
     _MIN_STATIONARY_TURN_SPEED = 0.5
     _MIN_MOVING_TURN_SPEED = 0.15
-    _MAX_MOVING_TURN = pi / 6
-    _MIN_LINEAR_SPEED = .25
+    _MAX_MOVING_TURN = pi / 6.0
+    _MIN_LINEAR_SPEED = 0.25
     
     # set avoidance data
-    _AVOID_BUMP_TURN = pi / 6
-    _AVOID_TURN = .2
+    _AVOID_BUMP_TURN = pi / 6.0
+    _AVOID_TURN = 0.2
     _AVOID_DIST = 0.25
     
     def __init__(self, jerky = False, walking_speed = 1):
@@ -126,7 +126,7 @@ class Navigation(Motion, TfTransformer):
         turn_angle = self._wrapAngle(turn)
 
         # we're (pretty) near our final location
-        if np.allclose([self.p.x, self.p.y], [dest_x, dest_y], atol=.05):
+        if np.allclose([self.p.x, self.p.y], [dest_x, dest_y], atol=0.05):
             return True
         
         # our orientation has gotten off and we need to adjust

@@ -22,7 +22,8 @@ class FloorPlan():
             position on the floorplan.
         landmark_angles (dict): Map AprilTag landmark ids to their absolute
             position on the floorplan. This specifies the angle of rotation of the landmark in the 
-            xy plane; ie, how much has its horizontal vector deviated from the x axis.
+            xy plane; ie, how much has the landmark;s horizontal vector deviated from the x axis of 
+            the map.
             
     Attributes:
         graph (dict of Waypoints, readonly): Represent the floorplan in an easy to parse way.
@@ -63,7 +64,7 @@ class FloorPlan():
         """ Compute the shortest path from the current position to the destination (Djikstra's). 
         
         Note:
-            The shortest path algorithm will only return to points actually on the map. If the map is empty, 
+            The shortest path algorithm will only return points actually on the map. If the map is empty,
                 it will return the destination provided.
         
         Args:
@@ -143,7 +144,7 @@ class Landmark():
         pose (geometry_msgs.msg.Pose): The location and orientation of the landmark.
     """
     def __init__(self, position, angle):
-        # convert angle to quaternion
+        # convert angle to quaternion to construct pose
         q = tf.transformations.quaternion_from_euler(0,0,angle)
         
         # construct the landmark pose
