@@ -137,6 +137,48 @@ class Navigation(Motion, TfTransformer):
         else:
             return 0
 
+    def _avoid(self):
+        """ Enter waypoint driven obstacle avoidance mode. """
+        
+        # if we encounter a new obstacle, we want to turn in the right way
+        self._obstacle = False
+        
+        # if we see a wall while we're avoiding, we should deal with it
+        if self._sensors.wall:
+        
+            # turn away from the wall
+            self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
+            
+            # set avoidance behavior
+            self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
+            self._avoid_target = None
+        
+        # we need to turn to avoid and obstacle
+        elif self._avoid_turn is not None:
+        
+            # turn in the prescribed avoidance direction
+            if self._goToOrient(self.angle - self._wrapAngle(self._avoid_turn)):
+                self._avoid_turn = None
+
+        # we should set our target to escape the obstacle
+        elif self._avoid_target is None:
+        
+            # get the most recent transformation to set target in the odom frame
+            self._avoid_goto.header.stamp = rospy.Time(0)
+            self._avoid_target = self._tf_listener.transformPoint("/odom", self._avoid_goto)
+        
+        # we just need to go to the avoidance waypoint
+        else:
+        
+            # go to the avoidance way point
+            if self._goToPos(self._getDestData(self._avoid_target.point.x, self._avoid_target.point.y)):
+                self._avoiding = False
+                self._avoid_target = None
+                return False
+
+        # we're still avoiding something
+        return True
+
     def _handleObstacle(self):
         """ Take stock of sensor data when deciding how to move. """
     
@@ -191,43 +233,9 @@ class Navigation(Motion, TfTransformer):
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
             
-        # otherwise, if we're avoiding something
+        # otherwise, if we're avoiding something, embark on avoidance behavior
         elif self._avoiding:
-            
-            # if we encounter a new obstacle, we want to turn in the right way
-            self._obstacle = False
-            
-            # if we see a wall while we're avoiding, we should deal with it
-            if self._sensors.wall:
-            
-                # turn away from the wall
-                self._motion.turn(self._sensors.wall_dir > 0, speed = self._MAX_MOVING_TURN)
-                
-                # set avoidance behavior
-                self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
-                self._avoid_target = None
-            
-            # we need to turn to avoid and obstacle
-            elif self._avoid_turn is not None:
-            
-                # turn in the prescribed avoidance direction
-                if self._goToOrient(self.angle - self._wrapAngle(self._avoid_turn)):
-                    self._avoid_turn = None
-
-            # we should set our target to escape the obstacle
-            elif self._avoid_target is None:
-            
-                # get the most recent transformation to set target in the odom frame
-                self._avoid_goto.header.stamp = rospy.Time(0)
-                self._avoid_target = self._tf_listener.transformPoint("/odom", self._avoid_goto)
-            
-            else:
-            
-                # go to the avoidance way point
-                if self._goToPos(self._getDestData(self._avoid_target.point.x, self._avoid_target.point.y)):
-                    self._avoiding = False
-                    self._avoid_target = None
-                    return False
+            return self._avoid()
 
         # all our sensor reading came back clear, so we can proceed with normal navigation
         else:
