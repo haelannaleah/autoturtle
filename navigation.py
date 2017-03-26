@@ -144,13 +144,13 @@ class Navigation(Motion, TfTransformer):
         if self._sensors.cliff or self._sensors.wheeldrop:
             self._motion.stop(now=True)
     
-        # if we hit something, stop
+        # if we hit something...
         elif self._sensors.bump:
             if not self._bumped:
                 self._bumped = True
                 self._bumper = self._sensors.bumper
         
-            # stop if we hit something
+            # stop if we haven't
             if self._motion.walking:
                 self._motion.stopLinear(now = True)
 
@@ -174,7 +174,7 @@ class Navigation(Motion, TfTransformer):
         elif self._reached_goal and self._motion.stopping:
             return False
 
-        # no colliding with anything
+        # handle an obstacle
         elif self._sensors.obstacle:
             
             # stop so we don't hit anything
@@ -191,7 +191,7 @@ class Navigation(Motion, TfTransformer):
             else:
                 self._motion.turn(self._sensors.obstacle_dir > 0)
             
-        # otherwise, we go into avoidance mode
+        # otherwise, if we're avoiding something
         elif self._avoiding:
             
             # if we encounter a new obstacle, we want to turn in the right way
@@ -207,12 +207,14 @@ class Navigation(Motion, TfTransformer):
                 self._avoid_turn = self.angle + self._AVOID_TURN * self._motion.turn_dir
                 self._avoid_target = None
             
+            # we need to turn to avoid and obstacle
             elif self._avoid_turn is not None:
             
                 # turn in the prescribed avoidance direction
                 if self._goToOrient(self.angle - self._wrapAngle(self._avoid_turn)):
                     self._avoid_turn = None
-        
+
+            # we should set our target to escape the obstacle
             elif self._avoid_target is None:
             
                 # get the most recent transformation to set target in the odom frame
@@ -226,9 +228,12 @@ class Navigation(Motion, TfTransformer):
                     self._avoiding = False
                     self._avoid_target = None
                     return False
+
+        # all our sensor reading came back clear, so we can proceed with normal navigation
         else:
             return False
 
+        # we encountered some trouble on our path
         return True
     
     def _goToOrient(self, turn_delta):
