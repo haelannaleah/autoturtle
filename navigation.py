@@ -172,6 +172,8 @@ class Navigation(Motion, TfTransformer):
         
             # go to the avoidance way point
             if self._goToPos(self._getDestData(self._avoid_target.point.x, self._avoid_target.point.y)):
+            
+                # we've made it! time to proceed with normal operation
                 self._avoiding = False
                 self._avoid_target = None
                 return False
@@ -367,12 +369,6 @@ if __name__ == "__main__":
         """ Run local navigation tests. """
         def __init__(self):
             Tester.__init__(self, "Navigation")
-
-            # tests to run:
-            #   square with Motion module, minimal.launch
-            #   square with Motion module, navigation launch
-            # expect all to turn out the same, but need to sanity check
-            #self.motion = Motion()
             
             # flag for a jerky stop
             self.jerky = False
