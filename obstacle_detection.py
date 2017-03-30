@@ -149,13 +149,14 @@ class ObstacleDetector():
         if min_index is None:
             return True, 0
         
-        # if the closest thing in our slice is too close, trigger obstacle detection
+        # if the closest thing is too close, trigger obstacle detection
         if sample[min_index] < self._OBSTACLE_DIST_THRESH:
         
-            # if we aren't already in the obstacle state, set state to true and set obstacle direction
-            #   if we don't do this, then the obstacle direction is allowed to fluctuate and the robot
-            #   behaves irratically; here we are fixing the direction to be the inital trigger for the
-            #   current obstacle state
+            # if we aren't already in the obstacle state, set state to true and
+            # set obstacle direction. if we don't do this, then the obstacle
+            # direction is allowed to fluctuate and the robot behaves irratically;
+            # here we are fixing the direction to be the inital trigger for the
+            # current obstacle state
             return (True, -1 if min_index[1] < w_center else 1)
         
         # otherwise, return no obstruction
