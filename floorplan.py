@@ -1,4 +1,4 @@
-""" Static map
+""" Static map object.
     
 Author:
     Annaleah Ernst
