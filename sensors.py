@@ -19,10 +19,11 @@ class Sensors():
         bump (bool): True if robot has bumped into something, False otherwise.
         bumper (int): -1 if left bumper, 0 if middle bumper, 1 if right bumper.
         cliff (bool): True if robot is near an edge, False otherwise.
-        cliff_sensor (int): -1 if left sensor, 0 if middle sensor, 1 if right sensor.
+        cliff_sensor (int): -1 if left sensor, 0 if middle sensor, 1 if right 
+            sensor.
         obstacle (bool): True if obstacle in distance threshold, False otherwise.
-        obstacle_dir (int): -1 if obstacle on the left, 1 if obstacle on the right, 0 if extracting
-            obstacle failed.
+        obstacle_dir (int): -1 if obstacle on the left, 1 if obstacle on the 
+            right, 0 if extracting obstacle failed.
         wheeldrop (bool): True if robot is not on the ground, False otherwise.
     """
     # the english location of the sensor
@@ -86,7 +87,7 @@ class Sensors():
         #   -1 if left sensor, 0 if middle sensor, 1 if right sensor.
         self.cliff_sensor = data.sensor - 1
         
-        # only log cliff data if it's independent of a wheel drop so as not to overwhelm the log
+        # don't overwhelm the log with multiple sensors
         if not self.wheeldrop:
             self._logKobuki("Cliff", data.state, ("FLOOR", "CLIFF"), data.sensor)
 
@@ -135,9 +136,11 @@ class Sensors():
             sensor (str): The name of the reporting sensor.
             state (int): The current state of the sensor.
             states (list): The possible states for that sensor.
-            sensor_location (int, optional): Which sensor got triggered (0, 1, 2; Left, Center, Right).
+            sensor_location (int, optional): Which sensor got triggered 
+                (0, 1, 2; Left, Center, Right).
         """
-        # if we have location data, change the sensor name to reflect the which sensor was triggered
+        # if we have location data, change the sensor name to reflect the which
+        # sensor was triggered
         if sensor_location is not None:
             sensor = self._SENSOR_LOCATION[sensor_location] + " " + sensor
         
@@ -156,7 +159,8 @@ if __name__ == "__main__":
 
         def main(self):
             """ Run behavioral tests. """
-            # since it's all callbacks, we can see how the robot responds to being tiggered
+            # since it's all callbacks, we can see how the robot responds to being
+            # tiggered without additional effort
             self.rate.sleep()
 
     SensorsTest().run()

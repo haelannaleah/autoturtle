@@ -32,10 +32,14 @@ class Logger:
         Currently set to ROS info for ease of access.
         
         Args:
-            msg: The message. Generally a complete string or the contents of some variable.
-            var_name (str, optional): Name of the variable whose contents are in msg.
-            method (str, optional): Method from which the debug message originated.
-            line (str/int, optional): Line number from which the debug message originated.
+            msg: The message. Generally a complete string or the contents of some 
+                variable.
+            var_name (str, optional): Name of the variable whose contents are in 
+                msg.
+            method (str, optional): Method from which the debug message 
+                originated.
+            line (str/int, optional): Line number from which the debug message 
+                originated.
         """
         if var_name is not None:
             msg = str(var_name) + " = " + str(msg)
@@ -53,7 +57,8 @@ class Logger:
         
         Args:
             msg (str): Description of the error.
-            method (str, optional): Method from which the error message originated.
+            method (str, optional): Method from which the error message 
+                originated.
         """
         if method is not None:
             msg = "Error in method '" + method + "': " + str(msg)
@@ -73,7 +78,8 @@ class Logger:
         
         Args:
             msg (str): Description of the warning.
-            method (str, optional): Method from which the warning message originated.
+            method (str, optional): Method from which the warning message 
+                originated.
         """
         if method is not None:
             msg = "Warning in method '" + method + "': " + str(msg)
@@ -88,15 +94,19 @@ class Logger:
         """ Log data to a CSV file of the form filename_YYYYMMDD-HHMMSS.csv. 
         
         Args:
-            tname (str): The name of the test. Note that this is not the same as the path to the file;
-                rather, this should be descriptive of the test we are logging CSV data for.
+            tname (str): The name of the test. Note that this is not the same as 
+                the path to the file; rather, this should be descriptive of the 
+                test we are logging CSV data for.
             fields (str list): The names of the columns in the csv file.
             row (list): The line to be added to the CSV file.
-            folder (str, optional): The name of the local file we want to store the file in.
-            tol (float, optional): The amount of difference between sequential arguments to the
-                csv writer to trigger a new line written. Larger tolerance will mean more time in between
-                lines written to output files. By default, this tolerance is mostly in place to root out
-                identical lines, since these indicate that the data has not renewed.
+            folder (str, optional): The name of the local file we want to store 
+                the file in.
+            tol (float, optional): The amount of difference between sequential 
+                arguments to the csv writer to trigger a new line written. Larger 
+                tolerance will mean more time in between lines written to output 
+                files. By default, this tolerance is mostly in place to root out
+                identical lines, since these indicate that the data has not since 
+                the last logging. renewed.
         """
         # if we haven't been writing to this already, open it up
         if tname not in self._open_files:
@@ -114,10 +124,12 @@ class Logger:
             # assume that the first message will be variable names
             self._open_files[tname]["writer"].writerow(["Time"] + fields)
             
-            # keep track of previous entries so that we don't log the same data multiple times
+            # keep track of previous entries so that we don't log the same data
+            # multiple times
             self._open_files[tname]["prev"] = 0
     
-        # preappend the current time and write current line to file if it's changed since the last writing
+        # preappend the current time
+        # write current line to file if it's changed since the last writing
         if not allclose(self._open_files[tname]["prev"], row, atol = self._tolerance if tol is None else tol):
             self._open_files[tname]["writer"].writerow([time() - self._start_time] + row)
             self._open_files[tname]["prev"] = row
@@ -140,7 +152,7 @@ if __name__ == "__main__":
             Tester.__init__(self, "Logger")
             
         def main(self):
-            """ The main control loop. """
+            """ Behavioral tests. """
             
             # verify that log messages are functional
             self.logger.info("hello")

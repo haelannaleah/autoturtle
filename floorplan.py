@@ -15,27 +15,29 @@ class FloorPlan():
     Args:
         point_ids (set): Unique identifier for each waypoint in the graph.
         locations (dict): Point_ids mapped to tuples representing locations.
-        neighbors (dict): Point_ids mapped to lists containing other point_ids representing 
-            the current node's neighbors.
+        neighbors (dict): Point_ids mapped to lists containing other point_ids 
+            representing the current node's neighbors.
         landmark_ids (set): Unique identifier for each landmark in the graph.
-        landmark_positions (dict): Map AprilTag landmark ids to their absolute
-            position on the floorplan.
+        landmark_pos(dict): Map AprilTag landmark ids to their absolute position 
+            on the floorplan.
         landmark_angles (dict): Map AprilTag landmark ids to their absolute
-            position on the floorplan. This specifies the angle of rotation of the landmark in the 
-            xy plane; ie, how much has the landmark;s horizontal vector deviated from the x axis of 
-            the map.
+            position on the floorplan. This specifies the angle of rotation of the 
+            landmark in the xy plane; ie, how much has the landmark;s horizontal 
+            vector deviated from the x axis of the map.
             
     Attributes:
-        graph (dict of Waypoints, readonly): Represent the floorplan in an easy to parse way.
-        landmarks (dict of Landmarks, readonly): Represent the precise pose of landmarks associated with
-            their landmark id.
+        graph (dict of Waypoints, readonly): Represent the floorplan as an easy to
+            parse graph of connected waypoints.
+        landmarks (dict of Landmarks, readonly): Represent the precise pose of 
+            landmarks associated with their landmark id.
     """
-    def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_positions, landmark_angles):
+    def __init__(self, point_ids, locations, neighbors, landmark_ids, landmark_pos, landmark_angles):
     
         # construct graph out of waypoints
         self.graph = {}
         for point_id in point_ids:
-            self.graph[point_id] = Waypoint(locations[point_id], neighbors[point_id])
+            self.graph[point_id] = Waypoint(locations[point_id],
+                neighbors[point_id])
 
         # construct landmark map
         self.landmarks = {}
@@ -46,8 +48,8 @@ class FloorPlan():
         """ Return the distance squared between two points. 
         
         Args:
-            point1 (geometry_msgs.msg.Point): The origin (we only care about 2D).
-            point2 (geometry_msgs.msg.Point): The destination (we only care about 2D).
+            point1 (geometry_msgs.msg.Point): The 2D origin.
+            point2 (geometry_msgs.msg.Point): The 2D destination.
         """
         return (point1.x - point2.x)**2 + (point1.y - point2.y)**2
 
@@ -55,22 +57,24 @@ class FloorPlan():
         """ Return the closest waypoint to the given position. 
             
         Args:
-            point (geometry_msgs.msg.Point): A point on the map that we want to find the closest map
-                point to.
+            point (geometry_msgs.msg.Point): A point on the map that we want to 
+                find the closest map point to.
         """
         return min(self.graph, key = lambda k: self._dist2(point, self.graph[k].location))
 
     def getShortestPath(self, cur_pose, destination):
-        """ Compute the shortest path from the current position to the destination (Djikstra's). 
+        """ Compute the shortest path from the current position to the destination 
+            (Djikstra's).
         
         Note:
-            The shortest path algorithm will only return points actually on the map. If the map is empty,
-                it will return the destination provided.
+            The shortest path algorithm will only return points actually on the 
+                map. If the map is empty, it will return the destination provided.
         
         Args:
-            cur_pose (geometry_msg.msgs.Point): The current position of the robot with respect to the map origin.
-            destination (geometry_msg.msgs.Point): The position of the desired destination with resepect to the 
-                map origin.
+            cur_pose (geometry_msg.msgs.Point): The current position of the robot 
+                with respect to the map origin.
+            destination (geometry_msg.msgs.Point): The position of the desired 
+                destination with resepect to the map origin.
         
         Returns: 
             A list of geometry_msg.msgs.Points representing the path on the map.
@@ -127,7 +131,8 @@ class FloorPlan():
             # otherwise, keep crawling backwards
             crawler = prev[crawler]
 
-        # make sure we don't backtrack to get to the destination; if its more optimal, skip a waypoint
+        # make sure we don't backtrack to get to the destination
+        # if its more optimal, skip a waypoint
         if len(path) > 1 and self._dist2(cur_pose, destination) < self._dist2(path[0], destination):
             return path[1:]
 
@@ -138,10 +143,12 @@ class Landmark():
     
     Args:
         position (float tuple): Specify the landmark's offset from the origin.
-        angle (float): Specify the absolute rotation of the landmark in the map frame.
+        angle (float): Specify the absolute rotation of the landmark in the map 
+            frame.
         
     Attributes:
-        pose (geometry_msgs.msg.Pose): The location and orientation of the landmark.
+        pose (geometry_msgs.msg.Pose): The location and orientation of the 
+            landmark.
     """
     def __init__(self, position, angle):
         # convert angle to quaternion to construct pose
@@ -156,20 +163,23 @@ class Landmark():
     def __str__(self):
         """ For debugging purposes, make getting a string easy. """
         
-        return ("position: " + str((self.pose.position.x, self.pose.position.y)) + "\n"
-                + "quaternion: " + str([self.pose.orientation.x, self.pose.orientation.y, self.pose.orientation.z, self.pose.orientation.w]) + "\n"
-                + "angle: " + str(self.angle) + "\n")
+        return ("position: " + str((self.pose.position.x, self.pose.position.y))
+                + "\n" + "quaternion: " + str([self.pose.orientation.x, self.pose.orientation.y, self.pose.orientation.z, self.pose.orientation.w])
+                + "\n" + "angle: " + str(self.angle) + "\n")
 
 class Waypoint():
     """ All necessary waypoint information.
             
     Args:
         location (float tuple): Specify the waypoint's offset from the origin.
-        neighbors (set): Specify the waypoint's neighbors in the graph as their ids.
+        neighbors (set): Specify the waypoint's neighbors in the graph as their 
+            ids.
             
     Attributes:
-        location (geometry_msgs.msg.Point): Represent the waypoint's offset from the origin.
-        neighbors (set): A set of unique point ids connected to the current waypoint
+        location (geometry_msgs.msg.Point): Represent the waypoint's offset from 
+            the origin.
+        neighbors (set): A set of unique point ids connected to the current 
+            waypoint
     """
     def __init__(self, location, neighbors):
         self.location = Point(location[0], location[1], 0)
@@ -182,12 +192,16 @@ class Waypoint():
                 + "neighbors: " + str(self.neighbors))
 
 if __name__ == "__main__":
+    """ Run simple unit tests. """
+    
     from math import pi
     
     # create a simple test map
     point_ids = {'A', 'B', 'C', 'D', 'E', 'F'}
-    locations = {'A': (2,4), 'B': (5,5), 'C':(5,1), 'D':(9,6), 'E':(2,-2), 'F':(6,-4)}
-    neighbors = {'A': ['C', 'B'], 'B': ['A', 'C', 'D'], 'C': ['A', 'B', 'E'], 'D':['B'], 'E':['C'], 'F':['C']}
+    locations = {'A': (2,4), 'B': (5,5), 'C':(5,1), 'D':(9,6),
+                 'E':(2,-2), 'F':(6,-4)}
+    neighbors = {'A': ['C', 'B'], 'B': ['A', 'C', 'D'],
+                 'C': ['A', 'B', 'E'], 'D':['B'], 'E':['C'], 'F':['C']}
     landmarks = {10, 17}
     landmark_positions = {10:(0,0), 17:(1,1)}
     landmark_orientations = {10:0, 17:pi/2}
@@ -206,5 +220,3 @@ if __name__ == "__main__":
 
     print("  PATH  ")
     print(myPlan.getShortestPath(Point(2,4,0), Point(9,6,0)))
-
-    # TODO: create more unit tests

@@ -22,31 +22,34 @@ class NavLoc(Navigation, Localization):
     Args:
         point_ids (set): Unique identifier for each waypoint in the graph.
         locations (dict): Point_ids mapped to tuples representing locations.
-        neighbors (dict): Point_ids mapped to lists containing other point_ids representing 
-            the current node's neighbors.
+        neighbors (dict): Point_ids mapped to lists containing other point_ids 
+            representing the current node's neighbors.
         landmark_ids (set): Unique identifier for each landmark in the graph.
         landmark_positions (dict): Map AprilTag landmark ids to their absolute
             position on the floorplan.
         landmark_angles (dict): Map AprilTag landmark ids to their absolute
-            position on the floorplan. This specifies the angle of rotation of the landmark in the 
-            xy plane; ie, how much has its horizontal vector deviated from the x axis.
-        jerky (bool, optional): If true, robot will not decelerate, but stop abruptly.
-            Defaults to False.
-        walking_speed (float, optional): Percentage of maximum speed, magnitude between 0 and 1.
-                Values with magnitude greater than 1 will be ignored.
+            position on the floorplan. This specifies the angle of rotation of the 
+            landmark in the xy plane; ie, how much has its horizontal vector 
+            deviated from the x axis.
+        jerky (bool, optional): If true, robot will not decelerate, but stop 
+            abruptly. Defaults to False.
+        walking_speed (float, optional): Percentage of maximum speed, magnitude 
+            between 0 and 1. Values with magnitude greater than 1 will be ignored.
     
     Attributes:
-        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
-            their raw form.
-        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odometry frame.
+        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags 
+            currently in view in their raw form.
+        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the 
+            odometry frame.
         floorplan (FloorPlan): The map of the current space as a floorplan.
-        p (geometry_msgs.msg.Point): The position of the robot in the ekf odometry frame according to
-            the robot_pose_ekf package.
-        q (geometry_msgs.msg.Quaternion): The orientation of the robot in the ekf odometry frame
-            according the the robot_pose_ekf package.
-        angle (float): The angle (in radians) that the robot is from 0 in the ekf odometry frame. 
-            Between -pi and pi
-        map_pos (geometry_msgs.msg.Point): The position of the robot in the map frame.
+        p (geometry_msgs.msg.Point): The position of the robot in the ekf odometry 
+            frame according to the robot_pose_ekf package.
+        q (geometry_msgs.msg.Quaternion): The orientation of the robot in the ekf 
+            odometry frame according the the robot_pose_ekf package.
+        angle (float): The angle (in radians) that the robot is from 0 in the ekf 
+            odometry frame. Between -pi and pi
+        map_pos (geometry_msgs.msg.Point): The position of the robot in the map 
+            frame.
         map_angle (float): The angle (in radians) of the robot in the map frame.
     """
     
@@ -111,8 +114,7 @@ class NavLoc(Navigation, Localization):
         
             # verify that nothing crazy happened before popping the map point
             if np.allclose([self._path[0].x, self._path[0].y], [self.map_pos.x, self.map_pos.y], atol = .1, rtol = .1):
-                self._logger.info("Arrived at waypoint " + str((self._path[0].x, self._path[0].y)) + " (map position is " +
-                str((self.map_pos.x, self.map_pos.y)) + ")")
+                self._logger.info("Arrived at waypoint " + str((self._path[0].x, self._path[0].y)) + " (map position is " + str((self.map_pos.x, self.map_pos.y)) + ")")
                 self._path.pop(0)
                 if len(self._path) != 0:
                     self._logger.debug("Navigating to " +str((self._path[0].x, self._path[0].y)))
@@ -154,10 +156,7 @@ if __name__ == "__main__":
             
             # flag for a jerky stop
             self.jerky = False
-            
-            # I'm a bit concerned about robot safety if we don't slow things down,
-            # but I'm also worried it won't be an accurate test if we change the speed
-            self.walking_speed = 1 # if not self.jerky else .5
+            self.walking_speed = 1
             
             # linear test
             self.reached_goal = False
@@ -188,16 +187,9 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            #self.testCCsquare(1)
-            #self.testCsquare(1)
-            #self.testLine(1.5)
-            self.testPath()
-            self.navloc.csvLogEKF(self.test_name)
-            self.navloc.csvLogMap(self.test_name)
-            self.navloc.csvLogTransform(self.test_name)
-            self.navloc.csvLogRawTags(self.test_name)
-            self.navloc.csvLogOdomTags(self.test_name)
-            #self.navloc.takePathToDest(1.5,0)
+            
+            # test function goes here 
+            pass
 
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """

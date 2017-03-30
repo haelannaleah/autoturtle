@@ -16,10 +16,12 @@ class Tester():
         
     Attributes:
         logger (Logger): A custom logger for the tester.
-        rate (rospy.Rate): Used to control the refresh rate of robot control loops.
+        rate (rospy.Rate): Used to control the refresh rate of robot control 
+            loops.
         
-    Note: When inheriting from the Tester class, its initialization sequence should be
-        the first thing to run in the inherting class's __init__ function.
+    Note: When inheriting from the Tester class, its initialization sequence 
+        should be the first thing to run in the inherting class's __init__ 
+        function.
     """
     def __init__(self, name):
         # set module name
@@ -41,7 +43,8 @@ class Tester():
     def main(self):
         """ The contents of the main loop.
         
-        Note: Looping happens in run(). The main function MUST be overriden in the subclasses.
+        Note: Looping happens in run(). The main function MUST be overriden in the 
+            subclasses.
         """
         self.signal_shutdown("The main function in the Tester class must be overriden!")
     

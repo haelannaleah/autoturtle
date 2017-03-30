@@ -16,19 +16,21 @@ class Motion():
         turn_dir (int): 1 if turning left, -1 if turning right, None if no turn.
         turning (bool): True if the robot is turning, False otherwise.
         walking (bool): True if robot is moving linearly, False otherwise.
-        stopping (bool): True if the robot is in the process of stopping, False otherwise.
-        starting (bool): True if the robot is in the process of starting, False otherwise.
+        stopping (bool): True if the robot is in the process of stopping, False 
+            otherwise.
+        starting (bool): True if the robot is in the process of starting, False 
+            otherwise.
     """
     # Define Turtlebot constants
     _ROT_SPEED = radians(60)    # maximum rotational speed
     _LIN_SPEED = 0.2            # maximum linear speed
-    _ACCEL_TIME = 0.2           # maximum time delta (s) between acceleration steps
+    _ACCEL_TIME = 0.2           # maximum time delta (s) between acceleration step
     _ROT_ACCEL = 1.5            # rotational acceleration (m/s^2)
     _ROT_DECCEL = -4            # rotational acceleration (m/s^2)
     _LIN_ACCEL = .2             # linear acceleration (m/s^2)
     _LIN_DECCEL = -.25          # linear deceleration (m/s^2)
-    _TURN_LEFT = 1              # positive turn values cause the robot to turn left
-    _TURN_RIGHT = -1            # negative turn values cause the robot to turn right
+    _TURN_LEFT = 1              # positive turn values cause left turns
+    _TURN_RIGHT = -1            # negative turn values cause right turns
     
     def __init__(self):
 
@@ -51,29 +53,32 @@ class Motion():
         """ Smooth out starts and stops. 
             
         Args:
-            accel (float): The change in robot speed in meters per second or radians per second.
-                Positive to accelerate, negative to accelerate.
+            accel (float): The change in robot speed in meters per second or 
+                radians per second. Positive to accelerate, negative to 
+                accelerate.
         
         Returns:
             The delta necessary to accelerate at accel.
         """
-        # save the previous acceleration time, update the current time, compute the delta
+        # save the previous acceleration time, update the current time,
+        # compute the delta
         self._prev_accel_time = self._accel_time
         self._accel_time = time()
         delta_time = self._accel_time - self._prev_accel_time
         
-        # we've just begun accelerating since it's been too long since the last step
+        # it's been too long since the last step; we've just begun accelerating
         if delta_time > self._ACCEL_TIME:
             return 0
         
         # multiply the delta by the desired acceleration to gently and return
-        #   this computed delta is used to gently change robot velocity
+        # this computed delta is used to gently change robot velocity
         return delta_time * float(accel)
     
     def _linearStop(self, now):
         """ Gently stop forward motion of robot. """
         
-        # if we've slowed to or past 0, or the user wants to stop now, zero the linear command and reset states
+        # if we've slowed to or past 0, or the user wants to stop now,
+        # zero the linear command and reset states
         if self._move_cmd.linear.x <= 0 or now:
             self._move_cmd.linear.x = 0
             self.walking = False
@@ -89,7 +94,8 @@ class Motion():
     def _rotationalStop(self, now):
         """ Stop the robot and handle associated housekeeping. """
         
-        # if we've slowed to or past 0, or the user wants to stop now, zero the rotational command and reset states
+        # if we've slowed to or past 0, or the user wants to stop now,
+        # zero the rotational command and reset states
         if self.turn_dir * self._move_cmd.angular.z <= 0 or now:
             self.turning = False
             self.turn_dir = 0
@@ -129,7 +135,8 @@ class Motion():
         """ Stop robot's linear motion, immediately if necessary. 
         
         Args:
-            now (bool): Robot's forward motion stops immediately if true, else decelerates.
+            now (bool): Robot's forward motion stops immediately if true, else 
+                decelerates.
         """
         self._linearStop(now)
         self._publish()
@@ -138,7 +145,8 @@ class Motion():
         """ Stop the robot rotation, immediately if necessary. 
         
         Args:
-            now (bool): Robot's rotational motion stops immediately if true, else decelerates.
+            now (bool): Robot's rotational motion stops immediately if true, else 
+                decelerates.
         """
         self._rotationalStop(now)
         self._publish()
@@ -148,8 +156,9 @@ class Motion():
             
         Args:
             direction (bool): Turn direction is left if True, right if False
-            speed (float, optional): Percentage of maximum speed, magnitude between 0 and 1.
-                Values with magnitude greater than 1 will be ignored.
+            speed (float, optional): Percentage of maximum speed, magnitude 
+                between 0 and 1. Values with magnitude greater than 1 will be 
+                ignored.
         """
         # set turning state
         self.turning = True
@@ -175,8 +184,9 @@ class Motion():
         """ Move straight forward. 
         
         Args:
-            speed (float, optional): Percentage of maximum speed, magnitude between 0 and 1.
-                Values with magnitude greater than 1 will be ignored.
+            speed (float, optional): Percentage of maximum speed, magnitude 
+                between 0 and 1. Values with magnitude greater than 1 will be 
+                ignored.
         """
         # set walking and stopping states
         self.walking = True

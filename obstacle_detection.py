@@ -13,12 +13,14 @@ class ObstacleDetector():
     """ Detect obstacles.
     
     Attributes:
-        obstacle (bool): True if there is an obstacle that needs attention, False otherwise.
-        obstacle_dir (int): -1 if the obstacle is on the left, 1 if the obstacle is on the right.
+        obstacle (bool): True if there is an obstacle that needs attention, False 
+            otherwise.
+        obstacle_dir (int): -1 if the obstacle is on the left, 1 if the obstacle 
+            is on the right.
     """
     # obstacle detection constants
-    _OBSTACLE_DIST_THRESH =  0.7    # distance threshold for obstacles to the Turtlebot
-    _OBSTACLE_SAMPLE_WIDTH = 0.3    # slice of the robot's vision to check for obstacles
+    _OBSTACLE_DIST_THRESH =  0.7    # distance threshold for obstacles
+    _OBSTACLE_SAMPLE_WIDTH = 0.3    # slice of robot FOV to check for obstacles
     _WALL_SAMPLE_WIDTH = 0.4
 
     def __init__(self):
@@ -38,7 +40,8 @@ class ObstacleDetector():
         """ Get a blurred slice of the image. 
         
         Args:
-            depth_img (numpy matrix): The cv2 depth image that we want to get a slice of.
+            depth_img (numpy matrix): The cv2 depth image that we want to get a 
+                slice of.
             min_height (int): The minimum y-pixel of the slice.
             max_height (int): The maximum y-pixel of the slice.
             min_width (int): The minimum x-pixel of the slice.
@@ -50,12 +53,14 @@ class ObstacleDetector():
         return cv2.medianBlur(depth_img[min_height:max_height, min_width:max_width], 5)
     
     def _getIndex(self, img, operation):
-        """ Get the index of the part of the imag that most satisfies the numpy operation.
+        """ Get the index of the part of the imag that most satisfies the numpy 
+                operation.
         
         Args:
-            img (numpy matrix): The cv2 depth image that we want to detect obstacles on.
-            operation (numpy arg function): A function that performs some operation and returns
-                a numpy index.
+            img (numpy matrix): The cv2 depth image that we want to detect 
+                obstacles on.
+            operation (numpy arg function): A function that performs some 
+                operation and returns a numpy index.
         
         Returns:
             The np index of the depth image that satisfied the input operation.
@@ -69,7 +74,8 @@ class ObstacleDetector():
         """ If there is an obstacle nearby, find it. 
         
         Args:
-            depth_img (numpy matrix): The cv2 depth image that we want to detect obstacles on.
+            depth_img (numpy matrix): The cv2 depth image that we want to detect 
+                obstacles on.
             
         Returns:
             True on success, False on failure.
@@ -95,7 +101,8 @@ class ObstacleDetector():
         """ If there is a wall, or very near obstacle, find it.
         
         Args:
-            depth_img (numpy matrix): The cv2 depth image that we want to detect obstacles on.
+            depth_img (numpy matrix): The cv2 depth image that we want to detect 
+                obstacles on.
             
         Returns:
             True on success, False on failure.
@@ -118,8 +125,10 @@ class ObstacleDetector():
         """ If there is an obstacle nearby, find it. 
         
         Args:
-            depth_img (numpy matrix): The cv2 depth image that we want to detect obstacles on.
-            obstruction_sample_width (numpy matrix): The width of the sample space in the image
+            depth_img (numpy matrix): The cv2 depth image that we want to detect 
+                obstacles on.
+            obstruction_sample_width (numpy matrix): The width of the sample space 
+                in the image
             
         Returns:
             True on success, False on failure.
@@ -135,7 +144,8 @@ class ObstacleDetector():
         # check distance to closest object
         min_index = self._getIndex(sample, np.nanargmin)
         
-        # if the operation failed (likely due to an all NaN slice), set obstacle state and return failure
+        # if the operation failed (likely due to an all NaN slice), set obstacle
+        # state and return failure
         if min_index is None:
             return True, 0
         

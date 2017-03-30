@@ -22,18 +22,18 @@ class Navigation(Motion, TfTransformer):
     """ Local navigation.
     
     Args:
-        jerky (bool, optional): If true, robot will not decelerate, but stop abruptly.
-            Defaults to False.
-        walking_speed (float, optional): Percentage of maximum speed, magnitude between 0 and 1.
-                Values with magnitude greater than 1 will be ignored.
+        jerky (bool, optional): If true, robot will not decelerate, but stop 
+            abruptly. Defaults to False.
+        walking_speed (float, optional): Percentage of maximum speed, magnitude 
+            between 0 and 1. Values with magnitude greater than 1 will be ignored.
     
     Attributes:
-        p (geometry_msgs.msg.Point): The position of the robot in the ekf odometry frame according to
-            the robot_pose_ekf package.
-        q (geometry_msgs.msg.Quaternion): The orientation of the robot in the ekf odometry frame
-            according the the robot_pose_ekf package.
-        angle (float): The angle (in radians) that the robot is from 0 in the ekf odometry frame. 
-            Between -pi and pi
+        p (geometry_msgs.msg.Point): The position of the robot in the ekf odometry 
+            frame according to the robot_pose_ekf package.
+        q (geometry_msgs.msg.Quaternion): The orientation of the robot in the ekf 
+            odometry frame according the the robot_pose_ekf package.
+        angle (float): The angle (in radians) that the robot is from 0 in the ekf 
+            odometry frame. Between -pi and pi
     """
     # avoid recomputing constants
     _HALF_PI = pi / 2.0
@@ -69,7 +69,8 @@ class Navigation(Motion, TfTransformer):
         self._bumped = False
         self._bumper = 0
         
-        # we're going to send the turtlebot to a point a quarter meter ahead of itself
+        # send the turtlebot to a point a quarter meter ahead of itself when
+        # avoiding an obstacle
         self._avoid_goto = PointStamped()
         self._avoid_goto.header.frame_id = "/base_footprint"
         self._avoid_goto.point.x = self._AVOID_DIST
@@ -86,7 +87,8 @@ class Navigation(Motion, TfTransformer):
         # set up navigation to destination data
         self._reached_goal = True
     
-        # set up the odometry reset publisher (publishing Empty messages here will reset odom)
+        # set up the odometry reset publisher
+        # publishing Empty messages here will reset odom
         reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=1)
         
         # reset odometry (these messages take about a second to get through)
@@ -101,8 +103,9 @@ class Navigation(Motion, TfTransformer):
         self.p = data.pose.pose.position
         self.q = data.pose.pose.orientation
         
-        # since a quaternion respresents 3d space, and turtlebot motion is in 2d, we can just
-        #   extract the only non zero euler angle as the angle of rotation in the floor plane
+        # since a quaternion respresents 3d space, and turtlebot motion is in 2d,
+        # we can just extract the only non zero euler angle as the angle of
+        # rotation in the floor plane
         self.angle = tf.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w])[-1]
 
     def _getDestData(self, dest_x, dest_y):
@@ -115,14 +118,16 @@ class Navigation(Motion, TfTransformer):
         Returns:
             True if we are close to the desired location 
             0 if the goal is straight ahead
-            The difference between the current angle and the desired angle if we are not on course.
-                A negative value indicates that the desired angle is that many radians to the left of 
-                the current orientation, positive indicates the desired angle is to the right.
+            The difference between the current angle and the desired angle if we 
+                are not on course. A negative value indicates that the desired 
+                angle is that many radians to the left of the current orientation, 
+                positive indicates the desired angle is to the right.
         """
-        # take the angle between our position and destination in the ekf odom_combined frame
+        # take the angle between position and destination in the odom frame
         turn = atan2(dest_y - self.p.y, dest_x - self.p.x)
         
-        # set the turn angle to behave as the angle that is the minimum distance from our current pose
+        # set the turn angle to behave as the angle that is the minimum distance
+        # from current pose
         turn_angle = self._wrapAngle(turn)
 
         # we're (pretty) near our final location
@@ -239,7 +244,7 @@ class Navigation(Motion, TfTransformer):
         elif self._avoiding:
             return self._avoid()
 
-        # all our sensor reading came back clear, so we can proceed with normal navigation
+        # all our sensor reading came back clear; proceed with normal navigation
         else:
             return False
 
@@ -253,7 +258,8 @@ class Navigation(Motion, TfTransformer):
             # we're facing the direction we're supposed to
             return True
     
-        # make sure we're turning in the correct direction, and stop the turn if we're not
+        # make sure we're turning in the correct direction,
+        # stop the turn if we're not
         if (turn_delta <= 0) != (self._motion.turn_dir >= 0):
             self._motion.stopRotation(now = True)
 
@@ -305,15 +311,17 @@ class Navigation(Motion, TfTransformer):
         else:
             self._goToOrient(turn_delta)
 
-        # we're still moving towards our goal (or our stopping point), or we've gotten trapped
+        # we're still moving towards our goal (or our stopping point)
         return False
         
     def _wrapAngle(self, angle):
-        """ Set the turn angle to behave as the angle that is the minimum distance from our current pose.
+        """ Set the turn angle to behave as the angle that is the minimum distance 
+                from our current pose.
         
         Note:
-            The closest equivalent angle may be slightly greater than pi or slightly less than -pi; we want
-                angles at pi and -pi to behave as if they are right next to each other, so we may need to wrap
+            The closest equivalent angle may be slightly greater than pi or 
+                slightly less than -pi; we want angles at pi and -pi to behave as 
+                if they are right next to each other, so we may need to wrap 
                 around by adding or subtracting two pi.
         """
         return min([angle, angle + self._TWO_PI, angle - self._TWO_PI], key = lambda a: abs(a - self.angle))
@@ -330,16 +338,17 @@ class Navigation(Motion, TfTransformer):
         """ Go to waypoint in the odometry frame.
         
         Args:
-            x (float): The x coordinate of the desired location (in meters from the origin).
-            y (float): The y coordinate of the desired location (in meters from the origin).
+            x (float): The x coordinate of the desired location (in meters from 
+                the origin).
+            y (float): The y coordinate of the desired location (in meters from 
+                the origin).
         """
-        # if we've encountered some sort of obstacle, we haven't even tried to get to the current position
-        
-        self._target_turn_delta = self._getDestData(x, y)
-        
+        # if we've encountered some sort of obstacle, we haven't even tried to get
+        # to our target position
         if self._handleObstacle():
             return False
-
+        
+        self._target_turn_delta = self._getDestData(x, y)
         return self._goToPos(self._target_turn_delta)
         
     def csvLogArrival(self, test_name, x, y, folder = "tests"):
@@ -372,10 +381,7 @@ if __name__ == "__main__":
             
             # flag for a jerky stop
             self.jerky = False
-            
-            # I'm a bit concerned about robot safety if we don't slow things down,
-            # but I'm also worried it won't be an accurate test if we change the speed
-            self.walking_speed = 1 # if not self.jerky else .5
+            self.walking_speed = 1
             
             # linear test
             self.reached_goal = False
@@ -393,13 +399,12 @@ if __name__ == "__main__":
 
         def main(self):
             """ The test currently being run. """
-            #self.testCCsquare(1)
-            #self.testCsquare(1)
-            self.testLine(1.5)
-            self.navigation.csvLogEKF(self.filename)
+            # test functions go here
+            pass
         
         def initFile(self, filename):
             """ Write the first line of our outgoing file (variable names). """
+            
             self.filename = filename + ("_jerky" if self.jerky else "_smooth")
         
         def testLine(self, length):

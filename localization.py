@@ -23,19 +23,21 @@ class Localization(TfTransformer):
     Args:
         point_ids (set): Unique identifier for each waypoint in the graph.
         locations (dict): Point_ids mapped to tuples representing locations.
-        neighbors (dict): Point_ids mapped to lists containing other point_ids representing 
-            the current node's neighbors.
+        neighbors (dict): Point_ids mapped to lists containing other point_ids 
+            representing the current node's neighbors.
         landmark_ids (set): Unique identifier for each landmark in the graph.
         landmark_positions (dict): Map AprilTag landmark ids to their absolute
             position on the floorplan.
         landmark_angles (dict): Map AprilTag landmark ids to their absolute
-            position on the floorplan. This specifies the angle of rotation of the landmark in the 
-            xy plane; ie, how much has its horizontal vector deviated from the x axis.
+            position on the floorplan. This specifies the angle of rotation of the 
+            landmark in the xy plane; ie, how much has its horizontal vector 
+            deviated from the x axis.
     
     Attributes:
-        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags currently in view in 
-            their raw form.
-        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the odometry frame.
+        tags (geometry_msgs.msg.PoseStamped dict): A dict of all the AprilTags 
+            currently in view in their raw form.
+        tags_odom (geometry_msgs.msg.PoseStamped dict): Same as above, but in the 
+            odometry frame.
         floorplan (FloorPlan): The map of the current space as a floorplan.
     """
     _AR_FOV_LIMIT = 2.0 * pi / 15.0  # radians
@@ -66,7 +68,8 @@ class Localization(TfTransformer):
     def _tagCallback(self, data):
         """ Extract and process tag data from the ar_pose_marker topic. """
         if data.markers:
-            # use a list comprehension to convert the raw marker data into a dictionary of PoseStamped objects
+            # use a list comprehension to convert the raw marker data into a
+            # dictionary of PoseStamped objects
             #   I promise, its less scary than it looks...
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
             self.tags_odom = self._tfTransformTags('/odom')
@@ -78,18 +81,20 @@ class Localization(TfTransformer):
             self.tags_odom = {}
     
     def _setTransform(self):
-        """ Set the transformation between the odom frame and the map frame based on current tag info. """
-    
+        """ Set the transformation between the odom frame and the map frame based 
+                on current tag info. 
+        """
         # attempt to get the id of the closest landmark
         try:
             t = self.tags
             
-            # compute the closest (viable) tag by looking for the smallest distance squared from the robot base
-            #   among tags that also appear in landmarks
+            # compute the closest (viable) tag by looking for the smallest
+            # distance squared from the robot base among tags that also appear in
+            # landmarks
             dist2, closest_id = min((t[id].pose.position.x**2 + t[id].pose.position.z**2, id)
                 for id in t if (id in self.floorplan.landmarks and id in self.tags_odom))
         
-        # the argument to min was an empty list; we don't see any familiar landmarks
+        # the argument to min was an empty list; no familiar landmarks
         except (TypeError, ValueError) as e:
             return
         
@@ -116,12 +121,14 @@ class Localization(TfTransformer):
             target_frame (string): The desired final coordinate frame.
             
         Returns:
-            A geometry_msgs.msg.PoseStamped dictionary containing the positions in the target frame
-                of the visible AprilTags that were successfully transformed.
+            A geometry_msgs.msg.PoseStamped dictionary containing the positions in 
+                the target frame of the visible AprilTags that were successfully 
+                transformed.
                 
         Note: 
-            Raw tag orientation data comes in the /ar_marker_<id> frame, and its position data comes in the
-                /camera_rgb_optical_frame, so our transformations must reflect this.
+            Raw tag orientation data comes in the /ar_marker_<id> frame, and its 
+                position data comes in the /camera_rgb_optical_frame, so our 
+                transformations must reflect this.
             Also note that this is the scary function...
         """
         
@@ -129,30 +136,33 @@ class Localization(TfTransformer):
         transformed = {}
         for id in self.tags:
         
-            # make sure that the data coming in is in a viable frame of view, and ignore if it's not
-            # experimentally, I found points more than 7pi/15 rad away from the x-axis gave junk data
+            # make sure that the data coming in is in a viable frame of view, and
+            # ignore if it's not
+            #    experimentally, I found points more than 7pi/15 rad away from the
+            #    x-axis gave junk data
             if abs(atan2(self.tags[id].pose.position.x, self.tags[id].pose.position.z)) > self._AR_FOV_LIMIT:
                 self._logger.warn("Tag outside FOV. Ignoring.")
                 continue
         
-            # since the tag should always be roughly perpendicular to the ground, these values should be relatively small
+            # since the tag should always be roughly perpendicular to the ground,
+            # these values should be relatively small
             if np.isclose(self.tags[id].pose.orientation.x, 1, atol = 0.01) or np.isclose(self.tags[id].pose.orientation.y, 1, atol = 0.01):
                 
                 self._logger.warn("Tag outside acceptable orientation limits. Ignoring.")
                 continue
-            # if abs(self.tags[id].pose.orientation.x) > 0.75 or abs(self.tags[id].pose.orientation.y) > 0.75:
-            #     continue
 
             # get the header from the current tag
             header = self.tags[id].header
             
-            # set the time to show that we only care about the most recent available transform
+            # set the time to show that we only care about the most recent
+            # available transform
             header.stamp = rospy.Time(0)
             
-            # orientation data is in the ar_marker_<id> frame, so we need to update the starting frame
-            #   (if we just transform from the optical frame, then turning the AR tag upside down affects the
-            #   reported orientation)
-            # this will get us the angle between the ARtag's x-axis and the robot base's x-axis
+            # orientation data is in the ar_marker_<id> frame, so we need to
+            # update the starting frame
+            # (if we just transform from the optical frame, then turning the AR
+            # tag upside down affects the reported orientation) this will get us
+            # the angle between the ARtag's x-axis and the robot base's x-axis
             header.frame_id = '/ar_marker_' + str(id)
             orientation = self._tf_listener.transformQuaternion(target_frame, QuaternionStamped(header, self.tags[id].pose.orientation))
             
@@ -160,9 +170,10 @@ class Localization(TfTransformer):
             if orientation is None:
                 continue
                 
-            # incoming position data is relative to the rgb camera frame, so we reset the header to the optical
-            #   frame to get the correct position (note that this step is necessary since we're getting a shallow
-            #   copy of the header)
+            # incoming position data is relative to the rgb camera frame, so we
+            # reset the header to the optical frame to get the correct position
+            # (note that this step is necessary since we're getting a shallow
+            # copy of the header)
             header.frame_id = '/camera_rgb_optical_frame'
             position = self._tf_listener.transformPoint(target_frame, PointStamped(header, self.tags[id].pose.position))
                          
@@ -170,7 +181,7 @@ class Localization(TfTransformer):
             if position is None:
                 continue
             
-            # if we made it this far, then we can add our pose data to our dictionary!
+            # if we made it this far, add our pose data to the dictionary
             transformed[id] = PoseStamped(position.header, Pose(position.point, orientation.quaternion))
             
         return transformed
@@ -180,8 +191,8 @@ class Localization(TfTransformer):
         
         Args:
             position (geometry_msgs.msg.Point): A position in the from_frame.
-            from_frame (str, "map" or "odom") The frame that the incoming point is in.
-            to_frame (str, "map" or "odom") The frame that the final point will be in.
+            from_frame (str, "map" or "odom") The frame of the incoming point.
+            to_frame (str, "map" or "odom") The the target frame.
         
         Returns:
             A geometry_msgs.msg.Point in the target frame.
@@ -196,7 +207,7 @@ class Localization(TfTransformer):
         # the amount we've rotated since we've logged a transform point
         delta = self._transform[to_frame + "_angle"] - self._transform[from_frame + "_angle"] 
     
-        # now, add this movement back in to last transform point in the desired frame
+        # now, add this movement back to most recent basis point
         x = self._transform[to_pos].x + dx * cos(delta) - dy * sin(delta)
         y = self._transform[to_pos].y + dx * sin(delta) + dy * cos(delta)
     
@@ -241,16 +252,17 @@ class Localization(TfTransformer):
         self._csvLogAR(test_name, self.tags, "raw", folder)
 
     def csvLogOdomTags(self, test_name, folder = "tests"):
-        """ Log new position of AR tags relative to the robot base in separate files. """
-
+        """ Log new position of AR tags relative to the robot base in separate 
+                files. 
+        """
         self._csvLogAR(test_name, self.tags_odom, "odom", folder)
     
     def csvLogTransform(self, test_name, folder = "tests"):
         """ Log the transformation from the ekf frame to the map frame. """
                             
-        self._logger.csv(test_name + "_transform", ["X_map", "Y_map", "angle_map", "X_odom", "Y_odom", "angle_odom"],
+        self._logger.csv(test_name + "_transform", ["X_map", "Y_map", "angle_map","X_odom", "Y_odom", "angle_odom"],
                     [self._transform["map_pos"].x, self._transform["map_pos"].y, self._transform["map_angle"],
-                            self._transform["odom_pos"].x, self._transform["odom_pos"].y, self._transform["odom_angle"]],
+                    self._transform["odom_pos"].x, self._transform["odom_pos"].y, self._transform["odom_angle"]],
                     folder = folder)
 
     def shutdown(self):
