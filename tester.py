@@ -43,10 +43,10 @@ class Tester():
     def main(self):
         """ The contents of the main loop.
         
-        Note: Looping happens in run(). The main function MUST be overriden in the 
+        Note: Looping happens in run(). The main function MUST be overridden in the
             subclasses.
         """
-        self.signal_shutdown("The main function in the Tester class must be overriden!")
+        self.signal_shutdown("The main function in the Tester class must be overridden!")
     
     def run(self):
         """ Actually run the code written in main.
