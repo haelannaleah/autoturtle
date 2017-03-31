@@ -72,7 +72,7 @@ class Localization(TfTransformer):
             # dictionary of PoseStamped objects
             #   I promise, its less scary than it looks...
             self.tags = {marker.id : PoseStamped(marker.header, marker.pose.pose) for marker in data.markers}
-            self.tags_odom = self._tfTransformTags('/odom')
+            self.tags_odom = self._tfProcessRawTags('/odom')
             self._setTransform()
         
         else:
@@ -114,8 +114,8 @@ class Localization(TfTransformer):
 
         self._prev_odom = cur_odom
 
-    def _tfTransformTags(self, target_frame):
-        """ Convert all of the visible tags to target frame.
+    def _tfProcessRawTags(self, target_frame):
+        """ Convert all of the visible tags to target ROS frame.
         
         Args:
             target_frame (string): The desired final coordinate frame.
@@ -133,7 +133,7 @@ class Localization(TfTransformer):
         """
         
         # transform the visible tags that are in the viable field of view
-        transformed = {}
+        processed = {}
         for id in self.tags:
         
             # make sure that the data coming in is in a viable frame of view, and
@@ -182,9 +182,9 @@ class Localization(TfTransformer):
                 continue
             
             # if we made it this far, add our pose data to the dictionary
-            transformed[id] = PoseStamped(position.header, Pose(position.point, orientation.quaternion))
+            processed[id] = PoseStamped(position.header, Pose(position.point, orientation.quaternion))
             
-        return transformed
+        return processed
     
     def transformPoint(self, position, from_frame, to_frame):
         """ Compute coordinate transformation.

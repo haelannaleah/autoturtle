@@ -67,13 +67,7 @@ rooms = {253 : 'A',
      235 : 'T'
     }
 
-# of the form {tag_id : map_location}
 landmarks = {1, 2, 4}
-
-# offset
-#landmark_pos = {1 : (-2.4384, 11.8872),
-#    2 : (-2.4384, 7.9248)
-#    }
 
 landmark_pos = {1 : (-2.4384, 12.4968),
     2 : (-2.4384, 7.3152),
