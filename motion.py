@@ -120,7 +120,7 @@ class Motion():
             
         return self._move_cmd.angular.z
 
-    def stop(self, now=False): 
+    def stop(self, now=False):
         """ Stop the robot, immediately if necessary.
         
         Args:
@@ -180,13 +180,18 @@ class Motion():
         
         self._publish()
 
-    def walk(self, speed=1):
+    def walk(self, speed=1, smooth=True):
         """ Move straight forward. 
         
         Args:
             speed (float, optional): Percentage of maximum speed, magnitude 
                 between 0 and 1. Values with magnitude greater than 1 will be 
                 ignored.
+                Defaults to 1.
+            smooth (bool, optional): If True, robot will accelerate to speed. 
+                Otherwise, start immediately as speed (note that this is generally
+                not reccomended as it jars robotic components.)
+                Defaults to True.
         """
         # set walking and stopping states
         self.walking = True
@@ -196,7 +201,7 @@ class Motion():
         target_speed = self._LIN_SPEED * min(abs(speed), 1)
         
         # if we're under our target speed, accelerate
-        if self._move_cmd.linear.x < target_speed:
+        if self._move_cmd.linear.x < target_speed and smooth:
             self._move_cmd.linear.x += self._accelerate(self._LIN_ACCEL)
             self.starting = True
         
